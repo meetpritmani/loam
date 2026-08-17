@@ -1,0 +1,38 @@
+{%- comment -%}
+  Renders a collection card: image with the title either overlaid on it or
+  shown below.
+
+  Accepts:
+  - collection: {Object} collection. Required.
+  - ratio: {String} wrapper_ratio passed to responsive-image.
+  - show_title_overlay: {Boolean} true = title overlaid on the image.
+
+  Handles: no collection image (falls back to a placeholder, same as
+  product cards do — never a broken/empty box).
+
+  Styled from sections/collection-list.liquid's {% stylesheet %} — snippets
+  can't carry their own style tags.
+{%- endcomment -%}
+
+<a class="rpl-collection-card" href="{{ collection.url }}">
+  <div class="rpl-collection-card__media">
+    {% render 'responsive-image',
+      image: collection.featured_image,
+      alt: collection.title,
+      loading: 'lazy',
+      sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80vw',
+      widths: '360, 533, 720, 940',
+      wrapper_ratio: ratio,
+      placeholder: 'collection-1'
+    %}
+    {%- if show_title_overlay -%}
+      <span class="rpl-collection-card__scrim" aria-hidden="true"></span>
+      <h3 class="rpl-collection-card__title rpl-collection-card__title--overlay">
+        {{- collection.title | escape -}}
+      </h3>
+    {%- endif -%}
+  </div>
+  {%- unless show_title_overlay -%}
+    <h3 class="rpl-collection-card__title">{{ collection.title | escape }}</h3>
+  {%- endunless -%}
+</a>

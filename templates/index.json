@@ -3,39 +3,152 @@
     "hero": {
       "type": "hero",
       "blocks": {
-        "heading": {
-          "type": "heading",
+        "slide-1": {
+          "type": "slide",
           "settings": {
+            "image": "",
+            "video": "",
             "heading": "Never run out again",
-            "heading_size": "large"
-          }
-        },
-        "text": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Refill reminders and subscriber-only pricing on the essentials you use every day.</p>"
-          }
-        },
-        "buttons": {
-          "type": "buttons",
-          "settings": {
+            "heading_size": "large",
+            "text": "<p>Refill reminders and subscriber-only pricing on the essentials you use every day.</p>",
             "button_label": "Shop now",
             "button_link": "shopify://collections/all",
-            "button_style": false,
-            "second_button_label": "",
-            "second_button_link": "",
-            "second_button_style": true
+            "button_style": false
           }
         }
       },
-      "block_order": ["heading", "text", "buttons"],
+      "block_order": ["slide-1"],
       "settings": {
         "height": "medium",
         "content_position": "left",
+        "content_vertical_position": "center",
         "overlay_opacity": 20,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "color_scheme": "scheme-1"
+      }
+    },
+    "feature-highlights": {
+      "type": "feature-highlights",
+      "blocks": {
+        "highlight-1": {
+          "type": "highlight",
+          "settings": {
+            "heading": "Free shipping",
+            "text": "<p>On all orders over $50.</p>"
+          }
+        },
+        "highlight-2": {
+          "type": "highlight",
+          "settings": {
+            "heading": "Easy returns",
+            "text": "<p>30 days, no questions asked.</p>"
+          }
+        },
+        "highlight-3": {
+          "type": "highlight",
+          "settings": {
+            "heading": "Secure checkout",
+            "text": "<p>Your data is always protected.</p>"
+          }
+        },
+        "highlight-4": {
+          "type": "highlight",
+          "settings": {
+            "heading": "24/7 support",
+            "text": "<p>Real humans, real fast.</p>"
+          }
+        }
+      },
+      "block_order": ["highlight-1", "highlight-2", "highlight-3", "highlight-4"],
+      "settings": {
+        "columns_desktop": "4",
+        "color_scheme": "scheme-1"
+      }
+    },
+    "collection-list": {
+      "type": "collection-list",
+      "settings": {
+        "heading": "Shop by category",
+        "collections": [],
+        "layout": "grid",
+        "columns_desktop": "4",
+        "image_ratio": "square",
+        "show_title_overlay": true,
+        "show_view_all": true,
+        "view_all_label": "View all",
+        "color_scheme": "scheme-1"
+      }
+    },
+    "trending-products": {
+      "type": "trending-products",
+      "settings": {
+        "heading": "Best sellers",
+        "product_count": 8,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "show_vendor": false,
+        "show_badge": false,
+        "badge_text": "Best seller",
+        "badge_count": 3,
+        "color_scheme": "scheme-1"
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "blocks": {
+        "testimonial-1": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "<p>This changed how I shop for essentials completely — never running out, and the subscription pricing actually saves me money.</p>",
+            "rating": 5,
+            "name": "Jamie L."
+          }
+        },
+        "testimonial-2": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "<p>The refill reminders alone are worth it. I haven't had to think about reordering in months.</p>",
+            "rating": 5,
+            "name": "Priya K."
+          }
+        },
+        "testimonial-3": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "<p>Fast shipping, great packaging, and the products are exactly as described.</p>",
+            "rating": 4,
+            "name": "Sam T."
+          }
+        }
+      },
+      "block_order": ["testimonial-1", "testimonial-2", "testimonial-3"],
+      "settings": {
+        "heading": "What customers are saying",
+        "layout": "grid",
+        "columns_desktop": "3",
+        "color_scheme": "scheme-1"
+      }
+    },
+    "trust-badges": {
+      "type": "trust-badges",
+      "blocks": {},
+      "block_order": [],
+      "settings": {
+        "heading": "",
+        "auto_scroll": false,
+        "grayscale_until_hover": true,
+        "row_height": 32,
         "color_scheme": "scheme-1"
       }
     }
   },
-  "order": ["hero"]
+  "order": [
+    "hero",
+    "feature-highlights",
+    "collection-list",
+    "trending-products",
+    "testimonials",
+    "trust-badges"
+  ]
 }

@@ -1,0 +1,210 @@
+{%- comment -%}
+  Payment icons / press logos / security badges in a row — static, or an
+  auto-scrolling marquee. The marquee is pure CSS (two identical tracks
+  side by side, animated -100%, which is what makes the loop seamless); no
+  JS is involved at all. Pauses on hover/focus, and prefers-reduced-motion
+  disables the animation and duplicate track entirely, falling back to one
+  static, wrapping row.
+
+  Handles: 0 blocks (renders nothing), a block with no image (skipped, not
+  a broken image), auto-scroll on/off, reduced motion, grayscale-until-hover
+  on/off.
+{%- endcomment -%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .rpl-trust-badges__image {
+    max-height: {{ section.settings.row_height }}px;
+  }
+{% endstyle %}
+
+{%- if section.blocks.size > 0 -%}
+  <div class="rpl-color-{{ section.settings.color_scheme }}">
+    <div class="rpl-container rpl-section--tight">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="rpl-trust-badges__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      <div
+        class="rpl-trust-badges__row {% if section.settings.grayscale_until_hover %}rpl-trust-badges__row--grayscale{% endif %}"
+        data-auto-scroll="{{ section.settings.auto_scroll }}"
+      >
+        <ul class="rpl-list-unstyled rpl-trust-badges__track">
+          {%- for block in section.blocks -%}
+            <li {{ block.shopify_attributes }}>
+              {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{%- endif -%}
+                {%- if block.settings.image != blank -%}
+                  <img
+                    class="rpl-trust-badges__image"
+                    src="{{ block.settings.image | image_url: width: 300 }}"
+                    alt="{{ block.settings.image.alt | default: '' }}"
+                    loading="lazy"
+                    width="{{ block.settings.image.width }}"
+                    height="{{ block.settings.image.height }}"
+                  >
+                {%- else -%}
+                  {{ 'image' | placeholder_svg_tag: 'rpl-trust-badges__image rpl-trust-badges__image--placeholder' }}
+                {%- endif -%}
+              {%- if block.settings.link != blank -%}</a>{%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {%- if section.settings.auto_scroll -%}
+          <ul class="rpl-list-unstyled rpl-trust-badges__track rpl-trust-badges__track--duplicate" aria-hidden="true">
+            {%- for block in section.blocks -%}
+              {%- if block.settings.image != blank -%}
+                <li>
+                  <img
+                    class="rpl-trust-badges__image"
+                    src="{{ block.settings.image | image_url: width: 300 }}"
+                    alt=""
+                    loading="lazy"
+                    width="{{ block.settings.image.width }}"
+                    height="{{ block.settings.image.height }}"
+                  >
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .rpl-trust-badges__heading {
+    margin-block-end: var(--rpl-space-md);
+    text-align: center;
+  }
+
+  .rpl-trust-badges__row {
+    overflow: hidden;
+  }
+
+  .rpl-trust-badges__track {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--rpl-space-lg);
+  }
+
+  .rpl-trust-badges__image {
+    width: auto;
+    display: block;
+  }
+
+  .rpl-trust-badges__row--grayscale .rpl-trust-badges__image {
+    filter: grayscale(1);
+    opacity: 0.6;
+    transition: filter var(--rpl-duration-fast) var(--rpl-ease), opacity var(--rpl-duration-fast) var(--rpl-ease);
+  }
+
+  .rpl-trust-badges__row--grayscale li:hover .rpl-trust-badges__image {
+    filter: grayscale(0);
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rpl-trust-badges__track--duplicate {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .rpl-trust-badges__row[data-auto-scroll='true'] {
+      display: flex;
+    }
+
+    .rpl-trust-badges__row[data-auto-scroll='true'] .rpl-trust-badges__track {
+      flex-wrap: nowrap;
+      flex: 0 0 auto;
+      animation: rpl-trust-badges-scroll 30s linear infinite;
+    }
+
+    .rpl-trust-badges__row[data-auto-scroll='true']:hover .rpl-trust-badges__track,
+    .rpl-trust-badges__row[data-auto-scroll='true']:focus-within .rpl-trust-badges__track {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes rpl-trust-badges-scroll {
+    to {
+      transform: translateX(-100%);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.trust_badges.name",
+  "tag": "section",
+  "class": "rpl-section-trust-badges",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.all.heading.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_scroll",
+      "label": "t:sections.trust_badges.settings.auto_scroll.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "grayscale_until_hover",
+      "label": "t:sections.trust_badges.settings.grayscale_until_hover.label",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "row_height",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.trust_badges.settings.row_height.label",
+      "default": 40
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "badge",
+      "name": "t:sections.trust_badges.blocks.badge.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.trust_badges.blocks.badge.settings.image.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.trust_badges.blocks.badge.settings.link.label"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 16,
+  "presets": [
+    {
+      "name": "t:sections.trust_badges.name",
+      "blocks": [
+        { "type": "badge" },
+        { "type": "badge" },
+        { "type": "badge" },
+        { "type": "badge" }
+      ]
+    }
+  ]
+}
+{% endschema %}

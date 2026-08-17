@@ -1,0 +1,145 @@
+{%- comment -%}
+  Shows the top N products from a merchant-picked collection — sort order
+  (best-selling, manual, etc.) comes from the collection itself, native to
+  Shopify, not a hand-rolled "best selling" computation. Reuses
+  snippets/product-card.liquid, so it's the exact same card as everywhere
+  else in the theme; the "trending" badge is an overlay added here, not a
+  change to that shared snippet.
+
+  Handles: no collection picked (renders nothing), an empty collection, a
+  product with no image/price (product-card.liquid already handles this),
+  fewer products in the collection than the requested count, badge on/off.
+{%- endcomment -%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .rpl-product-grid {
+    --rpl-grid-columns-mobile: {{ section.settings.columns_mobile }};
+    --rpl-grid-columns-desktop: {{ section.settings.columns_desktop }};
+  }
+{% endstyle %}
+
+{%- if section.settings.collection != blank and section.settings.collection.products.size > 0 -%}
+  <div class="rpl-color-{{ section.settings.color_scheme }}">
+    <div class="rpl-container rpl-section">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="rpl-trending-products__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      <ul class="rpl-grid rpl-product-grid rpl-list-unstyled">
+        {%- for product in section.settings.collection.products limit: section.settings.product_count -%}
+          <li class="rpl-reveal rpl-trending-products__item">
+            {%- if section.settings.show_badge and forloop.index <= section.settings.badge_count -%}
+              <span class="rpl-badge rpl-trending-products__badge">{{ section.settings.badge_text | escape }}</span>
+            {%- endif -%}
+            {% render 'product-card', product: product, lazy: forloop.index > section.settings.columns_desktop, show_vendor: section.settings.show_vendor %}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .rpl-trending-products__heading {
+    margin-block-end: var(--rpl-space-md);
+  }
+
+  .rpl-trending-products__item {
+    position: relative;
+  }
+
+  .rpl-trending-products__badge {
+    position: absolute;
+    z-index: 1;
+    top: var(--rpl-space-2xs);
+    inset-inline-start: var(--rpl-space-2xs);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.trending_products.name",
+  "tag": "section",
+  "class": "rpl-section-trending-products",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.all.heading.label",
+      "default": "Best sellers"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:sections.trending_products.settings.collection.label",
+      "info": "t:sections.trending_products.settings.collection.info"
+    },
+    {
+      "type": "range",
+      "id": "product_count",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "label": "t:sections.trending_products.settings.product_count.label",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "label": "t:sections.all.columns_desktop.label",
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "t:sections.all.columns_mobile.label",
+      "options": [
+        { "value": "1", "label": "t:sections.all.columns_mobile.options__1.label" },
+        { "value": "2", "label": "t:sections.all.columns_mobile.options__2.label" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "t:sections.all.show_vendor.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "t:sections.trending_products.settings.show_badge.label",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "t:sections.trending_products.settings.badge_text.label",
+      "default": "Best seller"
+    },
+    {
+      "type": "range",
+      "id": "badge_count",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "t:sections.trending_products.settings.badge_count.label",
+      "default": 3
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.trending_products.name"
+    }
+  ]
+}
+{% endschema %}

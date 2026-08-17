@@ -1,12 +1,15 @@
 /*
-  rpl-product.js — product page enhancements: thumbnail gallery,
+  rpl-product.js — product form enhancements: thumbnail gallery,
   variant-driven price/availability/SKU/media updates, mobile sticky ATC.
 
-  Loaded only from sections/main-product.liquid. Everything here reads
-  server-rendered data (the embedded product JSON, and per-variant hidden
-  price/label blocks already rendered by Liquid) rather than reconstructing
-  money formatting or translated strings in JS — see the comments in
-  main-product.liquid for why.
+  Loaded from sections/main-product.liquid AND sections/featured-product.liquid
+  — both render the same data-hooks (data-product-gallery, data-product-json,
+  data-product-variant-select, data-product-price, data-product-submit, …) on
+  purpose, so this one file drives both instead of featured-product needing
+  its own copy. Everything here reads server-rendered data (the embedded
+  product JSON, and per-variant hidden price/label blocks already rendered by
+  Liquid) rather than reconstructing money formatting or translated strings
+  in JS — see the comments in main-product.liquid for why.
 
   No-JS baseline this enhances rather than replaces: without this file, every
   product image is already visible (no gallery interaction needed), the
@@ -20,6 +23,9 @@
   var RPL = window.RPL;
 
   function initProductForm(root) {
+    if (root.hasAttribute('data-rpl-product-bound')) return;
+    root.setAttribute('data-rpl-product-bound', 'true');
+
     var gallery = root.querySelector('[data-product-gallery]');
     var jsonScript = root.querySelector('[data-product-json]');
     var select = root.querySelector('[data-product-variant-select]');
@@ -221,13 +227,15 @@
     if (select) onVariantChange();
   }
 
+  var PRODUCT_SECTION_SELECTOR = '.rpl-section-main-product, .rpl-section-featured-product';
+
   function boot(root) {
     var scope = root || document;
-    var sections = scope.querySelectorAll('.rpl-section-main-product');
+    var sections = scope.querySelectorAll(PRODUCT_SECTION_SELECTOR);
     Array.prototype.forEach.call(sections, function (section) {
       initProductForm(section);
     });
-    if (scope.matches && scope.matches('.rpl-section-main-product')) {
+    if (scope.matches && scope.matches(PRODUCT_SECTION_SELECTOR)) {
       initProductForm(scope);
     }
   }

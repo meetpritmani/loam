@@ -8,6 +8,32 @@
     }
   },
   "sections": {
+    "collection_list_section": {
+      "name": "Collection list",
+      "settings": {
+        "collections": {
+          "label": "Collections"
+        },
+        "layout": {
+          "label": "Layout",
+          "options__1": {
+            "label": "Grid"
+          },
+          "options__2": {
+            "label": "Carousel"
+          }
+        },
+        "show_title_overlay": {
+          "label": "Show collection title on image"
+        },
+        "show_view_all": {
+          "label": "Show \"View all\" link"
+        },
+        "view_all_label": {
+          "label": "\"View all\" link text"
+        }
+      }
+    },
     "all": {
       "color_scheme": {
         "label": "Color scheme"
@@ -32,6 +58,74 @@
       },
       "text": {
         "label": "Text"
+      }
+    },
+    "feature_highlights": {
+      "name": "Feature highlights",
+      "blocks": {
+        "highlight": {
+          "name": "Highlight",
+          "settings": {
+            "icon": {
+              "label": "Icon"
+            },
+            "link": {
+              "label": "Link"
+            }
+          }
+        }
+      }
+    },
+    "featured_product": {
+      "name": "Featured product",
+      "settings": {
+        "product": {
+          "label": "Product"
+        },
+        "description": {
+          "label": "Short description",
+          "info": "Overrides the product's own description here. Leave blank to hide."
+        }
+      },
+      "blocks": {
+        "trust_badge": {
+          "name": "Trust badge",
+          "settings": {
+            "icon": {
+              "label": "Icon",
+              "options__1": {
+                "label": "Shield"
+              },
+              "options__2": {
+                "label": "Truck"
+              },
+              "options__3": {
+                "label": "Refresh"
+              },
+              "options__4": {
+                "label": "Checkmark"
+              }
+            }
+          }
+        }
+      }
+    },
+    "frequently_bought_together": {
+      "name": "Bought together",
+      "settings": {
+        "default_checked": {
+          "label": "Pre-select related products"
+        }
+      },
+      "blocks": {
+        "related_product": {
+          "name": "Related product",
+          "settings": {
+            "product": {
+              "label": "Product"
+            }
+          }
+        }
       }
     },
     "footer": {
@@ -81,9 +175,6 @@
     "hero": {
       "name": "Hero banner",
       "settings": {
-        "image": {
-          "label": "Background image"
-        },
         "height": {
           "label": "Banner height",
           "options__1": {
@@ -108,15 +199,41 @@
             "label": "Right"
           }
         },
+        "content_vertical_position": {
+          "label": "Content vertical position",
+          "options__1": {
+            "label": "Top"
+          },
+          "options__2": {
+            "label": "Center"
+          },
+          "options__3": {
+            "label": "Bottom"
+          }
+        },
         "overlay_opacity": {
           "label": "Image overlay opacity",
           "info": "Improves text contrast over busy images."
+        },
+        "autoplay": {
+          "label": "Auto-rotate slides",
+          "info": "Only applies with 2 or more slides. Visitors can always pause it."
+        },
+        "autoplay_speed": {
+          "label": "Change slides every"
         }
       },
       "blocks": {
-        "heading": {
-          "name": "Heading",
+        "slide": {
+          "name": "Slide",
           "settings": {
+            "image": {
+              "label": "Background image"
+            },
+            "video": {
+              "label": "Background video",
+              "info": "Overrides the background image when set. Muted and looped automatically."
+            },
             "heading": {
               "label": "Heading"
             },
@@ -131,39 +248,19 @@
               "options__3": {
                 "label": "Large"
               }
-            }
-          }
-        },
-        "text": {
-          "name": "Text",
-          "settings": {
+            },
             "text": {
               "label": "Text"
-            }
-          }
-        },
-        "buttons": {
-          "name": "Buttons",
-          "settings": {
+            },
             "button_label": {
-              "label": "First button label",
+              "label": "Button label",
               "info": "Leave blank to hide the button."
             },
             "button_link": {
-              "label": "First button link"
+              "label": "Button link"
             },
             "button_style": {
-              "label": "Use outline style for first button"
-            },
-            "second_button_label": {
-              "label": "Second button label",
-              "info": "Leave blank to hide the button."
-            },
-            "second_button_link": {
-              "label": "Second button link"
-            },
-            "second_button_style": {
-              "label": "Use outline style for second button"
+              "label": "Use outline style"
             }
           }
         }
@@ -275,6 +372,93 @@
       "settings": {
         "results_per_page": {
           "label": "Results per page"
+        }
+      }
+    },
+    "product_card_fetch": {
+      "name": "Product card fetch"
+    },
+    "recently_viewed": {
+      "name": "Recently viewed",
+      "settings": {
+        "product_count": {
+          "label": "Products to show"
+        },
+        "hide_if_empty": {
+          "label": "Hide if none viewed yet"
+        }
+      }
+    },
+    "trending_products": {
+      "name": "Trending products",
+      "settings": {
+        "collection": {
+          "label": "Collection",
+          "info": "Product order comes from this collection's own sort setting."
+        },
+        "product_count": {
+          "label": "Products to show"
+        },
+        "show_badge": {
+          "label": "Show badge on top products"
+        },
+        "badge_text": {
+          "label": "Badge text"
+        },
+        "badge_count": {
+          "label": "Number of products to badge"
+        }
+      }
+    },
+    "trust_badges": {
+      "name": "Trust badges",
+      "settings": {
+        "auto_scroll": {
+          "label": "Auto-scroll"
+        },
+        "grayscale_until_hover": {
+          "label": "Grayscale until hover"
+        },
+        "row_height": {
+          "label": "Row height"
+        }
+      },
+      "blocks": {
+        "badge": {
+          "name": "Badge",
+          "settings": {
+            "image": {
+              "label": "Image"
+            },
+            "link": {
+              "label": "Link"
+            }
+          }
+        }
+      }
+    },
+    "testimonials": {
+      "name": "Testimonials",
+      "blocks": {
+        "testimonial": {
+          "name": "Testimonial",
+          "settings": {
+            "photo": {
+              "label": "Photo"
+            },
+            "quote": {
+              "label": "Quote"
+            },
+            "rating": {
+              "label": "Rating"
+            },
+            "name": {
+              "label": "Customer name"
+            },
+            "product": {
+              "label": "Linked product"
+            }
+          }
         }
       }
     }

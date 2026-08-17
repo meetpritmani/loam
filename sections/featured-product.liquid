@@ -1,0 +1,324 @@
+{%- comment -%}
+  Spotlights one merchant-picked product outside the product template (e.g.
+  on the homepage). Deliberately reuses the exact same data-hooks and class
+  names as sections/main-product.liquid (data-product-gallery,
+  data-product-json, data-product-variant-select, data-product-price,
+  data-product-submit, .rpl-product-form, …), so assets/rpl-product.js and
+  assets/rpl-cart.js drive this section automatically — no separate JS file,
+  no duplicated gallery/variant/AJAX-cart logic. See rpl-product.js's header
+  comment for why both sections share it.
+
+  Simplified from the full PDP on purpose: no selling plans/subscriptions,
+  no SKU line, no sticky ATC bar (this is a spotlight inside a longer page,
+  not the page itself) — just gallery, variant, price, quantity, add to
+  cart, an optional short description, and a small trust-badges row.
+
+  Handles: no product picked (onboarding placeholder, not a blank section),
+  1 variant, many variants, no image, sold out, no description setting.
+{%- endcomment -%}
+
+<script src="{{ 'rpl-product.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign product = section.settings.product
+  assign product_form_id = 'FeaturedProductForm-' | append: section.id
+  assign current_variant = product.selected_or_first_available_variant
+-%}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <div class="rpl-container rpl-section rpl-section-featured-product">
+    {%- if product == blank -%}
+      <div class="rpl-empty-state">
+        <p class="rpl-muted">{{ 'onboarding.product_title' | t }}</p>
+      </div>
+    {%- else -%}
+      <div class="rpl-product__layout">
+        <div class="rpl-product__media" data-product-gallery id="FeaturedProductGallery-{{ section.id }}">
+          {%- if product.media.size > 0 -%}
+            <ul class="rpl-list-unstyled rpl-product__media-list" role="group" aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+              {%- for media in product.media limit: section.settings.media_limit -%}
+                {%- liquid
+                  assign media_alt = media.alt | default: product.title
+                  assign media_loading = 'lazy'
+                  if forloop.first
+                    assign media_loading = 'eager'
+                  endif
+                -%}
+                <li
+                  data-media-id="{{ media.id }}"
+                  id="FeaturedProductMedia-{{ section.id }}-{{ media.id }}"
+                  role="tabpanel"
+                  aria-labelledby="FeaturedProductThumbnail-{{ section.id }}-{{ media.id }}"
+                  {% if forloop.first %}
+                    data-media-active
+                  {% endif %}
+                >
+                  {% render 'responsive-image',
+                    image: media.preview_image,
+                    alt: media_alt,
+                    loading: media_loading,
+                    sizes: '(min-width: 990px) 50vw, 100vw',
+                    widths: '360, 533, 720, 940, 1200',
+                    wrapper_ratio: 'adapt',
+                    placeholder: 'product-1'
+                  %}
+                </li>
+              {%- endfor -%}
+            </ul>
+
+            {%- if product.media.size > 1 -%}
+              <ul
+                class="rpl-list-unstyled rpl-product__thumbnails rpl-js-only"
+                role="tablist"
+                aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
+                data-product-thumbnails
+              >
+                {%- for media in product.media limit: section.settings.media_limit -%}
+                  <li>
+                    <button
+                      type="button"
+                      class="rpl-product__thumbnail"
+                      id="FeaturedProductThumbnail-{{ section.id }}-{{ media.id }}"
+                      role="tab"
+                      aria-controls="FeaturedProductMedia-{{ section.id }}-{{ media.id }}"
+                      aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                      tabindex="{% unless forloop.first %}-1{% endunless %}"
+                      data-media-target="{{ media.id }}"
+                    >
+                      {% render 'responsive-image',
+                        image: media.preview_image,
+                        alt: media.alt | default: product.title,
+                        loading: 'lazy',
+                        sizes: '64px',
+                        widths: '64, 128',
+                        wrapper_ratio: 'square'
+                      %}
+                    </button>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          {%- else -%}
+            <div class="rpl-media rpl-media--ratio">
+              {{ 'product-1' | placeholder_svg_tag: 'rpl-media__placeholder' }}
+            </div>
+          {%- endif -%}
+        </div>
+
+        <script type="application/json" data-product-json>
+          {{ product.variants | json }}
+        </script>
+
+        <div class="rpl-product__info">
+          {%- if section.settings.show_vendor and product.vendor != blank -%}
+            <p class="rpl-caption rpl-muted">
+              <span class="rpl-visually-hidden">{{ 'products.product.vendor' | t }}</span>
+              {{ product.vendor | escape }}
+            </p>
+          {%- endif -%}
+
+          <h2 class="rpl-product__title">
+            <a href="{{ product.url }}">{{ product.title | escape }}</a>
+          </h2>
+
+          <div class="rpl-product__price" data-product-price>
+            {%- for variant in product.variants -%}
+              <div data-price-variant="{{ variant.id }}" {% unless variant == current_variant %}hidden{% endunless %}>
+                {% render 'price', product: variant, show_badges: true %}
+              </div>
+            {%- endfor -%}
+            <div data-price-variant="unavailable" {% if current_variant %}hidden{% endif %}>
+              {% render 'price', product: product, use_variant: true, show_badges: true %}
+            </div>
+          </div>
+
+          {%- if section.settings.description != blank -%}
+            <div class="rpl-rte rpl-product__description">{{ section.settings.description }}</div>
+          {%- endif -%}
+
+          {%- form 'product', product, id: product_form_id, class: 'rpl-product-form' -%}
+            {%- unless product.has_only_default_variant -%}
+              <div class="rpl-field rpl-product-form__variants">
+                <label class="rpl-field__label" for="FeaturedVariantSelect-{{ section.id }}">
+                  {{- product.options_with_values | map: 'name' | join: ' / ' -}}
+                </label>
+                <select
+                  class="rpl-select"
+                  id="FeaturedVariantSelect-{{ section.id }}"
+                  name="id"
+                  data-product-variant-select
+                >
+                  {%- for variant in product.variants -%}
+                    <option
+                      value="{{ variant.id }}"
+                      {% if variant == current_variant %}
+                        selected
+                      {% endif %}
+                      {% unless variant.available %}
+                        disabled
+                      {% endunless %}
+                    >
+                      {{ variant.title }}
+                      {%- unless variant.available %} - {{ 'products.product.sold_out' | t }}{% endunless %}
+                      - {{ variant.price | money }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- else -%}
+              <input type="hidden" name="id" value="{{ current_variant.id }}">
+            {%- endunless -%}
+
+            <div class="rpl-field rpl-product-form__quantity">
+              <label class="rpl-field__label" for="FeaturedQuantity-{{ section.id }}">
+                {{- 'products.product.quantity.label' | t -}}
+              </label>
+              <input
+                class="rpl-input rpl-product-form__quantity-input"
+                type="number"
+                id="FeaturedQuantity-{{ section.id }}"
+                name="quantity"
+                value="1"
+                min="1"
+                step="1"
+                inputmode="numeric"
+              >
+            </div>
+
+            <p class="rpl-form-status" role="alert" data-cart-form-error hidden></p>
+
+            <button
+              class="rpl-button rpl-button--full rpl-product-form__submit"
+              type="submit"
+              name="add"
+              data-product-submit
+              {% unless current_variant.available %}
+                disabled
+              {% endunless %}
+            >
+              <span data-submit-text-unavailable {% unless current_variant == blank %}hidden{% endunless %}>
+                {{- 'products.product.unavailable' | t -}}
+              </span>
+              <span data-submit-text-available {% unless current_variant.available %}hidden{% endunless %}>
+                {{- 'products.product.add_to_cart' | t -}}
+              </span>
+              <span data-submit-text-soldout {% if current_variant == blank or current_variant.available %}hidden{% endif %}>
+                {{- 'products.product.sold_out' | t -}}
+              </span>
+            </button>
+          {%- endform -%}
+
+          {%- if section.blocks.size > 0 -%}
+            <ul class="rpl-list-unstyled rpl-featured-product__badges">
+              {%- for block in section.blocks -%}
+                <li class="rpl-featured-product__badge" {{ block.shopify_attributes }}>
+                  {% render 'icon', icon: block.settings.icon %}
+                  <span>{{ block.settings.text | escape }}</span>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .rpl-featured-product__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rpl-space-sm);
+    margin-block-start: var(--rpl-space-xs);
+  }
+
+  .rpl-featured-product__badge {
+    display: flex;
+    align-items: center;
+    gap: var(--rpl-space-3xs);
+  }
+
+  .rpl-featured-product__badge .rpl-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: 0 0 auto;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.featured_product.name",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:sections.featured_product.settings.product.label"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:sections.featured_product.settings.description.label",
+      "info": "t:sections.featured_product.settings.description.info"
+    },
+    {
+      "type": "range",
+      "id": "media_limit",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "label": "t:sections.main_product.settings.media_limit.label",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "t:sections.all.show_vendor.label",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_badge",
+      "name": "t:sections.featured_product.blocks.trust_badge.name",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "t:sections.featured_product.blocks.trust_badge.settings.icon.label",
+          "options": [
+            { "value": "shield", "label": "t:sections.featured_product.blocks.trust_badge.settings.icon.options__1.label" },
+            { "value": "truck", "label": "t:sections.featured_product.blocks.trust_badge.settings.icon.options__2.label" },
+            { "value": "refresh", "label": "t:sections.featured_product.blocks.trust_badge.settings.icon.options__3.label" },
+            { "value": "check", "label": "t:sections.featured_product.blocks.trust_badge.settings.icon.options__4.label" }
+          ],
+          "default": "check"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:sections.all.text.label",
+          "default": "Free shipping over $50"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "t:sections.featured_product.name",
+      "blocks": [
+        { "type": "trust_badge", "settings": { "icon": "truck", "text": "Free shipping over $50" } },
+        { "type": "trust_badge", "settings": { "icon": "refresh", "text": "30-day returns" } },
+        { "type": "trust_badge", "settings": { "icon": "shield", "text": "Secure checkout" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

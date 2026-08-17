@@ -327,59 +327,6 @@
 </div>
 
 {% stylesheet %}
-  .rpl-product__layout {
-    display: grid;
-    gap: var(--rpl-space-lg);
-  }
-
-  .rpl-product__media-list {
-    display: grid;
-    gap: var(--rpl-space-2xs);
-  }
-
-  /* Collapses to a single visible slide only when JS is available — .js is
-     already set on <html> before first paint (see layout/theme.liquid), so
-     there's no flash of the stacked no-JS layout before this applies. */
-  .js .rpl-product__media-list > li {
-    display: none;
-  }
-
-  .js .rpl-product__media-list > li[data-media-active] {
-    display: block;
-  }
-
-  .rpl-product__thumbnails {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--rpl-space-3xs);
-    margin-block-start: var(--rpl-space-2xs);
-  }
-
-  .rpl-product__thumbnail {
-    display: block;
-    width: 4rem;
-    padding: 0;
-    border: 2px solid transparent;
-    border-radius: var(--rpl-media-radius);
-    background: none;
-    cursor: pointer;
-    overflow: hidden;
-  }
-
-  .rpl-product__thumbnail[aria-selected='true'] {
-    border-color: rgb(var(--rpl-color-foreground));
-  }
-
-  .rpl-product__info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--rpl-space-2xs);
-  }
-
-  .rpl-product__title {
-    margin: 0;
-  }
-
   .rpl-product__subscription-note {
     display: flex;
     align-items: center;
@@ -390,13 +337,6 @@
   .rpl-product__subscription-note .rpl-icon {
     width: 0.875rem;
     height: 0.875rem;
-  }
-
-  .rpl-product-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--rpl-space-sm);
-    margin-block: var(--rpl-space-sm);
   }
 
   .rpl-product-form__plans {
@@ -417,20 +357,10 @@
     cursor: pointer;
   }
 
-  .rpl-product-form__quantity-input {
-    width: 6rem;
-  }
-
-  .rpl-product__description {
-    margin-block-start: var(--rpl-space-sm);
-  }
-
   @media screen and (min-width: 990px) {
-    .rpl-product__layout {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-      align-items: start;
-    }
-
+    /* .rpl-product__layout's grid-template-columns lives in base.css (shared
+       with featured-product); only the sticky-info behavior is specific to
+       the full product page. */
     .rpl-product__info {
       position: sticky;
       top: var(--rpl-space-sm);

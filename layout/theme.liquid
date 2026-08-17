@@ -82,6 +82,14 @@
       {% section 'cart-drawer' %}
     {%- endif -%}
 
+    {%- comment -%}
+      Same trick, different reason: this renders nothing on a normal page
+      (product is blank), but gives rpl-recently-viewed.js a stable
+      ?section_id=product-card-fetch endpoint to fetch a single product's
+      card by handle from any page — see sections/product-card-fetch.liquid.
+    {%- endcomment -%}
+    {% section 'product-card-fetch' %}
+
     {% comment %} Shared live regions — see RPL.announce() in rpl-core.js. {% endcomment %}
     <div id="rpl-live-status" class="rpl-visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
     <div id="rpl-live-alert" class="rpl-visually-hidden" role="alert" aria-live="assertive" aria-atomic="true"></div>

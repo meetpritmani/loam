@@ -1,0 +1,212 @@
+{%- comment -%}
+  Icon + heading + text repeated in a responsive grid — "Free shipping",
+  "Easy returns" style benefit bars. Icon is an image_picker (not a fixed
+  icon-font/library) so merchants aren't limited to whatever icon set the
+  theme happens to ship, matching how snippets/icon.liquid is deliberately
+  scoped to interactive-chrome icons only, not brand/marketing ones.
+
+  Handles: 0 blocks (section renders nothing rather than an empty grid), no
+  icon on a block (heading/text still show, no broken image), no heading
+  setting, a block with no link (plain, non-interactive card), many blocks
+  (grid wraps).
+{%- endcomment -%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .rpl-feature-highlights__grid {
+    --rpl-grid-columns-mobile: 1;
+    --rpl-grid-columns-desktop: {{ section.settings.columns_desktop }};
+  }
+{% endstyle %}
+
+{%- if section.blocks.size > 0 -%}
+  <div class="rpl-color-{{ section.settings.color_scheme }}">
+    <div class="rpl-container rpl-section">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="rpl-feature-highlights__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      <ul class="rpl-grid rpl-feature-highlights__grid rpl-list-unstyled">
+        {%- for block in section.blocks -%}
+          <li class="rpl-reveal" {{ block.shopify_attributes }}>
+            {%- if block.settings.link != blank -%}
+              <a class="rpl-feature-highlights__item rpl-feature-highlights__item--link" href="{{ block.settings.link }}">
+            {%- else -%}
+              <div class="rpl-feature-highlights__item">
+            {%- endif -%}
+
+              {%- if block.settings.icon != blank -%}
+                <img
+                  class="rpl-feature-highlights__icon"
+                  src="{{ block.settings.icon | image_url: width: 96 }}"
+                  alt=""
+                  loading="lazy"
+                  width="48"
+                  height="48"
+                >
+              {%- endif -%}
+
+              {%- if block.settings.heading != blank -%}
+                <p class="rpl-feature-highlights__item-heading">{{ block.settings.heading | escape }}</p>
+              {%- endif -%}
+
+              {%- if block.settings.text != blank -%}
+                <div class="rpl-feature-highlights__item-text rpl-caption rpl-muted">{{ block.settings.text }}</div>
+              {%- endif -%}
+
+            {%- if block.settings.link != blank -%}
+              </a>
+            {%- else -%}
+              </div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .rpl-feature-highlights__heading {
+    margin-block-end: var(--rpl-space-md);
+    text-align: center;
+  }
+
+  .rpl-feature-highlights__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--rpl-space-3xs);
+    height: 100%;
+    padding: var(--rpl-space-sm);
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .rpl-feature-highlights__item--link:hover .rpl-feature-highlights__item-heading {
+    text-decoration: underline;
+  }
+
+  .rpl-feature-highlights__icon {
+    width: 3rem;
+    height: 3rem;
+    margin-block-end: var(--rpl-space-3xs);
+    object-fit: contain;
+  }
+
+  .rpl-feature-highlights__item-heading {
+    margin: 0;
+    font-weight: var(--rpl-font-body-weight-bold);
+  }
+
+  .rpl-feature-highlights__item-text {
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.feature_highlights.name",
+  "tag": "section",
+  "class": "rpl-section-feature-highlights",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.all.heading.label"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "t:sections.all.columns_desktop.label",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "highlight",
+      "name": "t:sections.feature_highlights.blocks.highlight.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "t:sections.feature_highlights.blocks.highlight.settings.icon.label"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.all.heading.label",
+          "default": "Free shipping"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:sections.all.text.label",
+          "default": "<p>On all orders over $50.</p>"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.feature_highlights.blocks.highlight.settings.link.label"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "t:sections.feature_highlights.name",
+      "blocks": [
+        {
+          "type": "highlight",
+          "settings": {
+            "heading": "Free shipping",
+            "text": "<p>On all orders over $50.</p>"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "heading": "Easy returns",
+            "text": "<p>30 days, no questions asked.</p>"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "heading": "Secure checkout",
+            "text": "<p>Your data is always protected.</p>"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "heading": "24/7 support",
+            "text": "<p>Real humans, real fast.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

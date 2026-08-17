@@ -2,7 +2,22 @@
   "sections": {
     "main": {
       "type": "main-product"
+    },
+    "frequently-bought-together": {
+      "type": "frequently-bought-together",
+      "settings": {
+        "heading": "Frequently bought together",
+        "default_checked": true
+      }
+    },
+    "recently-viewed": {
+      "type": "recently-viewed",
+      "settings": {
+        "heading": "Recently viewed",
+        "product_count": 8,
+        "hide_if_empty": true
+      }
     }
   },
-  "order": ["main"]
+  "order": ["main", "frequently-bought-together", "recently-viewed"]
 }

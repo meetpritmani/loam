@@ -1,18 +1,30 @@
 {%- comment -%}
-  Full-bleed hero banner: background image (or color-scheme background when
-  blank) with a block-based content stack (heading, text, up to two buttons).
+  Full-bleed hero. One "slide" block bundles its own media (image, or a
+  native Shopify video that overrides the image) with heading/text/CTA, so
+  one block is a plain static hero and 2-5 blocks become a slideshow —
+  there's no separate "simple hero" vs. "slideshow" mode to maintain.
 
-  Handles: 0 blocks (image/color only, still a valid banner), no image (falls
-  back to the color scheme background, no broken/empty box), many blocks
-  (stack grows, no fixed height clipping), missing button links (button block
-  degrades to plain text — no dead/empty link), mobile vs desktop height and
-  content position.
+  No-JS: only the first slide ever renders visible (pure CSS, not gated
+  behind .js) — never a broken/half-built carousel. rpl-hero.js adds
+  prev/next, dot indicators, and optional autoplay (off by default) with a
+  required pause control per WCAG 2.2.2. Reduced motion disables autoplay
+  outright regardless of the setting. Background video gets its own
+  pause/play control — never autoplays without one.
+
+  Handles: 1 slide (no controls shown, just a static hero), 2-5 slides, a
+  slide with no image/video (falls back to the color-scheme background), a
+  slide with a video overriding its image, a slide with no button (no dead
+  link), autoplay on/off, reduced motion, keyboard-only navigation.
 {%- endcomment -%}
+
+<script src="{{ 'rpl-hero.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
   assign height_class = 'rpl-hero--height-' | append: section.settings.height
-  assign position_class = 'rpl-hero--position-' | append: section.settings.content_position
+  assign h_position_class = 'rpl-hero--h-' | append: section.settings.content_position
+  assign v_position_class = 'rpl-hero--v-' | append: section.settings.content_vertical_position
   assign overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0
+  assign slide_count = section.blocks.size
 -%}
 
 {% style %}
@@ -22,48 +34,99 @@
 {% endstyle %}
 
 <div class="rpl-color-{{ section.settings.color_scheme }}">
-  <div class="rpl-hero {{ height_class }} {{ position_class }}">
-    <div class="rpl-hero__media">
-      {%- if section.settings.image != blank -%}
-        {% render 'responsive-image',
-          image: section.settings.image,
-          alt: section.settings.image.alt,
-          loading: 'eager',
-          fetchpriority: 'high',
-          class: 'rpl-hero__image',
-          sizes: '100vw',
-          widths: '750, 1100, 1500, 1780, 2000, 3000, 3840'
-        %}
-        <div class="rpl-hero__overlay" aria-hidden="true"></div>
-      {%- endif -%}
-    </div>
+  <div
+    class="rpl-hero {{ height_class }} {{ h_position_class }} {{ v_position_class }}"
+    {% if slide_count > 1 %}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="{{ 'general.slideshow.name' | t }}"
+      data-hero-carousel
+      data-autoplay="{{ section.settings.autoplay }}"
+      data-autoplay-speed="{{ section.settings.autoplay_speed }}"
+    {% endif %}
+  >
+    {%- if slide_count == 0 -%}
+      <div class="rpl-hero__slides">
+        <div class="rpl-hero__slide" data-slide-active></div>
+      </div>
+    {%- else -%}
+      <div class="rpl-hero__slides">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign has_video = false
+            if block.settings.video != blank
+              assign has_video = true
+            endif
+            assign media_loading = 'lazy'
+            assign media_priority = 'auto'
+            if forloop.first
+              assign media_loading = 'eager'
+              assign media_priority = 'high'
+            endif
+          -%}
+          <div
+            class="rpl-hero__slide"
+            {% if forloop.first %}
+              data-slide-active
+            {% endif %}
+            {% if slide_count > 1 %}
+              role="group"
+              aria-roledescription="{{ 'general.slideshow.slide' | t }}"
+              aria-label="{{ 'general.slideshow.slide_position' | t: current: forloop.index, total: slide_count }}"
+              aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
+            {% endif %}
+            {{ block.shopify_attributes }}
+          >
+            <div class="rpl-hero__media">
+              {%- if has_video -%}
+                <div class="rpl-hero__video-wrap" data-hero-video>
+                  {{
+                    block.settings.video
+                    | video_tag:
+                      image_size: '1500x',
+                      loop: true,
+                      muted: true,
+                      autoplay: false,
+                      controls: false,
+                      class: 'rpl-hero__video'
+                  }}
+                  <button type="button" class="rpl-icon-button rpl-hero__video-toggle rpl-js-only" data-hero-video-toggle>
+                    <span class="rpl-visually-hidden" data-hero-video-label-pause>{{ 'general.video.pause' | t }}</span>
+                    <span class="rpl-visually-hidden" data-hero-video-label-play hidden>{{ 'general.video.play' | t }}</span>
+                    <span data-hero-video-icon-pause>{% render 'icon', icon: 'pause' %}</span>
+                    <span data-hero-video-icon-play hidden>{% render 'icon', icon: 'play' %}</span>
+                  </button>
+                </div>
+                <div class="rpl-hero__overlay" aria-hidden="true"></div>
+              {%- elsif block.settings.image != blank -%}
+                {% render 'responsive-image',
+                  image: block.settings.image,
+                  alt: block.settings.image.alt,
+                  loading: media_loading,
+                  fetchpriority: media_priority,
+                  class: 'rpl-hero__image',
+                  sizes: '100vw',
+                  widths: '750, 1100, 1500, 1780, 2000, 3000, 3840'
+                %}
+                <div class="rpl-hero__overlay" aria-hidden="true"></div>
+              {%- endif -%}
+            </div>
 
-    {%- if section.blocks.size > 0 -%}
-      <div class="rpl-container">
-        <div class="rpl-hero__content">
-          {%- for block in section.blocks -%}
-            {%- case block.type -%}
-              {%- when 'heading' -%}
-                {%- if block.settings.heading != blank -%}
-                  <h2
-                    class="rpl-hero__heading rpl-hero__heading--{{ block.settings.heading_size }}"
-                    {{ block.shopify_attributes }}
-                  >
-                    {{ block.settings.heading | escape }}
-                  </h2>
-                {%- endif -%}
+            {%- if block.settings.heading != blank or block.settings.text != blank or block.settings.button_label != blank -%}
+              <div class="rpl-container">
+                <div class="rpl-hero__content">
+                  {%- if block.settings.heading != blank -%}
+                    <h2 class="rpl-hero__heading rpl-hero__heading--{{ block.settings.heading_size }}">
+                      {{- block.settings.heading | escape -}}
+                    </h2>
+                  {%- endif -%}
 
-              {%- when 'text' -%}
-                {%- if block.settings.text != blank -%}
-                  <div class="rpl-hero__text rpl-rte" {{ block.shopify_attributes }}>
-                    {{ block.settings.text }}
-                  </div>
-                {%- endif -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="rpl-hero__text rpl-rte">{{ block.settings.text }}</div>
+                  {%- endif -%}
 
-              {%- when 'buttons' -%}
-                {%- if block.settings.button_label != blank or block.settings.second_button_label != blank -%}
-                  <div class="rpl-hero__buttons" {{ block.shopify_attributes }}>
-                    {%- if block.settings.button_label != blank -%}
+                  {%- if block.settings.button_label != blank -%}
+                    <div class="rpl-hero__buttons">
                       <a
                         href="{{ block.settings.button_link | default: '#' }}"
                         class="rpl-button {% if block.settings.button_style %}rpl-button--secondary{% endif %}"
@@ -74,24 +137,53 @@
                       >
                         {{- block.settings.button_label | escape -}}
                       </a>
-                    {%- endif -%}
-                    {%- if block.settings.second_button_label != blank -%}
-                      <a
-                        href="{{ block.settings.second_button_link | default: '#' }}"
-                        class="rpl-button {% if block.settings.second_button_style %}rpl-button--secondary{% endif %}"
-                        {% if block.settings.second_button_link == blank %}
-                          role="link"
-                          aria-disabled="true"
-                        {% endif %}
-                      >
-                        {{- block.settings.second_button_label | escape -}}
-                      </a>
-                    {%- endif -%}
-                  </div>
-                {%- endif -%}
-            {%- endcase -%}
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if slide_count > 1 -%}
+      <div class="rpl-hero__controls rpl-js-only">
+        <button type="button" class="rpl-icon-button rpl-hero__arrow rpl-hero__arrow--prev" data-hero-prev>
+          <span class="rpl-visually-hidden">{{ 'general.slideshow.previous_slide' | t }}</span>
+          {% render 'icon', icon: 'chevron-left' %}
+        </button>
+
+        <ul class="rpl-list-unstyled rpl-hero__dots" data-hero-dots>
+          {%- for block in section.blocks -%}
+            <li>
+              <button
+                type="button"
+                class="rpl-hero__dot"
+                data-hero-dot="{{ forloop.index0 }}"
+                aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+              >
+                <span class="rpl-visually-hidden">
+                  {{- 'general.slideshow.slide_position' | t: current: forloop.index, total: slide_count -}}
+                </span>
+              </button>
+            </li>
           {%- endfor -%}
-        </div>
+        </ul>
+
+        <button type="button" class="rpl-icon-button rpl-hero__arrow rpl-hero__arrow--next" data-hero-next>
+          <span class="rpl-visually-hidden">{{ 'general.slideshow.next_slide' | t }}</span>
+          {% render 'icon', icon: 'chevron-right' %}
+        </button>
+
+        {%- if section.settings.autoplay -%}
+          <button type="button" class="rpl-icon-button rpl-hero__autoplay-toggle" data-hero-autoplay-toggle>
+            <span class="rpl-visually-hidden" data-hero-autoplay-label-pause>{{ 'general.slideshow.pause' | t }}</span>
+            <span class="rpl-visually-hidden" data-hero-autoplay-label-play hidden>{{ 'general.slideshow.play' | t }}</span>
+            <span data-hero-autoplay-icon-pause>{% render 'icon', icon: 'pause' %}</span>
+            <span data-hero-autoplay-icon-play hidden>{% render 'icon', icon: 'play' %}</span>
+          </button>
+        {%- endif -%}
       </div>
     {%- endif -%}
   </div>
@@ -100,8 +192,6 @@
 {% stylesheet %}
   .rpl-hero {
     position: relative;
-    display: flex;
-    align-items: center;
     min-height: 20rem;
     overflow: hidden;
   }
@@ -118,22 +208,55 @@
     min-height: 44rem;
   }
 
+  .rpl-hero__slides {
+    position: relative;
+    height: 100%;
+    min-height: inherit;
+  }
+
+  .rpl-hero__slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--rpl-duration-slow) var(--rpl-ease), visibility var(--rpl-duration-slow) var(--rpl-ease);
+  }
+
+  .rpl-hero__slide[data-slide-active] {
+    position: relative;
+    opacity: 1;
+    visibility: visible;
+  }
+
   .rpl-hero__media,
   .rpl-hero__image,
-  .rpl-hero__overlay {
+  .rpl-hero__overlay,
+  .rpl-hero__video-wrap {
     position: absolute;
     inset: 0;
   }
 
-  .rpl-hero__image {
+  .rpl-hero__image,
+  .rpl-hero__video-wrap {
     width: 100%;
     height: 100%;
   }
 
-  .rpl-hero__image img {
+  .rpl-hero__image img,
+  .rpl-hero__video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .rpl-hero__video-toggle {
+    position: absolute;
+    z-index: 1;
+    inset-block-end: var(--rpl-space-sm);
+    inset-inline-end: var(--rpl-space-sm);
+    background-color: rgb(0 0 0 / 0.4);
+    color: #fff;
   }
 
   .rpl-hero__overlay {
@@ -141,9 +264,22 @@
     opacity: 0;
   }
 
-  .rpl-hero > .rpl-container {
+  .rpl-hero > .rpl-hero__slides > .rpl-hero__slide > .rpl-container {
     position: relative;
     width: 100%;
+    align-self: center;
+  }
+
+  .rpl-hero__slide {
+    align-items: center;
+  }
+
+  .rpl-hero--v-top .rpl-hero__slide {
+    align-items: flex-start;
+  }
+
+  .rpl-hero--v-bottom .rpl-hero__slide {
+    align-items: flex-end;
   }
 
   .rpl-hero__content {
@@ -154,13 +290,13 @@
     padding-block: var(--rpl-space-lg);
   }
 
-  .rpl-hero--position-center .rpl-hero__content {
+  .rpl-hero--h-center .rpl-hero__content {
     margin-inline: auto;
     align-items: center;
     text-align: center;
   }
 
-  .rpl-hero--position-right .rpl-hero__content {
+  .rpl-hero--h-right .rpl-hero__content {
     margin-inline-start: auto;
     align-items: flex-end;
     text-align: end;
@@ -187,6 +323,42 @@
   .rpl-hero:has(.rpl-hero__media:empty) {
     background-color: rgb(var(--rpl-color-background));
   }
+
+  .rpl-hero__controls {
+    position: absolute;
+    z-index: 2;
+    inset-block-end: var(--rpl-space-sm);
+    inset-inline: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--rpl-space-sm);
+  }
+
+  .rpl-hero__arrow,
+  .rpl-hero__autoplay-toggle {
+    background-color: rgb(0 0 0 / 0.4);
+    color: #fff;
+  }
+
+  .rpl-hero__dots {
+    display: flex;
+    gap: var(--rpl-space-2xs);
+  }
+
+  .rpl-hero__dot {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--rpl-radius-full);
+    background-color: rgb(255 255 255 / 0.5);
+    cursor: pointer;
+  }
+
+  .rpl-hero__dot[aria-current='true'] {
+    background-color: #fff;
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -195,11 +367,6 @@
   "tag": "section",
   "class": "rpl-section-hero",
   "settings": [
-    {
-      "type": "image_picker",
-      "id": "image",
-      "label": "t:sections.hero.settings.image.label"
-    },
     {
       "type": "select",
       "id": "height",
@@ -241,6 +408,26 @@
       "default": "left"
     },
     {
+      "type": "select",
+      "id": "content_vertical_position",
+      "label": "t:sections.hero.settings.content_vertical_position.label",
+      "options": [
+        {
+          "value": "top",
+          "label": "t:sections.hero.settings.content_vertical_position.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.hero.settings.content_vertical_position.options__2.label"
+        },
+        {
+          "value": "bottom",
+          "label": "t:sections.hero.settings.content_vertical_position.options__3.label"
+        }
+      ],
+      "default": "center"
+    },
+    {
       "type": "range",
       "id": "overlay_opacity",
       "min": 0,
@@ -252,6 +439,23 @@
       "default": 20
     },
     {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "t:sections.hero.settings.autoplay.label",
+      "info": "t:sections.hero.settings.autoplay.info",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "t:sections.hero.settings.autoplay_speed.label",
+      "default": 5
+    },
+    {
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:sections.all.color_scheme.label",
@@ -260,103 +464,80 @@
   ],
   "blocks": [
     {
-      "type": "heading",
-      "name": "t:sections.hero.blocks.heading.name",
+      "type": "slide",
+      "name": "t:sections.hero.blocks.slide.name",
       "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.hero.blocks.slide.settings.image.label"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "t:sections.hero.blocks.slide.settings.video.label",
+          "info": "t:sections.hero.blocks.slide.settings.video.info"
+        },
         {
           "type": "text",
           "id": "heading",
-          "label": "t:sections.hero.blocks.heading.settings.heading.label",
+          "label": "t:sections.hero.blocks.slide.settings.heading.label",
           "default": "Never run out again"
         },
         {
           "type": "select",
           "id": "heading_size",
-          "label": "t:sections.hero.blocks.heading.settings.heading_size.label",
+          "label": "t:sections.hero.blocks.slide.settings.heading_size.label",
           "options": [
             {
               "value": "small",
-              "label": "t:sections.hero.blocks.heading.settings.heading_size.options__1.label"
+              "label": "t:sections.hero.blocks.slide.settings.heading_size.options__1.label"
             },
             {
               "value": "medium",
-              "label": "t:sections.hero.blocks.heading.settings.heading_size.options__2.label"
+              "label": "t:sections.hero.blocks.slide.settings.heading_size.options__2.label"
             },
             {
               "value": "large",
-              "label": "t:sections.hero.blocks.heading.settings.heading_size.options__3.label"
+              "label": "t:sections.hero.blocks.slide.settings.heading_size.options__3.label"
             }
           ],
           "default": "large"
-        }
-      ]
-    },
-    {
-      "type": "text",
-      "name": "t:sections.hero.blocks.text.name",
-      "settings": [
+        },
         {
           "type": "richtext",
           "id": "text",
-          "label": "t:sections.hero.blocks.text.settings.text.label",
+          "label": "t:sections.hero.blocks.slide.settings.text.label",
           "default": "<p>Refill reminders and subscriber-only pricing on the essentials you use every day.</p>"
-        }
-      ]
-    },
-    {
-      "type": "buttons",
-      "name": "t:sections.hero.blocks.buttons.name",
-      "settings": [
+        },
         {
           "type": "text",
           "id": "button_label",
-          "label": "t:sections.hero.blocks.buttons.settings.button_label.label",
-          "info": "t:sections.hero.blocks.buttons.settings.button_label.info",
+          "label": "t:sections.hero.blocks.slide.settings.button_label.label",
+          "info": "t:sections.hero.blocks.slide.settings.button_label.info",
           "default": "Shop now"
         },
         {
           "type": "url",
           "id": "button_link",
-          "label": "t:sections.hero.blocks.buttons.settings.button_link.label"
+          "label": "t:sections.hero.blocks.slide.settings.button_link.label"
         },
         {
           "type": "checkbox",
           "id": "button_style",
-          "label": "t:sections.hero.blocks.buttons.settings.button_style.label",
+          "label": "t:sections.hero.blocks.slide.settings.button_style.label",
           "default": false
-        },
-        {
-          "type": "text",
-          "id": "second_button_label",
-          "label": "t:sections.hero.blocks.buttons.settings.second_button_label.label",
-          "info": "t:sections.hero.blocks.buttons.settings.second_button_label.info"
-        },
-        {
-          "type": "url",
-          "id": "second_button_link",
-          "label": "t:sections.hero.blocks.buttons.settings.second_button_link.label"
-        },
-        {
-          "type": "checkbox",
-          "id": "second_button_style",
-          "label": "t:sections.hero.blocks.buttons.settings.second_button_style.label",
-          "default": true
         }
       ]
     }
   ],
+  "max_blocks": 5,
   "presets": [
     {
       "name": "t:sections.hero.presets.name",
       "blocks": [
         {
-          "type": "heading"
-        },
-        {
-          "type": "text"
-        },
-        {
-          "type": "buttons"
+          "type": "slide"
         }
       ]
     }

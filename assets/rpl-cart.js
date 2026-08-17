@@ -244,4 +244,9 @@
     if (!note) return;
     updateNote(note.value);
   });
+
+  /* Exposed so other cart-touching modules (e.g. rpl-fbt.js's "add all")
+     can refresh the drawer after their own /cart/add.js call, instead of
+     re-implementing this same fetch-and-swap. */
+  RPL.refreshCartDrawer = refreshDrawer;
 })();

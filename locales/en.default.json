@@ -48,6 +48,20 @@
       },
       "follow_on": "Follow us on {{ platform }}"
     },
+    "slideshow": {
+      "name": "Slideshow",
+      "slide": "Slide",
+      "slide_position": "Slide {{ current }} of {{ total }}",
+      "previous_slide": "Previous slide",
+      "next_slide": "Next slide",
+      "pause": "Pause slideshow",
+      "play": "Play slideshow"
+    },
+    "video": {
+      "pause": "Pause video",
+      "play": "Play video"
+    },
+    "rating": "{{ rating }} out of 5 stars",
     "continue_shopping": "Continue shopping",
     "learn_more": "Learn more",
     "close": "Close",
@@ -127,6 +141,9 @@
         "one": "{{ count }} product",
         "other": "{{ count }} products"
       }
+    },
+    "frequently_bought_together": {
+      "add_all_to_cart": "Add all to cart"
     }
   },
   "products": {

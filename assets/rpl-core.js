@@ -305,12 +305,50 @@
   }
 
   /* ------------------------------------------------------------------
+     Carousels — generic enhancement for any native CSS scroll-snap track.
+     The swipe/scroll itself needs no JS at all (that's the browser's native
+     scroll-snap behavior, which is why this is a `[data-carousel]` track
+     rather than a hand-rolled slider); this only wires up optional
+     prev/next buttons. Shared by every section that wants a horizontal
+     carousel (collection list, testimonials, …) instead of each rebuilding
+     the same few lines.
+     ------------------------------------------------------------------ */
+
+  function initCarousels(root) {
+    var scope = root || document;
+    var carousels = scope.querySelectorAll('[data-carousel]');
+
+    Array.prototype.forEach.call(carousels, function (carousel) {
+      if (carousel.hasAttribute('data-rpl-bound')) return;
+      carousel.setAttribute('data-rpl-bound', 'true');
+
+      var track = carousel.querySelector('[data-carousel-track]');
+      var prev = carousel.querySelector('[data-carousel-prev]');
+      var next = carousel.querySelector('[data-carousel-next]');
+      if (!track) return;
+
+      function scrollByAmount(direction) {
+        var item = track.querySelector('[data-carousel-item]');
+        var amount = item ? item.getBoundingClientRect().width + 16 : track.clientWidth * 0.8;
+        track.scrollBy({
+          left: amount * direction,
+          behavior: RPL.prefersReducedMotion() ? 'auto' : 'smooth',
+        });
+      }
+
+      if (prev) prev.addEventListener('click', function () { scrollByAmount(-1); });
+      if (next) next.addEventListener('click', function () { scrollByAmount(1); });
+    });
+  }
+
+  /* ------------------------------------------------------------------
      Boot + Theme Editor lifecycle
      ------------------------------------------------------------------ */
 
   function boot(root) {
     RPL.initReveal(root);
     initMobileNav(root);
+    initCarousels(root);
   }
 
   if (document.readyState === 'loading') {
