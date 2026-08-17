@@ -1,0 +1,79 @@
+{%- comment -%}
+  Account activation from an invite email.
+{%- endcomment -%}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <div class="rpl-container rpl-container--narrow rpl-section">
+    <div class="rpl-account-form">
+      <h1>{{ 'customer.activate_account.title' | t }}</h1>
+      <p class="rpl-muted">{{ 'customer.activate_account.subtext' | t }}</p>
+
+      {%- form 'activate_customer_password' -%}
+        {%- if form.errors -%}
+          <div class="rpl-form-status" role="alert" tabindex="-1">
+            <p>{{ form.errors | default_errors }}</p>
+          </div>
+        {%- endif -%}
+
+        <div class="rpl-field">
+          <label class="rpl-field__label" for="ActivatePassword">
+            {{- 'customer.activate_account.password' | t -}}
+          </label>
+          <input
+            class="rpl-input"
+            type="password"
+            name="customer[password]"
+            id="ActivatePassword"
+            autocomplete="new-password"
+            required
+          >
+        </div>
+
+        <div class="rpl-field">
+          <label class="rpl-field__label" for="ActivatePasswordConfirm">
+            {{- 'customer.activate_account.password_confirm' | t -}}
+          </label>
+          <input
+            class="rpl-input"
+            type="password"
+            name="customer[password_confirmation]"
+            id="ActivatePasswordConfirm"
+            autocomplete="new-password"
+            required
+          >
+        </div>
+
+        <div class="rpl-account-form__actions">
+          <button class="rpl-button" type="submit">{{ 'customer.activate_account.submit' | t }}</button>
+          <button class="rpl-button rpl-button--secondary" type="submit" name="decline">
+            {{- 'customer.activate_account.cancel' | t -}}
+          </button>
+        </div>
+      {%- endform -%}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .rpl-account-form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rpl-space-2xs);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.main_activate_account.name",
+  "tag": "section",
+  "class": "rpl-section-main-activate",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}

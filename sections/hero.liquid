@@ -1,0 +1,365 @@
+{%- comment -%}
+  Full-bleed hero banner: background image (or color-scheme background when
+  blank) with a block-based content stack (heading, text, up to two buttons).
+
+  Handles: 0 blocks (image/color only, still a valid banner), no image (falls
+  back to the color scheme background, no broken/empty box), many blocks
+  (stack grows, no fixed height clipping), missing button links (button block
+  degrades to plain text — no dead/empty link), mobile vs desktop height and
+  content position.
+{%- endcomment -%}
+
+{%- liquid
+  assign height_class = 'rpl-hero--height-' | append: section.settings.height
+  assign position_class = 'rpl-hero--position-' | append: section.settings.content_position
+  assign overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0
+-%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .rpl-hero__overlay {
+    opacity: {{ overlay_opacity }};
+  }
+{% endstyle %}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <div class="rpl-hero {{ height_class }} {{ position_class }}">
+    <div class="rpl-hero__media">
+      {%- if section.settings.image != blank -%}
+        {% render 'responsive-image',
+          image: section.settings.image,
+          alt: section.settings.image.alt,
+          loading: 'eager',
+          fetchpriority: 'high',
+          class: 'rpl-hero__image',
+          sizes: '100vw',
+          widths: '750, 1100, 1500, 1780, 2000, 3000, 3840'
+        %}
+        <div class="rpl-hero__overlay" aria-hidden="true"></div>
+      {%- endif -%}
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="rpl-container">
+        <div class="rpl-hero__content">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'heading' -%}
+                {%- if block.settings.heading != blank -%}
+                  <h2
+                    class="rpl-hero__heading rpl-hero__heading--{{ block.settings.heading_size }}"
+                    {{ block.shopify_attributes }}
+                  >
+                    {{ block.settings.heading | escape }}
+                  </h2>
+                {%- endif -%}
+
+              {%- when 'text' -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="rpl-hero__text rpl-rte" {{ block.shopify_attributes }}>
+                    {{ block.settings.text }}
+                  </div>
+                {%- endif -%}
+
+              {%- when 'buttons' -%}
+                {%- if block.settings.button_label != blank or block.settings.second_button_label != blank -%}
+                  <div class="rpl-hero__buttons" {{ block.shopify_attributes }}>
+                    {%- if block.settings.button_label != blank -%}
+                      <a
+                        href="{{ block.settings.button_link | default: '#' }}"
+                        class="rpl-button {% if block.settings.button_style %}rpl-button--secondary{% endif %}"
+                        {% if block.settings.button_link == blank %}
+                          role="link"
+                          aria-disabled="true"
+                        {% endif %}
+                      >
+                        {{- block.settings.button_label | escape -}}
+                      </a>
+                    {%- endif -%}
+                    {%- if block.settings.second_button_label != blank -%}
+                      <a
+                        href="{{ block.settings.second_button_link | default: '#' }}"
+                        class="rpl-button {% if block.settings.second_button_style %}rpl-button--secondary{% endif %}"
+                        {% if block.settings.second_button_link == blank %}
+                          role="link"
+                          aria-disabled="true"
+                        {% endif %}
+                      >
+                        {{- block.settings.second_button_label | escape -}}
+                      </a>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .rpl-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 20rem;
+    overflow: hidden;
+  }
+
+  .rpl-hero--height-small {
+    min-height: 20rem;
+  }
+
+  .rpl-hero--height-medium {
+    min-height: 32rem;
+  }
+
+  .rpl-hero--height-large {
+    min-height: 44rem;
+  }
+
+  .rpl-hero__media,
+  .rpl-hero__image,
+  .rpl-hero__overlay {
+    position: absolute;
+    inset: 0;
+  }
+
+  .rpl-hero__image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .rpl-hero__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .rpl-hero__overlay {
+    background-color: rgb(0 0 0 / 1);
+    opacity: 0;
+  }
+
+  .rpl-hero > .rpl-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .rpl-hero__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rpl-space-xs);
+    max-width: 34rem;
+    padding-block: var(--rpl-space-lg);
+  }
+
+  .rpl-hero--position-center .rpl-hero__content {
+    margin-inline: auto;
+    align-items: center;
+    text-align: center;
+  }
+
+  .rpl-hero--position-right .rpl-hero__content {
+    margin-inline-start: auto;
+    align-items: flex-end;
+    text-align: end;
+  }
+
+  .rpl-hero__heading {
+    margin: 0;
+  }
+
+  .rpl-hero__heading--small {
+    font-size: calc(1.25rem * var(--rpl-font-heading-scale));
+  }
+
+  .rpl-hero__heading--large {
+    font-size: calc(clamp(2rem, 1.3rem + 3vw, 3.5rem) * var(--rpl-font-heading-scale));
+  }
+
+  .rpl-hero__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rpl-space-2xs);
+  }
+
+  .rpl-hero:has(.rpl-hero__media:empty) {
+    background-color: rgb(var(--rpl-color-background));
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.hero.name",
+  "tag": "section",
+  "class": "rpl-section-hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:sections.hero.settings.image.label"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "t:sections.hero.settings.height.label",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:sections.hero.settings.height.options__1.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.hero.settings.height.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.hero.settings.height.options__3.label"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "t:sections.hero.settings.content_position.label",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.hero.settings.content_position.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.hero.settings.content_position.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.hero.settings.content_position.options__3.label"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "t:sections.hero.settings.overlay_opacity.label",
+      "info": "t:sections.hero.settings.overlay_opacity.info",
+      "default": 20
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "t:sections.hero.blocks.heading.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.hero.blocks.heading.settings.heading.label",
+          "default": "Never run out again"
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "label": "t:sections.hero.blocks.heading.settings.heading_size.label",
+          "options": [
+            {
+              "value": "small",
+              "label": "t:sections.hero.blocks.heading.settings.heading_size.options__1.label"
+            },
+            {
+              "value": "medium",
+              "label": "t:sections.hero.blocks.heading.settings.heading_size.options__2.label"
+            },
+            {
+              "value": "large",
+              "label": "t:sections.hero.blocks.heading.settings.heading_size.options__3.label"
+            }
+          ],
+          "default": "large"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "t:sections.hero.blocks.text.name",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:sections.hero.blocks.text.settings.text.label",
+          "default": "<p>Refill reminders and subscriber-only pricing on the essentials you use every day.</p>"
+        }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "t:sections.hero.blocks.buttons.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "t:sections.hero.blocks.buttons.settings.button_label.label",
+          "info": "t:sections.hero.blocks.buttons.settings.button_label.info",
+          "default": "Shop now"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "t:sections.hero.blocks.buttons.settings.button_link.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "button_style",
+          "label": "t:sections.hero.blocks.buttons.settings.button_style.label",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "second_button_label",
+          "label": "t:sections.hero.blocks.buttons.settings.second_button_label.label",
+          "info": "t:sections.hero.blocks.buttons.settings.second_button_label.info"
+        },
+        {
+          "type": "url",
+          "id": "second_button_link",
+          "label": "t:sections.hero.blocks.buttons.settings.second_button_link.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "second_button_style",
+          "label": "t:sections.hero.blocks.buttons.settings.second_button_style.label",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.hero.presets.name",
+      "blocks": [
+        {
+          "type": "heading"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "buttons"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,58 @@
+{%- comment -%}
+  Renders accessible pagination.
+
+  Accepts:
+  - paginate: {Object} the paginate object from a {% paginate %} block.
+  - anchor: {String} optional fragment appended to each link, so paging returns
+    the customer to the grid rather than the top of the document.
+
+  Renders nothing when there is only one page.
+{%- endcomment -%}
+
+{%- if paginate.pages > 1 -%}
+  {%- liquid
+    assign hash = anchor | default: ''
+    # Non-link parts are either the current page or a truncation ellipsis.
+    # Comparing as strings keeps the check working for any page number.
+    assign current_title = paginate.current_page | append: ''
+  -%}
+  <nav class="rpl-pagination-wrapper" role="navigation" aria-label="{{ 'general.pagination.label' | t }}">
+    <ul class="rpl-pagination">
+      {%- if paginate.previous -%}
+        <li class="rpl-pagination__item">
+          <a href="{{ paginate.previous.url }}{{ hash }}" aria-label="{{ 'general.pagination.previous' | t }}">
+            {% render 'icon', icon: 'chevron-left' %}
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        {%- if part.is_link -%}
+          <li class="rpl-pagination__item">
+            <a href="{{ part.url }}{{ hash }}" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">
+              {{- part.title -}}
+            </a>
+          </li>
+        {%- elsif part.title == current_title -%}
+          <li class="rpl-pagination__item rpl-pagination__item--current">
+            <span aria-current="page" aria-label="{{ 'general.pagination.current_page' | t: number: part.title }}">
+              {{- part.title -}}
+            </span>
+          </li>
+        {%- else -%}
+          <li class="rpl-pagination__item">
+            <span aria-hidden="true">{{ part.title }}</span>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- if paginate.next -%}
+        <li class="rpl-pagination__item">
+          <a href="{{ paginate.next.url }}{{ hash }}" aria-label="{{ 'general.pagination.next' | t }}">
+            {% render 'icon', icon: 'chevron-right' %}
+          </a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

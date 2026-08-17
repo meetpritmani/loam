@@ -1,0 +1,155 @@
+{%- comment -%}
+  Customer account overview. Handles a customer with zero orders and a
+  customer with no default address.
+{%- endcomment -%}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <div class="rpl-container rpl-section">
+    <div class="rpl-account__head">
+      <h1>{{ 'customer.account.title' | t }}</h1>
+      <a class="rpl-button rpl-button--link" href="{{ routes.account_logout_url }}">
+        {{- 'customer.log_out' | t -}}
+      </a>
+    </div>
+
+    <div class="rpl-account__layout">
+      <section class="rpl-account__orders" aria-labelledby="OrderHistoryHeading">
+        <h2 id="OrderHistoryHeading">{{ 'customer.orders.title' | t }}</h2>
+
+        {%- paginate customer.orders by 20 -%}
+          {%- if customer.orders.size > 0 -%}
+            <table class="rpl-account-table">
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'customer.orders.order_number' | t }}</th>
+                  <th scope="col">{{ 'customer.orders.date' | t }}</th>
+                  <th scope="col">{{ 'customer.orders.payment_status' | t }}</th>
+                  <th scope="col">{{ 'customer.orders.fulfillment_status' | t }}</th>
+                  <th scope="col">{{ 'customer.orders.total' | t }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for order in customer.orders -%}
+                  <tr>
+                    <td data-label="{{ 'customer.orders.order_number' | t }}">
+                      <a
+                        href="{{ order.customer_url }}"
+                        aria-label="{{ 'customer.orders.order_number_link' | t: number: order.name }}"
+                      >
+                        {{- order.name -}}
+                      </a>
+                    </td>
+                    <td data-label="{{ 'customer.orders.date' | t }}">
+                      {{ order.created_at | date: format: 'date' }}
+                    </td>
+                    <td data-label="{{ 'customer.orders.payment_status' | t }}">{{ order.financial_status_label }}</td>
+                    <td data-label="{{ 'customer.orders.fulfillment_status' | t }}">
+                      {{ order.fulfillment_status_label }}
+                    </td>
+                    <td data-label="{{ 'customer.orders.total' | t }}">{{ order.total_net_amount | money }}</td>
+                  </tr>
+                {%- endfor -%}
+              </tbody>
+            </table>
+
+            {% render 'pagination', paginate: paginate %}
+          {%- else -%}
+            <p class="rpl-muted">{{ 'customer.orders.none' | t }}</p>
+          {%- endif -%}
+        {%- endpaginate -%}
+      </section>
+
+      <section class="rpl-account__details" aria-labelledby="AccountDetailsHeading">
+        <h2 id="AccountDetailsHeading">{{ 'customer.account.details' | t }}</h2>
+
+        {%- if customer.default_address != blank -%}
+          {{ customer.default_address | format_address }}
+        {%- endif -%}
+
+        <a href="{{ routes.account_addresses_url }}">{{ 'customer.account.view_addresses' | t }}</a>
+      </section>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .rpl-account__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--rpl-space-sm);
+  }
+
+  .rpl-account__layout {
+    display: grid;
+    gap: var(--rpl-space-lg);
+  }
+
+  .rpl-account-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .rpl-account-table th,
+  .rpl-account-table td {
+    padding: var(--rpl-space-2xs);
+    border-block-end: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
+    text-align: start;
+  }
+
+  @media screen and (min-width: 990px) {
+    .rpl-account__layout {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .rpl-account-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .rpl-account-table,
+    .rpl-account-table tbody,
+    .rpl-account-table tr,
+    .rpl-account-table td {
+      display: block;
+      width: 100%;
+    }
+
+    .rpl-account-table tr {
+      padding-block: var(--rpl-space-2xs);
+      border-block-end: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
+    }
+
+    .rpl-account-table td {
+      border: 0;
+      padding: 0.125rem 0;
+    }
+
+    .rpl-account-table td::before {
+      content: attr(data-label) ': ';
+      font-weight: var(--rpl-font-body-weight-bold);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.main_account.name",
+  "tag": "section",
+  "class": "rpl-section-main-account",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}

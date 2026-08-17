@@ -1,0 +1,37 @@
+{
+  "type": "footer",
+  "name": "t:section_groups.footer.name",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "menu-1": {
+          "type": "menu",
+          "settings": {
+            "heading": "Shop",
+            "menu": "footer"
+          }
+        },
+        "text-1": {
+          "type": "text",
+          "settings": {
+            "heading": "About us",
+            "text": "<p>Tell customers what your brand refills, replaces, or replenishes.</p>"
+          }
+        },
+        "social-1": {
+          "type": "social",
+          "settings": {
+            "heading": "Follow along"
+          }
+        }
+      },
+      "block_order": ["menu-1", "text-1", "social-1"],
+      "settings": {
+        "show_payment_icons": true,
+        "color_scheme": "scheme-2"
+      }
+    }
+  },
+  "order": ["footer"]
+}

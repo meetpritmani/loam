@@ -1,0 +1,41 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Never run out again",
+            "heading_size": "large"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Refill reminders and subscriber-only pricing on the essentials you use every day.</p>"
+          }
+        },
+        "buttons": {
+          "type": "buttons",
+          "settings": {
+            "button_label": "Shop now",
+            "button_link": "shopify://collections/all",
+            "button_style": false,
+            "second_button_label": "",
+            "second_button_link": "",
+            "second_button_style": true
+          }
+        }
+      },
+      "block_order": ["heading", "text", "buttons"],
+      "settings": {
+        "height": "medium",
+        "content_position": "left",
+        "overlay_opacity": 20,
+        "color_scheme": "scheme-1"
+      }
+    }
+  },
+  "order": ["hero"]
+}

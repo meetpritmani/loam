@@ -1,0 +1,56 @@
+{%- comment -%}
+  Renders a linklist as a `<ul>`, one level of submenu deep. Shared by the
+  header's desktop inline nav and mobile off-canvas nav so link markup and
+  submenu behavior can't drift between the two.
+
+  Accepts:
+  - menu: {Object} a linklist, e.g. section.settings.menu.
+  - list_class: {String} class(es) applied to the outer <ul>.
+
+  Handles: 0 links (renders an empty, harmless <ul>), 1 link, many links,
+  and links with/without a submenu.
+{%- endcomment -%}
+
+{%- liquid
+  assign ul_class = list_class | default: 'rpl-list-unstyled'
+-%}
+
+<ul class="{{ ul_class }}">
+  {%- for link in menu.links -%}
+    <li class="rpl-header__menu-item">
+      {%- if link.links.size > 0 -%}
+        <details class="rpl-header__details">
+          <summary class="rpl-header__link">
+            {{ link.title | escape }}
+            {% render 'icon', icon: 'chevron-down' %}
+          </summary>
+          <ul class="rpl-header__submenu rpl-list-unstyled">
+            {%- for child in link.links -%}
+              <li>
+                <a
+                  class="rpl-header__link"
+                  href="{{ child.url }}"
+                  {% if child.current %}
+                    aria-current="page"
+                  {% endif %}
+                >
+                  {{- child.title | escape -}}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </details>
+      {%- else -%}
+        <a
+          class="rpl-header__link"
+          href="{{ link.url }}"
+          {% if link.current %}
+            aria-current="page"
+          {% endif %}
+        >
+          {{- link.title | escape -}}
+        </a>
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+</ul>

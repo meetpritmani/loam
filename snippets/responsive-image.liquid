@@ -1,0 +1,76 @@
+{%- comment -%}
+  Renders a responsive, CLS-safe image with a graceful no-image fallback.
+
+  Accepts:
+  - image: {Object} image object. If blank, renders `placeholder` instead.
+  - alt: {String} override for image.alt. Falls back to image.alt, then ''.
+  - class: {String} class names applied to the <img>.
+  - sizes: {String} sizes attribute. Default: '100vw'.
+  - widths: {String} comma-separated srcset widths.
+  - loading: {String} 'lazy' (default) or 'eager'. Use 'eager' only above the fold.
+  - fetchpriority: {String} 'high' for the LCP image, otherwise omit.
+  - placeholder: {String} placeholder_svg_tag name used when image is blank.
+  - wrapper_ratio: {String} 'adapt' | 'square' | 'portrait' | 'landscape'.
+    When set, wraps the image in a reserved aspect box so nothing shifts.
+
+  Usage:
+  {% render 'responsive-image', image: section.settings.image, sizes: '(min-width: 750px) 50vw, 100vw' %}
+
+  DOCUMENTED EXCEPTION to the project's no-inline-style rule: the aspect box
+  sets a single CSS custom property (--rpl-media-ratio) inline. The value is
+  per-image and only known at render time, so the alternative is emitting a
+  <style> block per image — strictly worse for payload and caching. No visual
+  properties are set inline; all of them live in assets/base.css.
+{%- endcomment -%}
+
+{%- liquid
+  assign img_loading = loading | default: 'lazy'
+  assign img_sizes = sizes | default: '100vw'
+  assign img_widths = widths | default: '165, 360, 533, 720, 940, 1066, 1200, 1500, 1780, 2000'
+  assign img_class = class | default: ''
+  assign img_alt = alt | default: image.alt | default: ''
+  # 'auto' is the browser default, so an omitted fetchpriority stays a no-op
+  # while keeping the emitted attribute valid.
+  assign img_fetchpriority = fetchpriority | default: 'auto'
+  assign svg_placeholder = placeholder | default: 'image'
+
+  assign ratio_value = ''
+  case wrapper_ratio
+    when 'square'
+      assign ratio_value = '1'
+    when 'portrait'
+      assign ratio_value = '0.8'
+    when 'landscape'
+      assign ratio_value = '1.5'
+    when 'adapt'
+      if image != blank
+        assign ratio_value = image.aspect_ratio
+      else
+        assign ratio_value = '1'
+      endif
+  endcase
+-%}
+
+{%- if ratio_value != blank -%}
+  <div class="rpl-media rpl-media--ratio" style="--rpl-media-ratio: {{ ratio_value }};">
+{%- endif -%}
+
+{%- if image != blank -%}
+  {{
+    image
+    | image_url: width: 2000
+    | image_tag:
+      loading: img_loading,
+      fetchpriority: img_fetchpriority,
+      widths: img_widths,
+      sizes: img_sizes,
+      class: img_class,
+      alt: img_alt
+  }}
+{%- else -%}
+  {{ svg_placeholder | placeholder_svg_tag: 'rpl-media__placeholder' }}
+{%- endif -%}
+
+{%- if ratio_value != blank -%}
+  </div>
+{%- endif -%}

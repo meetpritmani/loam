@@ -1,0 +1,15 @@
+{
+  "type": "header",
+  "name": "t:section_groups.header.name",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "menu": "main-menu",
+        "show_account": true,
+        "color_scheme": "scheme-1"
+      }
+    }
+  },
+  "order": ["header"]
+}

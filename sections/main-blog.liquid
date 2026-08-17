@@ -1,0 +1,105 @@
+{%- comment -%}
+  Blog listing. Handles a blog with zero articles and articles with no image,
+  no excerpt, and no author.
+{%- endcomment -%}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <div class="rpl-container rpl-section">
+    <h1>{{ blog.title | escape }}</h1>
+
+    {%- if blog.articles_count > 0 -%}
+      {%- paginate blog.articles by section.settings.posts_per_page -%}
+        <ul class="rpl-grid rpl-blog-grid">
+          {%- for article in blog.articles -%}
+            {%- liquid
+              assign article_alt = article.image.alt | default: article.title
+              assign article_loading = 'lazy'
+              if forloop.first and paginate.current_page == 1
+                assign article_loading = 'eager'
+              endif
+            -%}
+            <li class="rpl-reveal">
+              <article class="rpl-card">
+                {% render 'responsive-image',
+                  image: article.image,
+                  alt: article_alt,
+                  loading: article_loading,
+                  sizes: '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw',
+                  widths: '330, 533, 720, 940, 1200',
+                  wrapper_ratio: 'landscape'
+                %}
+                <div class="rpl-card__content">
+                  <h2 class="rpl-card__title">
+                    <a class="rpl-card__link" href="{{ article.url }}">{{ article.title | escape }}</a>
+                  </h2>
+                  {%- if section.settings.show_date -%}
+                    <p class="rpl-caption rpl-muted">
+                      <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+                        {{- article.published_at | date: format: 'date' -}}
+                      </time>
+                    </p>
+                  {%- endif -%}
+                  {%- if section.settings.show_excerpt and article.excerpt_or_content != blank -%}
+                    <p class="rpl-muted">{{ article.excerpt_or_content | strip_html | truncate: 140 }}</p>
+                  {%- endif -%}
+                </div>
+              </article>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {%- if paginate.pages > 1 -%}
+          {% render 'pagination', paginate: paginate %}
+        {%- endif -%}
+      {%- endpaginate -%}
+    {%- else -%}
+      <div class="rpl-empty-state">
+        <p class="rpl-muted">{{ 'blogs.empty' | t }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .rpl-blog-grid {
+    --rpl-grid-columns-mobile: 1;
+    --rpl-grid-columns-desktop: 3;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.main_blog.name",
+  "tag": "section",
+  "class": "rpl-section-main-blog",
+  "settings": [
+    {
+      "type": "range",
+      "id": "posts_per_page",
+      "min": 3,
+      "max": 24,
+      "step": 3,
+      "label": "t:sections.main_blog.settings.posts_per_page.label",
+      "default": 9
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "t:sections.main_blog.settings.show_date.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "t:sections.main_blog.settings.show_excerpt.label",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}

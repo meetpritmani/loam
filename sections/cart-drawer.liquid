@@ -1,0 +1,342 @@
+{%- comment -%}
+  Site-wide cart drawer. Rendered directly from layout/theme.liquid via
+  `{% section 'cart-drawer' %}` (not through a section group) so it always
+  exists when settings.cart_type is "drawer" and can't be deleted from the
+  Theme Editor's section list — losing it would break the header cart icon.
+
+  Being a real section (not a snippet) is deliberate: it gives it a
+  section.id, which is what makes it fetchable through the Section Rendering
+  API (`?section_id=cart-drawer`) — rpl-cart.js uses that single endpoint to
+  re-render the whole drawer after every add/change/remove instead of
+  hand-duplicating this markup in JS.
+
+  No-JS story: this drawer is unreachable without JavaScript (it only opens
+  via the <rpl-drawer> custom element), which is fine — the header cart icon
+  is a real link to /cart, and main-cart.liquid is a complete, independent
+  no-JS cart page. JS intercepts that same link to open this instead.
+
+  Handles: empty cart, line items with no image, subscription line items,
+  line item discounts/properties, unit pricing, cart-level discounts.
+{%- endcomment -%}
+
+<script src="{{ 'rpl-cart.js' | asset_url }}" defer="defer"></script>
+
+<rpl-drawer
+  id="CartDrawer"
+  class="rpl-color-{{ section.settings.color_scheme }} rpl-cart-drawer"
+  data-cart-change-url="{{ routes.cart_change_url }}"
+  data-cart-update-url="{{ routes.cart_update_url }}"
+  data-section-url="{{ routes.cart_url }}?section_id={{ section.id }}"
+  data-item-count="{{ cart.item_count }}"
+>
+  <div class="rpl-overlay" data-drawer-overlay></div>
+  <div
+    class="rpl-drawer"
+    data-drawer-panel
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="CartDrawer-title"
+  >
+    <div class="rpl-drawer__header">
+      <h2 class="rpl-drawer__title" id="CartDrawer-title">
+        {{- 'sections.cart.title' | t -}}
+      </h2>
+      <button type="button" class="rpl-icon-button" data-drawer-close>
+        <span class="rpl-visually-hidden">{{ 'accessibility.close' | t }}</span>
+        {% render 'icon', icon: 'close' %}
+      </button>
+    </div>
+
+    <div class="rpl-drawer__body">
+      {%- comment -%}
+        Populated by rpl-cart.js if a quantity change or remove fails (e.g.
+        requesting more than is in stock). Visible, not just announced — a
+        sighted user changing quantity here wouldn't see a screen-reader-only
+        message.
+      {%- endcomment -%}
+      <p class="rpl-form-status" role="status" data-cart-drawer-status hidden></p>
+
+      {%- if cart.item_count == 0 -%}
+        <div class="rpl-empty-state">
+          <p>{{ 'sections.cart.empty' | t }}</p>
+          <p class="rpl-muted">{{ 'sections.cart.empty_subtext' | t }}</p>
+          <a class="rpl-button" href="{{ routes.all_products_collection_url }}" data-drawer-close>
+            {{- 'general.continue_shopping' | t -}}
+          </a>
+        </div>
+      {%- else -%}
+        <ul class="rpl-list-unstyled rpl-cart-drawer-items">
+          {%- for line_item in cart.items -%}
+            {%- liquid
+              assign line_alt = line_item.image.alt | default: line_item.product.title
+              assign remove_label = 'sections.cart.remove' | t: title: line_item.title
+              assign decrease_label = 'products.product.quantity.decrease' | t: product: line_item.product.title
+              assign increase_label = 'products.product.quantity.increase' | t: product: line_item.product.title
+              assign input_label = 'products.product.quantity.input_label' | t: product: line_item.product.title
+            -%}
+            <li class="rpl-cart-drawer-item">
+              <div class="rpl-cart-drawer-item__media">
+                {% render 'responsive-image',
+                  image: line_item.image,
+                  alt: line_alt,
+                  sizes: '72px',
+                  widths: '72, 144, 216',
+                  wrapper_ratio: 'square'
+                %}
+              </div>
+
+              <div class="rpl-cart-drawer-item__info">
+                <a class="rpl-cart-drawer-item__title" href="{{ line_item.url }}">
+                  {{- line_item.product.title | escape -}}
+                </a>
+
+                {%- if settings.show_vendor and line_item.product.vendor != blank -%}
+                  <p class="rpl-caption rpl-muted">{{ line_item.product.vendor | escape }}</p>
+                {%- endif -%}
+
+                {%- unless line_item.product.has_only_default_variant -%}
+                  <p class="rpl-caption rpl-muted">{{ line_item.variant.title | escape }}</p>
+                {%- endunless -%}
+
+                {%- if line_item.selling_plan_allocation != blank -%}
+                  <p class="rpl-badge rpl-badge--subtle">
+                    {{- line_item.selling_plan_allocation.selling_plan.name | escape -}}
+                  </p>
+                {%- endif -%}
+
+                {%- if line_item.properties.size > 0 -%}
+                  <dl class="rpl-cart-item__properties rpl-caption rpl-muted">
+                    {%- for property in line_item.properties -%}
+                      {%- assign property_first_char = property.first | slice: 0 -%}
+                      {%- if property.last != blank and property_first_char != '_' -%}
+                        <dt>{{ property.first | escape }}:</dt>
+                        <dd>{{ property.last | escape }}</dd>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </dl>
+                {%- endif -%}
+
+                <div class="rpl-cart-drawer-item__price">
+                  {%- if line_item.original_price != line_item.final_price -%}
+                    <s class="rpl-muted">{{ line_item.original_price | money }}</s>
+                    <span>{{ line_item.final_price | money }}</span>
+                  {%- else -%}
+                    <span>{{ line_item.final_price | money }}</span>
+                  {%- endif -%}
+                </div>
+
+                <div class="rpl-quantity-stepper" role="group" aria-label="{{ 'products.product.quantity.label' | t }}">
+                  <button
+                    type="button"
+                    class="rpl-quantity-stepper__button"
+                    data-quantity-decrease
+                    data-line="{{ forloop.index }}"
+                    aria-label="{{ decrease_label }}"
+                  >
+                    {% render 'icon', icon: 'minus' %}
+                  </button>
+                  <input
+                    class="rpl-quantity-stepper__input"
+                    type="number"
+                    data-quantity-input
+                    data-line="{{ forloop.index }}"
+                    value="{{ line_item.quantity }}"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    aria-label="{{ input_label }}"
+                  >
+                  <button
+                    type="button"
+                    class="rpl-quantity-stepper__button"
+                    data-quantity-increase
+                    data-line="{{ forloop.index }}"
+                    aria-label="{{ increase_label }}"
+                  >
+                    {% render 'icon', icon: 'plus' %}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="rpl-icon-button rpl-cart-drawer-item__remove"
+                data-line-remove
+                data-line="{{ forloop.index }}"
+                aria-label="{{ remove_label }}"
+              >
+                {% render 'icon', icon: 'close' %}
+              </button>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    {%- if cart.item_count > 0 -%}
+      <div class="rpl-drawer__footer">
+        {%- if cart.cart_level_discount_applications.size > 0 -%}
+          <ul class="rpl-list-unstyled rpl-caption">
+            {%- for discount in cart.cart_level_discount_applications -%}
+              <li>{{ discount.title | escape }} (-{{ discount.total_allocated_amount | money }})</li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if settings.show_cart_note -%}
+          <div class="rpl-field rpl-cart-drawer__note">
+            <label class="rpl-field__label" for="CartDrawerNote">{{ 'sections.cart.note' | t }}</label>
+            <textarea class="rpl-textarea" id="CartDrawerNote" data-cart-note rows="2">{{ cart.note }}</textarea>
+          </div>
+        {%- endif -%}
+
+        <p class="rpl-cart__subtotal">
+          <span>{{ 'sections.cart.subtotal' | t }}</span>
+          <span>{{ cart.total_price | money_with_currency }}</span>
+        </p>
+
+        <p class="rpl-caption rpl-muted">{{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}</p>
+
+        <div class="rpl-cart-drawer__actions">
+          <a class="rpl-button rpl-button--secondary" href="{{ routes.cart_url }}" data-drawer-close>
+            {{- 'sections.cart.title' | t -}}
+          </a>
+          <a class="rpl-button" href="{{ routes.cart_url }}/checkout">
+            {{- 'sections.cart.checkout' | t -}}
+          </a>
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</rpl-drawer>
+
+{% stylesheet %}
+  .rpl-cart-drawer .rpl-drawer__body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rpl-drawer__title {
+    margin: 0;
+    font-size: calc(1.125rem * var(--rpl-font-heading-scale));
+  }
+
+  .rpl-cart-drawer-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rpl-space-md);
+  }
+
+  .rpl-cart-drawer-item {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: var(--rpl-space-2xs);
+  }
+
+  .rpl-cart-drawer-item__title {
+    font-weight: var(--rpl-font-body-weight-bold);
+    text-decoration: none;
+  }
+
+  .rpl-cart-drawer-item__title:hover {
+    text-decoration: underline;
+  }
+
+  .rpl-cart-drawer-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rpl-space-3xs);
+    min-width: 0;
+  }
+
+  .rpl-cart-drawer-item__price {
+    margin-block-start: var(--rpl-space-3xs);
+  }
+
+  .rpl-quantity-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgb(var(--rpl-color-foreground) / 0.3);
+    border-radius: var(--rpl-buttons-radius);
+    width: fit-content;
+    margin-block-start: var(--rpl-space-3xs);
+  }
+
+  .rpl-quantity-stepper__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .rpl-quantity-stepper__button .rpl-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .rpl-quantity-stepper__input {
+    width: 2.5rem;
+    min-height: 0;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-inline: 1px solid rgb(var(--rpl-color-foreground) / 0.3);
+    text-align: center;
+    background: none;
+    color: inherit;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .rpl-cart-drawer-item__remove {
+    width: 32px;
+    height: 32px;
+  }
+
+  .rpl-cart-drawer-item__remove .rpl-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .rpl-cart-drawer__note {
+    margin-block-end: var(--rpl-space-2xs);
+  }
+
+  .rpl-cart-drawer__actions {
+    display: flex;
+    gap: var(--rpl-space-2xs);
+  }
+
+  .rpl-cart-drawer__actions .rpl-button {
+    flex: 1 1 0;
+  }
+
+  /* Dims the drawer body while a request is in flight so a second tap can't
+     fire a duplicate mutation before the refreshed section arrives. */
+  .rpl-cart-drawer[aria-busy='true'] .rpl-drawer__body {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.main_cart.name",
+  "tag": "section",
+  "class": "rpl-section-cart-drawer",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}

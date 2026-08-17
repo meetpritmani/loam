@@ -1,0 +1,502 @@
+/*
+  base.css — non-critical global stylesheet.
+
+  Loaded non-render-blocking from layout/theme.liquid. Anything required for the
+  first viewport belongs in snippets/critical-css.liquid instead.
+
+  Convention: BEM, `rpl-` prefix on every block. No !important without a
+  comment stating why. No hardcoded colors — always a color-scheme token.
+*/
+
+/* ==========================================================================
+   Layout helpers
+   ========================================================================== */
+
+.rpl-section--tight {
+  padding-block: var(--rpl-space-md);
+}
+
+.rpl-section--loose {
+  padding-block: var(--rpl-space-xl);
+}
+
+.rpl-container--narrow {
+  max-width: 46rem;
+}
+
+.rpl-container--full {
+  max-width: none;
+  padding-inline: 0;
+}
+
+.rpl-stack > * + * {
+  margin-block-start: var(--rpl-space-sm);
+}
+
+.rpl-grid {
+  display: grid;
+  gap: var(--rpl-grid-gap-vertical) var(--rpl-grid-gap-horizontal);
+  grid-template-columns: repeat(var(--rpl-grid-columns-mobile, 1), minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .rpl-grid {
+    grid-template-columns: repeat(var(--rpl-grid-columns-desktop, 3), minmax(0, 1fr));
+  }
+}
+
+/* ==========================================================================
+   Rich text (merchant-authored HTML)
+   ========================================================================== */
+
+.rpl-rte > :last-child {
+  margin-block-end: 0;
+}
+
+.rpl-rte img {
+  border-radius: var(--rpl-media-radius);
+}
+
+.rpl-rte ul,
+.rpl-rte ol {
+  padding-inline-start: 1.25rem;
+  margin-block: 0 var(--rpl-space-sm);
+}
+
+.rpl-rte li + li {
+  margin-block-start: var(--rpl-space-3xs);
+}
+
+.rpl-rte blockquote {
+  margin-inline: 0;
+  padding-inline-start: var(--rpl-space-sm);
+  border-inline-start: 2px solid rgb(var(--rpl-color-foreground) / 0.2);
+}
+
+.rpl-rte table {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+}
+
+.rpl-rte th,
+.rpl-rte td {
+  padding: var(--rpl-space-2xs);
+  border: 1px solid rgb(var(--rpl-color-foreground) / 0.15);
+  text-align: start;
+}
+
+/* ==========================================================================
+   Media
+   ========================================================================== */
+
+.rpl-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--rpl-media-radius);
+  background-color: rgb(var(--rpl-color-foreground) / 0.04);
+}
+
+/* Reserved aspect box — prevents CLS while the image decodes. */
+.rpl-media--ratio {
+  aspect-ratio: var(--rpl-media-ratio, 1);
+}
+
+.rpl-media img,
+.rpl-media svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rpl-media--contain img {
+  object-fit: contain;
+}
+
+.rpl-media__placeholder {
+  width: 100%;
+  height: 100%;
+  fill: rgb(var(--rpl-color-foreground) / 0.25);
+  background-color: rgb(var(--rpl-color-foreground) / 0.04);
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+.rpl-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rpl-space-3xs);
+}
+
+.rpl-field__label {
+  font-size: calc(0.875rem * var(--rpl-font-body-scale));
+  font-weight: var(--rpl-font-body-weight-bold);
+}
+
+.rpl-input,
+.rpl-select,
+.rpl-textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--rpl-space-2xs) var(--rpl-space-xs);
+  border: 1px solid rgb(var(--rpl-color-foreground) / 0.3);
+  border-radius: var(--rpl-buttons-radius);
+  background-color: rgb(var(--rpl-color-background));
+  color: rgb(var(--rpl-color-foreground));
+}
+
+.rpl-textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.rpl-input::placeholder,
+.rpl-textarea::placeholder {
+  color: rgb(var(--rpl-color-foreground) / 0.55);
+}
+
+.rpl-input[aria-invalid='true'],
+.rpl-textarea[aria-invalid='true'] {
+  border-color: rgb(var(--rpl-color-foreground));
+  border-width: 2px;
+}
+
+.rpl-field__error {
+  font-size: calc(0.8125rem * var(--rpl-font-body-scale));
+  font-weight: var(--rpl-font-body-weight-bold);
+}
+
+.rpl-form-status {
+  padding: var(--rpl-space-2xs) var(--rpl-space-xs);
+  border: 1px solid rgb(var(--rpl-color-foreground) / 0.3);
+  border-radius: var(--rpl-radius-sm);
+  margin-block-end: var(--rpl-space-sm);
+}
+
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+
+.rpl-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rpl-space-2xs);
+  height: 100%;
+  border-radius: var(--rpl-card-radius);
+  border: var(--rpl-card-border-width) solid rgb(var(--rpl-color-foreground) / 0.15);
+  box-shadow: 0 6px 16px rgb(var(--rpl-color-shadow) / var(--rpl-card-shadow-opacity));
+  transition: transform var(--rpl-duration-base) var(--rpl-ease);
+}
+
+.rpl-card--boxed {
+  padding: var(--rpl-space-xs);
+  background-color: rgb(var(--rpl-color-background));
+}
+
+.rpl-card__title {
+  margin: 0;
+  font-size: calc(1rem * var(--rpl-font-body-scale));
+  font-weight: var(--rpl-font-body-weight-bold);
+}
+
+/* Whole-card click target: the real link stays the only focusable element. */
+.rpl-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.rpl-card--lift:hover {
+  transform: translateY(-4px);
+}
+
+.rpl-card--zoom:hover .rpl-media img {
+  transform: scale(1.04);
+}
+
+.rpl-card .rpl-media img {
+  transition: transform var(--rpl-duration-slow) var(--rpl-ease);
+}
+
+.rpl-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rpl-space-3xs);
+  padding-block-start: var(--rpl-space-2xs);
+}
+
+.rpl-card__vendor {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.rpl-card__subscription {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  align-self: flex-start;
+  margin: var(--rpl-space-3xs) 0 0;
+}
+
+.rpl-card__subscription .rpl-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* ==========================================================================
+   Price
+   ========================================================================== */
+
+.rpl-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--rpl-space-3xs);
+}
+
+.rpl-price__compare {
+  opacity: 0.6;
+}
+
+.rpl-price__unit {
+  flex-basis: 100%;
+}
+
+.rpl-badge {
+  display: inline-block;
+  padding: 0.125rem var(--rpl-space-2xs);
+  border-radius: var(--rpl-radius-full);
+  background-color: rgb(var(--rpl-color-foreground));
+  color: rgb(var(--rpl-color-background));
+  font-size: calc(0.75rem * var(--rpl-font-body-scale));
+  font-weight: var(--rpl-font-body-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.rpl-badge--subtle {
+  background-color: rgb(var(--rpl-color-foreground) / 0.1);
+  color: rgb(var(--rpl-color-foreground));
+}
+
+/* ==========================================================================
+   Cart (shared by the cart page and the cart drawer)
+   ========================================================================== */
+
+.rpl-cart-item__properties {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--rpl-space-3xs);
+  margin: var(--rpl-space-3xs) 0;
+}
+
+.rpl-cart-item__properties dd {
+  margin: 0;
+}
+
+.rpl-cart__subtotal {
+  display: flex;
+  gap: var(--rpl-space-sm);
+  margin: 0;
+  font-size: calc(1.125rem * var(--rpl-font-body-scale));
+  font-weight: var(--rpl-font-body-weight-bold);
+}
+
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+
+.rpl-pagination {
+  display: flex;
+  justify-content: center;
+  gap: var(--rpl-space-3xs);
+  margin-block-start: var(--rpl-space-lg);
+  list-style: none;
+  padding: 0;
+}
+
+.rpl-pagination__item a,
+.rpl-pagination__item span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--rpl-radius-sm);
+  text-decoration: none;
+}
+
+.rpl-pagination__item--current span {
+  background-color: rgb(var(--rpl-color-foreground) / 0.1);
+  font-weight: var(--rpl-font-body-weight-bold);
+}
+
+/* ==========================================================================
+   Overlay + drawer primitives (consumed by cart drawer, menu drawer, modals)
+   ========================================================================== */
+
+.rpl-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--rpl-z-overlay);
+  background-color: rgb(0 0 0 / 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--rpl-duration-base) var(--rpl-ease), visibility var(--rpl-duration-base) var(--rpl-ease);
+}
+
+.rpl-overlay[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.rpl-drawer {
+  position: fixed;
+  z-index: var(--rpl-z-drawer);
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: min(28rem, 100vw);
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(var(--rpl-color-background));
+  color: rgb(var(--rpl-color-foreground));
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform var(--rpl-duration-base) var(--rpl-ease), visibility var(--rpl-duration-base) var(--rpl-ease);
+}
+
+.rpl-drawer[data-open='true'] {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.rpl-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rpl-space-sm);
+  padding: var(--rpl-space-sm);
+  border-block-end: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
+}
+
+.rpl-drawer__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--rpl-space-sm);
+}
+
+.rpl-drawer__footer {
+  padding: var(--rpl-space-sm);
+  border-block-start: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
+}
+
+/* Locks background scroll while a drawer or modal owns the viewport. */
+.rpl-scroll-locked {
+  overflow: hidden;
+}
+
+.rpl-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--rpl-radius-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.rpl-icon-button:hover {
+  background-color: rgb(var(--rpl-color-foreground) / 0.08);
+}
+
+.rpl-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ==========================================================================
+   Reveal-on-scroll (opt-in via theme setting; JS adds .rpl-reveal--in)
+   ========================================================================== */
+
+.rpl-reveal {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity var(--rpl-duration-slow) var(--rpl-ease), transform var(--rpl-duration-slow) var(--rpl-ease);
+}
+
+.rpl-reveal--in {
+  opacity: 1;
+  transform: none;
+}
+
+/* No JS: never leave content invisible. */
+.no-js .rpl-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.no-js .rpl-no-js-hidden {
+  display: none;
+}
+
+.rpl-js-only {
+  display: none;
+}
+
+.js .rpl-js-only {
+  display: revert;
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.rpl-text-center {
+  text-align: center;
+}
+
+.rpl-muted {
+  color: rgb(var(--rpl-color-foreground) / 0.7);
+}
+
+.rpl-caption {
+  font-size: calc(0.8125rem * var(--rpl-font-body-scale));
+  letter-spacing: 0.03em;
+}
+
+.rpl-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--rpl-space-sm);
+  padding-block: var(--rpl-space-xl);
+  text-align: center;
+}
+
+.rpl-divider {
+  border: 0;
+  border-block-start: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
+  margin-block: var(--rpl-space-md);
+}
+
+.rpl-list-unstyled {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

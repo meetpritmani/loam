@@ -1,0 +1,155 @@
+{%- comment -%}
+  Customer order detail. Handles: cancelled orders, unfulfilled orders,
+  orders with discounts, and line items with no image or no SKU.
+{%- endcomment -%}
+
+{%- comment -%}
+  Dates are formatted before being passed to `t` — filters chained after a
+  translation filter would apply to the translated string, not the date.
+{%- endcomment -%}
+{%- liquid
+  assign order_date = order.created_at | date: format: 'date'
+  assign cancelled_date = order.cancelled_at | date: format: 'date'
+-%}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <div class="rpl-container rpl-section">
+    <h1>{{ 'customer.order.title' | t: name: order.name }}</h1>
+    <p class="rpl-caption rpl-muted">
+      {{ 'customer.order.date_html' | t: date: order_date }}
+    </p>
+
+    {%- if order.cancelled -%}
+      <div class="rpl-form-status" role="status">
+        <p>{{ 'customer.order.cancelled_html' | t: date: cancelled_date }}</p>
+        {%- if order.cancel_reason != blank -%}
+          <p>{{ 'customer.order.cancelled_reason' | t: reason: order.cancel_reason_label }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <table class="rpl-account-table">
+      <caption class="rpl-visually-hidden">{{ 'customer.order.title' | t: name: order.name }}</caption>
+      <thead>
+        <tr>
+          <th scope="col">{{ 'customer.order.product' | t }}</th>
+          <th scope="col">{{ 'customer.order.price' | t }}</th>
+          <th scope="col">{{ 'customer.order.quantity' | t }}</th>
+          <th scope="col">{{ 'customer.order.total' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for line_item in order.line_items -%}
+          <tr>
+            <td data-label="{{ 'customer.order.product' | t }}">
+              {%- if line_item.url != blank -%}
+                <a href="{{ line_item.url }}">{{ line_item.title | escape }}</a>
+              {%- else -%}
+                {{ line_item.title | escape }}
+              {%- endif -%}
+              {%- if line_item.sku != blank -%}
+                <span class="rpl-caption rpl-muted">{{ line_item.sku | escape }}</span>
+              {%- endif -%}
+              {%- if line_item.fulfillment -%}
+                {%- assign fulfilled_date = line_item.fulfillment.created_at | date: format: 'date' -%}
+                <span class="rpl-caption rpl-muted">
+                  {{- 'customer.order.fulfilled_at_html' | t: date: fulfilled_date -}}
+                </span>
+                {%- if line_item.fulfillment.tracking_url != blank -%}
+                  <a class="rpl-caption" href="{{ line_item.fulfillment.tracking_url }}">
+                    {{- 'customer.order.track_shipment' | t -}}
+                  </a>
+                {%- endif -%}
+              {%- endif -%}
+            </td>
+            <td data-label="{{ 'customer.order.price' | t }}">{{ line_item.final_price | money }}</td>
+            <td data-label="{{ 'customer.order.quantity' | t }}">{{ line_item.quantity }}</td>
+            <td data-label="{{ 'customer.order.total' | t }}">{{ line_item.final_line_price | money }}</td>
+          </tr>
+        {%- endfor -%}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="row" colspan="3">{{ 'customer.order.subtotal' | t }}</th>
+          <td>{{ order.line_items_subtotal_price | money }}</td>
+        </tr>
+        {%- for discount_application in order.cart_level_discount_applications -%}
+          <tr>
+            <th scope="row" colspan="3">
+              {{- 'customer.order.discount' | t }}: {{ discount_application.title | escape -}}
+            </th>
+            <td>-{{ discount_application.total_allocated_amount | money }}</td>
+          </tr>
+        {%- endfor -%}
+        {%- for shipping_method in order.shipping_methods -%}
+          <tr>
+            <th scope="row" colspan="3">
+              {{- 'customer.order.shipping' | t }}: {{ shipping_method.title | escape -}}
+            </th>
+            <td>{{ shipping_method.price | money }}</td>
+          </tr>
+        {%- endfor -%}
+        {%- for tax_line in order.tax_lines -%}
+          <tr>
+            <th scope="row" colspan="3">{{ 'customer.order.tax' | t }}: {{ tax_line.title | escape }}</th>
+            <td>{{ tax_line.price | money }}</td>
+          </tr>
+        {%- endfor -%}
+        <tr>
+          <th scope="row" colspan="3">{{ 'customer.order.total' | t }}</th>
+          <td>{{ order.total_net_amount | money_with_currency }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="rpl-order__addresses">
+      <section aria-labelledby="BillingAddressHeading">
+        <h2 id="BillingAddressHeading">{{ 'customer.order.billing_address' | t }}</h2>
+        <p class="rpl-caption rpl-muted">
+          {{ 'customer.order.payment_status' | t }}: {{ order.financial_status_label }}
+        </p>
+        {{ order.billing_address | format_address }}
+      </section>
+
+      <section aria-labelledby="ShippingAddressHeading">
+        <h2 id="ShippingAddressHeading">{{ 'customer.order.shipping_address' | t }}</h2>
+        <p class="rpl-caption rpl-muted">
+          {{ 'customer.order.fulfillment_status' | t }}: {{ order.fulfillment_status_label }}
+        </p>
+        {{ order.shipping_address | format_address }}
+      </section>
+    </div>
+
+    <p><a href="{{ routes.account_url }}">{{ 'customer.account.return' | t }}</a></p>
+  </div>
+</div>
+
+{% stylesheet %}
+  .rpl-order__addresses {
+    display: grid;
+    gap: var(--rpl-space-lg);
+    margin-block-start: var(--rpl-space-lg);
+  }
+
+  @media screen and (min-width: 750px) {
+    .rpl-order__addresses {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.main_order.name",
+  "tag": "section",
+  "class": "rpl-section-main-order",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,520 @@
+{
+  "section_groups": {
+    "header": {
+      "name": "Header"
+    },
+    "footer": {
+      "name": "Footer"
+    }
+  },
+  "sections": {
+    "all": {
+      "color_scheme": {
+        "label": "Color scheme"
+      },
+      "columns_desktop": {
+        "label": "Number of columns on desktop"
+      },
+      "columns_mobile": {
+        "label": "Number of columns on mobile",
+        "options__1": {
+          "label": "1 column"
+        },
+        "options__2": {
+          "label": "2 columns"
+        }
+      },
+      "heading": {
+        "label": "Heading"
+      },
+      "show_vendor": {
+        "label": "Show vendor"
+      },
+      "text": {
+        "label": "Text"
+      }
+    },
+    "footer": {
+      "name": "Footer",
+      "blocks": {
+        "menu": {
+          "name": "Menu",
+          "settings": {
+            "menu": {
+              "label": "Menu"
+            }
+          }
+        },
+        "social": {
+          "name": "Social media icons",
+          "settings": {
+            "paragraph": {
+              "content": "Social media accounts are managed in the Social media settings under Brand."
+            }
+          }
+        },
+        "text": {
+          "name": "Text"
+        }
+      },
+      "settings": {
+        "show_payment_icons": {
+          "label": "Show payment icons"
+        }
+      }
+    },
+    "header": {
+      "name": "Header",
+      "settings": {
+        "logo": {
+          "label": "Logo image",
+          "info": "Recommended size: 200 x 100px"
+        },
+        "menu": {
+          "label": "Menu"
+        },
+        "show_account": {
+          "label": "Show account icon"
+        }
+      }
+    },
+    "hero": {
+      "name": "Hero banner",
+      "settings": {
+        "image": {
+          "label": "Background image"
+        },
+        "height": {
+          "label": "Banner height",
+          "options__1": {
+            "label": "Small"
+          },
+          "options__2": {
+            "label": "Medium"
+          },
+          "options__3": {
+            "label": "Large"
+          }
+        },
+        "content_position": {
+          "label": "Content position",
+          "options__1": {
+            "label": "Left"
+          },
+          "options__2": {
+            "label": "Center"
+          },
+          "options__3": {
+            "label": "Right"
+          }
+        },
+        "overlay_opacity": {
+          "label": "Image overlay opacity",
+          "info": "Improves text contrast over busy images."
+        }
+      },
+      "blocks": {
+        "heading": {
+          "name": "Heading",
+          "settings": {
+            "heading": {
+              "label": "Heading"
+            },
+            "heading_size": {
+              "label": "Heading size",
+              "options__1": {
+                "label": "Small"
+              },
+              "options__2": {
+                "label": "Medium"
+              },
+              "options__3": {
+                "label": "Large"
+              }
+            }
+          }
+        },
+        "text": {
+          "name": "Text",
+          "settings": {
+            "text": {
+              "label": "Text"
+            }
+          }
+        },
+        "buttons": {
+          "name": "Buttons",
+          "settings": {
+            "button_label": {
+              "label": "First button label",
+              "info": "Leave blank to hide the button."
+            },
+            "button_link": {
+              "label": "First button link"
+            },
+            "button_style": {
+              "label": "Use outline style for first button"
+            },
+            "second_button_label": {
+              "label": "Second button label",
+              "info": "Leave blank to hide the button."
+            },
+            "second_button_link": {
+              "label": "Second button link"
+            },
+            "second_button_style": {
+              "label": "Use outline style for second button"
+            }
+          }
+        }
+      },
+      "presets": {
+        "name": "Hero banner"
+      }
+    },
+    "main_404": {
+      "name": "404 page"
+    },
+    "main_account": {
+      "name": "Account"
+    },
+    "main_activate_account": {
+      "name": "Activate account"
+    },
+    "main_addresses": {
+      "name": "Addresses"
+    },
+    "main_article": {
+      "name": "Article",
+      "settings": {
+        "show_author": {
+          "label": "Show author"
+        },
+        "show_date": {
+          "label": "Show date"
+        }
+      }
+    },
+    "main_blog": {
+      "name": "Blog posts",
+      "settings": {
+        "posts_per_page": {
+          "label": "Posts per page"
+        },
+        "show_date": {
+          "label": "Show date"
+        },
+        "show_excerpt": {
+          "label": "Show excerpt"
+        }
+      }
+    },
+    "main_cart": {
+      "name": "Cart"
+    },
+    "main_collection": {
+      "name": "Collection",
+      "settings": {
+        "products_per_page": {
+          "label": "Products per page"
+        },
+        "show_description": {
+          "label": "Show collection description"
+        }
+      }
+    },
+    "main_list_collections": {
+      "name": "Collections list",
+      "settings": {
+        "sort": {
+          "label": "Sort collections by",
+          "options__1": {
+            "label": "Alphabetically, A-Z"
+          },
+          "options__2": {
+            "label": "Date, new to old"
+          }
+        }
+      }
+    },
+    "main_login": {
+      "name": "Login"
+    },
+    "main_order": {
+      "name": "Order"
+    },
+    "main_page": {
+      "name": "Page"
+    },
+    "main_password": {
+      "name": "Password"
+    },
+    "main_product": {
+      "name": "Product information",
+      "settings": {
+        "media_limit": {
+          "label": "Maximum media to show"
+        },
+        "show_dynamic_checkout": {
+          "label": "Show dynamic checkout buttons",
+          "info": "Customers see their preferred payment option, like PayPal or Apple Pay."
+        },
+        "show_sku": {
+          "label": "Show SKU"
+        }
+      }
+    },
+    "main_register": {
+      "name": "Register"
+    },
+    "main_reset_password": {
+      "name": "Reset password"
+    },
+    "main_search": {
+      "name": "Search results",
+      "settings": {
+        "results_per_page": {
+          "label": "Results per page"
+        }
+      }
+    }
+  },
+  "settings_schema": {
+    "brand": {
+      "name": "Brand",
+      "settings": {
+        "logo": {
+          "label": "Logo"
+        },
+        "logo_width": {
+          "label": "Logo width"
+        },
+        "favicon": {
+          "label": "Favicon",
+          "info": "Will be scaled down to 32 x 32px"
+        }
+      }
+    },
+    "colors": {
+      "name": "Colors",
+      "settings": {
+        "background": {
+          "label": "Background"
+        },
+        "background_gradient": {
+          "label": "Background gradient",
+          "info": "Overrides background where possible."
+        },
+        "text": {
+          "label": "Text"
+        },
+        "button": {
+          "label": "Button"
+        },
+        "button_label": {
+          "label": "Button label"
+        },
+        "secondary_button_label": {
+          "label": "Secondary button label"
+        },
+        "shadow": {
+          "label": "Shadow"
+        }
+      }
+    },
+    "typography": {
+      "name": "Typography",
+      "settings": {
+        "header_headings": {
+          "content": "Headings"
+        },
+        "type_heading_font": {
+          "label": "Font"
+        },
+        "heading_scale": {
+          "label": "Font size scale"
+        },
+        "heading_transform": {
+          "label": "Letter case",
+          "options__1": {
+            "label": "None"
+          },
+          "options__2": {
+            "label": "Uppercase"
+          }
+        },
+        "header_body": {
+          "content": "Body"
+        },
+        "type_body_font": {
+          "label": "Font"
+        },
+        "body_scale": {
+          "label": "Font size scale"
+        }
+      }
+    },
+    "layout": {
+      "name": "Layout",
+      "settings": {
+        "page_width": {
+          "label": "Page width"
+        },
+        "spacing_sections": {
+          "label": "Space between template sections",
+          "info": "Individual sections can override this value."
+        },
+        "spacing_grid_horizontal": {
+          "label": "Horizontal grid space"
+        },
+        "spacing_grid_vertical": {
+          "label": "Vertical grid space"
+        }
+      }
+    },
+    "buttons": {
+      "name": "Buttons"
+    },
+    "global": {
+      "settings": {
+        "radius": {
+          "label": "Corner radius"
+        },
+        "border_thickness": {
+          "label": "Border thickness"
+        },
+        "shadow_opacity": {
+          "label": "Shadow opacity"
+        }
+      }
+    },
+    "cards": {
+      "name": "Product cards",
+      "settings": {
+        "card_style": {
+          "label": "Style",
+          "options__1": {
+            "label": "Standard"
+          },
+          "options__2": {
+            "label": "Card"
+          }
+        },
+        "card_image_ratio": {
+          "label": "Image ratio",
+          "options__1": {
+            "label": "Adapt to image"
+          },
+          "options__2": {
+            "label": "Portrait"
+          },
+          "options__3": {
+            "label": "Square"
+          }
+        }
+      }
+    },
+    "media": {
+      "name": "Media"
+    },
+    "animations": {
+      "name": "Animations",
+      "settings": {
+        "animations_reveal_on_scroll": {
+          "label": "Reveal sections on scroll",
+          "info": "Disabled automatically when a visitor prefers reduced motion."
+        },
+        "animations_hover_effect": {
+          "label": "Hover effect",
+          "options__1": {
+            "label": "None"
+          },
+          "options__2": {
+            "label": "Zoom"
+          },
+          "options__3": {
+            "label": "Lift"
+          }
+        }
+      }
+    },
+    "cart": {
+      "name": "Cart",
+      "settings": {
+        "cart_type": {
+          "label": "Cart type",
+          "options__1": {
+            "label": "Drawer"
+          },
+          "options__2": {
+            "label": "Page"
+          }
+        },
+        "show_cart_note": {
+          "label": "Enable order notes"
+        },
+        "show_vendor": {
+          "label": "Show vendor"
+        }
+      }
+    },
+    "subscriptions": {
+      "name": "Subscriptions",
+      "settings": {
+        "paragraph": {
+          "content": "Applies to products with a Selling Plan Group, e.g. via the Shopify Subscriptions app."
+        },
+        "show_selling_plan_savings": {
+          "label": "Show subscription savings"
+        },
+        "subscription_default_selected": {
+          "label": "Select subscription by default",
+          "info": "Only applies to products that offer both one-time purchase and subscription options."
+        },
+        "subscription_badge_text": {
+          "label": "Subscription badge text"
+        }
+      }
+    },
+    "search": {
+      "name": "Search",
+      "settings": {
+        "predictive_search_enabled": {
+          "label": "Enable predictive search"
+        },
+        "predictive_search_show_price": {
+          "label": "Show product price"
+        }
+      }
+    },
+    "social": {
+      "name": "Social media",
+      "settings": {
+        "social_instagram_link": {
+          "label": "Instagram"
+        },
+        "social_facebook_link": {
+          "label": "Facebook"
+        },
+        "social_tiktok_link": {
+          "label": "TikTok"
+        },
+        "social_youtube_link": {
+          "label": "YouTube"
+        },
+        "social_link": {
+          "info": "https://instagram.com/shopify"
+        }
+      }
+    },
+    "social_sharing": {
+      "name": "Social sharing image",
+      "settings": {
+        "share_image": {
+          "label": "Image",
+          "info": "1200 x 630px recommended. Used when a link to your store is shared on social media."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,283 @@
+{%- comment -%}
+  SCAFFOLD — see PROGRESS.md.
+
+  Block-driven so it already satisfies the 0 / 1 / many blocks rule. The full
+  footer (newsletter with success state, localisation form, richer link
+  columns) is a dedicated build.
+{%- endcomment -%}
+
+{%- liquid
+  assign has_social = false
+  if settings.social_instagram_link != blank
+    assign has_social = true
+  elsif settings.social_facebook_link != blank
+    assign has_social = true
+  elsif settings.social_tiktok_link != blank
+    assign has_social = true
+  elsif settings.social_youtube_link != blank
+    assign has_social = true
+  endif
+-%}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <footer class="rpl-container rpl-section rpl-footer" role="contentinfo">
+    {%- if section.blocks.size > 0 -%}
+      <div class="rpl-footer__blocks">
+        {%- for block in section.blocks -%}
+          <div class="rpl-footer__block" {{ block.shopify_attributes }}>
+            {%- case block.type -%}
+              {%- when 'menu' -%}
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="rpl-footer__heading">{{ block.settings.heading | escape }}</h2>
+                {%- endif -%}
+                {%- assign footer_menu = block.settings.menu -%}
+                {%- if footer_menu != blank and footer_menu.links.size > 0 -%}
+                  <ul class="rpl-list-unstyled rpl-footer__links">
+                    {%- for link in footer_menu.links -%}
+                      <li>
+                        <a
+                          class="rpl-footer__link"
+                          href="{{ link.url }}"
+                          {% if link.current %}
+                            aria-current="page"
+                          {% endif %}
+                        >
+                          {{- link.title | escape -}}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+
+              {%- when 'text' -%}
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="rpl-footer__heading">{{ block.settings.heading | escape }}</h2>
+                {%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="rpl-rte">{{ block.settings.text }}</div>
+                {%- endif -%}
+
+              {%- when 'social' -%}
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="rpl-footer__heading">{{ block.settings.heading | escape }}</h2>
+                {%- endif -%}
+                {%- if has_social -%}
+                  <ul class="rpl-list-unstyled rpl-footer__social">
+                    {%- if settings.social_instagram_link != blank -%}
+                      <li>
+                        <a class="rpl-icon-button" href="{{ settings.social_instagram_link }}">
+                          <span class="rpl-visually-hidden">
+                            {{- 'general.social.follow_on' | t: platform: 'Instagram' -}}
+                          </span>
+                          {% render 'icon', icon: 'instagram' %}
+                        </a>
+                      </li>
+                    {%- endif -%}
+                    {%- if settings.social_facebook_link != blank -%}
+                      <li>
+                        <a class="rpl-icon-button" href="{{ settings.social_facebook_link }}">
+                          <span class="rpl-visually-hidden">
+                            {{- 'general.social.follow_on' | t: platform: 'Facebook' -}}
+                          </span>
+                          {% render 'icon', icon: 'facebook' %}
+                        </a>
+                      </li>
+                    {%- endif -%}
+                    {%- if settings.social_tiktok_link != blank -%}
+                      <li>
+                        <a class="rpl-icon-button" href="{{ settings.social_tiktok_link }}">
+                          <span class="rpl-visually-hidden">
+                            {{- 'general.social.follow_on' | t: platform: 'TikTok' -}}
+                          </span>
+                          {% render 'icon', icon: 'tiktok' %}
+                        </a>
+                      </li>
+                    {%- endif -%}
+                    {%- if settings.social_youtube_link != blank -%}
+                      <li>
+                        <a class="rpl-icon-button" href="{{ settings.social_youtube_link }}">
+                          <span class="rpl-visually-hidden">
+                            {{- 'general.social.follow_on' | t: platform: 'YouTube' -}}
+                          </span>
+                          {% render 'icon', icon: 'youtube' %}
+                        </a>
+                      </li>
+                    {%- endif -%}
+                  </ul>
+                {%- elsif request.design_mode -%}
+                  {%- comment -%}
+                    Editor-only hint. Never rendered on the live storefront, so
+                    an unconfigured social block degrades to nothing visible
+                    instead of an empty column with a stray label.
+                  {%- endcomment -%}
+                  <p class="rpl-muted rpl-caption">{{ 'sections.footer.blocks.social.no_links' | t }}</p>
+                {%- endif -%}
+            {%- endcase -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    <div class="rpl-footer__bottom">
+      <p class="rpl-caption rpl-muted rpl-footer__copyright">
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ 'sections.footer.copyright' | t }}
+      </p>
+
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <div class="rpl-footer__payment">
+          <h2 class="rpl-visually-hidden">{{ 'sections.footer.payment' | t }}</h2>
+          <ul class="rpl-list-unstyled rpl-footer__payment-list">
+            {%- for type in shop.enabled_payment_types -%}
+              <li>{{ type | payment_type_svg_tag: class: 'rpl-footer__payment-icon' }}</li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+  </footer>
+</div>
+
+{% stylesheet %}
+  .rpl-footer__blocks {
+    display: grid;
+    gap: var(--rpl-space-lg);
+    margin-block-end: var(--rpl-space-lg);
+  }
+
+  .rpl-footer__heading {
+    font-size: calc(1rem * var(--rpl-font-heading-scale));
+    margin-block-end: var(--rpl-space-2xs);
+  }
+
+  .rpl-footer__links {
+    display: grid;
+    gap: var(--rpl-space-3xs);
+  }
+
+  .rpl-footer__link {
+    text-decoration: none;
+  }
+
+  .rpl-footer__link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+
+  .rpl-footer__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rpl-space-3xs);
+  }
+
+  .rpl-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--rpl-space-sm);
+    padding-block-start: var(--rpl-space-sm);
+    border-block-start: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
+  }
+
+  .rpl-footer__copyright {
+    margin: 0;
+  }
+
+  .rpl-footer__payment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rpl-space-3xs);
+  }
+
+  .rpl-footer__payment-icon {
+    width: 38px;
+    height: 24px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .rpl-footer__blocks {
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.footer.name",
+  "tag": "section",
+  "class": "rpl-section-footer",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "t:sections.footer.settings.show_payment_icons.label",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-2"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "t:sections.footer.blocks.menu.name",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.all.heading.label",
+          "default": "Shop"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "t:sections.footer.blocks.menu.settings.menu.label",
+          "default": "footer"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "t:sections.footer.blocks.text.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.all.heading.label",
+          "default": "About us"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:sections.all.text.label",
+          "default": "<p>Tell customers what your brand refills, replaces, or replenishes.</p>"
+        }
+      ]
+    },
+    {
+      "type": "social",
+      "name": "t:sections.footer.blocks.social.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.all.heading.label",
+          "default": "Follow along"
+        },
+        {
+          "type": "paragraph",
+          "content": "t:sections.footer.blocks.social.settings.paragraph.content"
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  }
+}
+{% endschema %}

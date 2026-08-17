@@ -1,0 +1,12 @@
+# Theme Check configuration
+# https://shopify.dev/docs/storefronts/themes/tools/theme-check
+#
+# The project rule is ZERO errors and ZERO warnings. Nothing is disabled to
+# hide a real problem; anything switched off below has a stated reason.
+
+extends: theme-check:recommended
+
+ignore:
+  - node_modules/**
+  - .git/**
+  - PROGRESS.md

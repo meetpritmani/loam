@@ -1,0 +1,438 @@
+{%- comment -%}
+  SCAFFOLD — see PROGRESS.md.
+
+  Product grid + pagination + native filtering/sorting via Shopify Search &
+  Discovery (collection.filters / collection.sort_options) — no hand-rolled
+  filter index or price-range logic.
+
+  Filters, sort, and the grid all live inside one <form method="get">.
+  Existing filter/sort state is reflected as checked/selected controls (not
+  hidden fields duplicating them), so submitting the form — full reload with
+  no JS, or an auto-submit via rpl-facets.js with it — always carries every
+  active filter forward, not just the one that changed.
+
+  rpl-facets.js re-fetches this exact section through the Section Rendering
+  API (?section_id=...) and swaps it in, then updates the URL with
+  history.pushState — filtered results stay bookmarkable/shareable and
+  back/forward keep working, without a full reload. No filter markup is
+  duplicated in JS.
+
+  Handles: empty collection, collection with no description/image, products
+  with no image/price, no filters available (Search & Discovery not
+  configured), a filter with 0/1/many values, price range, several active
+  filters at once, and filters that produce zero matching products.
+{%- endcomment -%}
+
+<script src="{{ 'rpl-facets.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign products_per_page = section.settings.products_per_page
+  assign columns_desktop = section.settings.columns_desktop
+
+  assign show_facets = false
+  if collection.filters.size > 0 or collection.sort_options.size > 0
+    assign show_facets = true
+  endif
+
+  assign has_active_filters = false
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign has_active_filters = true
+      endif
+    else
+      for value in filter.values
+        if value.active
+          assign has_active_filters = true
+        endif
+      endfor
+    endif
+  endfor
+-%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .rpl-product-grid {
+    --rpl-grid-columns-mobile: {{ section.settings.columns_mobile }};
+    --rpl-grid-columns-desktop: {{ columns_desktop }};
+  }
+{% endstyle %}
+
+<div class="rpl-color-{{ section.settings.color_scheme }}">
+  <div class="rpl-container rpl-section">
+    <header class="rpl-collection__header">
+      <h1>{{ collection.title | escape }}</h1>
+      {%- if section.settings.show_description and collection.description != blank -%}
+        <div class="rpl-rte rpl-collection__description">{{ collection.description }}</div>
+      {%- endif -%}
+    </header>
+
+    <form
+      id="FacetsForm-{{ section.id }}"
+      class="rpl-facets-form"
+      method="get"
+      action="{{ collection.url }}"
+      data-facets-form
+      data-section-id="{{ section.id }}"
+    >
+      {%- if show_facets -%}
+        <details class="rpl-facets">
+          <summary class="rpl-facets__toggle">
+            {% render 'icon', icon: 'plus' %}
+            {{- 'products.facets.filter_and_sort' | t -}}
+          </summary>
+
+          <div class="rpl-facets__panel">
+            {%- if collection.sort_options.size > 0 -%}
+              <div class="rpl-field rpl-facets__sort">
+                <label class="rpl-field__label" for="SortBy-{{ section.id }}">
+                  {{- 'products.facets.sort_by_label' | t -}}
+                </label>
+                <select class="rpl-select" name="sort_by" id="SortBy-{{ section.id }}" data-facets-auto-submit>
+                  {%- for option in collection.sort_options -%}
+                    <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>
+                      {{- option.name -}}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- endif -%}
+
+            {%- if has_active_filters -%}
+              <div class="rpl-facets__active" data-facets-active>
+                {%- for filter in collection.filters -%}
+                  {%- unless filter.type == 'price_range' -%}
+                    {%- for value in filter.values -%}
+                      {%- if value.active -%}
+                        <a class="rpl-badge rpl-badge--subtle rpl-facets__pill" href="{{ value.url_to_remove }}" data-facets-link>
+                          {{- value.label | escape -}}
+                          {% render 'icon', icon: 'close' %}
+                        </a>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- endunless -%}
+                {%- endfor -%}
+                <a class="rpl-button rpl-button--link" href="{{ collection.url }}" data-facets-link>
+                  {{- 'products.facets.clear_all' | t -}}
+                </a>
+              </div>
+            {%- endif -%}
+
+            {%- if collection.filters.size > 0 -%}
+              <div class="rpl-facets__groups">
+                {%- for filter in collection.filters -%}
+                  <fieldset class="rpl-facets__group">
+                    <legend class="rpl-field__label">{{ filter.label | escape }}</legend>
+
+                    {%- case filter.type -%}
+                      {%- when 'list', 'boolean' -%}
+                        <ul class="rpl-list-unstyled rpl-facets__values">
+                          {%- for value in filter.values -%}
+                            <li>
+                              <label class="rpl-facets__value">
+                                <input
+                                  type="checkbox"
+                                  name="{{ value.param_name }}"
+                                  value="{{ value.value }}"
+                                  {% if value.active %}
+                                    checked
+                                  {% endif %}
+                                  {% if value.count == 0 and value.active == false %}
+                                    disabled
+                                  {% endif %}
+                                  data-facets-auto-submit
+                                >
+                                <span>{{ value.label | escape }} ({{ value.count }})</span>
+                              </label>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+
+                      {%- when 'price_range' -%}
+                        <div class="rpl-facets__price-range">
+                          <div class="rpl-field">
+                            <label class="rpl-visually-hidden" for="FilterPriceMin-{{ section.id }}">
+                              {{- 'products.facets.from' | t -}}
+                            </label>
+                            <input
+                              class="rpl-input"
+                              type="number"
+                              id="FilterPriceMin-{{ section.id }}"
+                              name="{{ filter.min_value.param_name }}"
+                              value="{{ filter.min_value.value }}"
+                              placeholder="0"
+                              min="0"
+                              inputmode="numeric"
+                              data-facets-auto-submit
+                            >
+                          </div>
+                          <div class="rpl-field">
+                            <label class="rpl-visually-hidden" for="FilterPriceMax-{{ section.id }}">
+                              {{- 'products.facets.to' | t -}}
+                            </label>
+                            <input
+                              class="rpl-input"
+                              type="number"
+                              id="FilterPriceMax-{{ section.id }}"
+                              name="{{ filter.max_value.param_name }}"
+                              value="{{ filter.max_value.value }}"
+                              placeholder="{{ filter.range_max }}"
+                              min="0"
+                              inputmode="numeric"
+                              data-facets-auto-submit
+                            >
+                          </div>
+                        </div>
+                    {%- endcase -%}
+                  </fieldset>
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+
+            <div class="rpl-facets__actions">
+              <button type="submit" class="rpl-button rpl-button--secondary">
+                {{- 'products.facets.apply' | t -}}
+              </button>
+            </div>
+          </div>
+        </details>
+      {%- endif -%}
+
+      {%- if collection.products_count > 0 -%}
+        {%- paginate collection.products by products_per_page -%}
+          <p class="rpl-visually-hidden" role="status">
+            {{- 'products.facets.product_count'
+              | t: product_count: collection.products.size, count: collection.products_count -}}
+          </p>
+
+          <ul class="rpl-grid rpl-product-grid" id="ProductGrid">
+            {%- for product in collection.products -%}
+              {%- liquid
+                # The first desktop row is above the fold on page 1, so those
+                # images load eagerly (lazy: false) to protect LCP.
+                assign card_lazy = true
+                if forloop.index <= columns_desktop and paginate.current_page == 1
+                  assign card_lazy = false
+                endif
+              -%}
+              <li class="rpl-reveal">
+                {% render 'product-card',
+                  product: product,
+                  lazy: card_lazy,
+                  show_vendor: section.settings.show_vendor
+                %}
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          {% render 'pagination', paginate: paginate, anchor: '#ProductGrid' %}
+        {%- endpaginate -%}
+      {%- else -%}
+        <div class="rpl-empty-state">
+          <p class="rpl-muted">{{ 'products.empty' | t }}</p>
+          {%- if has_active_filters -%}
+            <p class="rpl-muted">{{ 'products.use_fewer_filters_html' | t }}</p>
+            <a class="rpl-button rpl-button--secondary" href="{{ collection.url }}" data-facets-link>
+              {{- 'products.facets.clear_all' | t -}}
+            </a>
+          {%- else -%}
+            <a class="rpl-button rpl-button--secondary" href="{{ routes.all_products_collection_url }}">
+              {{- 'general.continue_shopping' | t -}}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </form>
+  </div>
+</div>
+
+{% stylesheet %}
+  .rpl-collection__header {
+    margin-block-end: var(--rpl-space-md);
+  }
+
+  /* Set by rpl-facets.js on the section wrapper while a filter/sort refresh
+     is in flight. .shopify-section is Shopify's own always-present wrapper
+     class, so this doesn't need a per-instance selector. */
+  .shopify-section[aria-busy='true'] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .rpl-collection__description {
+    max-width: 46rem;
+  }
+
+  .rpl-facets {
+    margin-block-end: var(--rpl-space-md);
+    border: 1px solid rgb(var(--rpl-color-foreground) / 0.15);
+    border-radius: var(--rpl-radius-sm);
+  }
+
+  .rpl-facets__toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--rpl-space-2xs);
+    padding: var(--rpl-space-sm);
+    list-style: none;
+    cursor: pointer;
+    font-weight: var(--rpl-font-body-weight-bold);
+  }
+
+  .rpl-facets__toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .rpl-facets__toggle .rpl-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .rpl-facets[open] .rpl-facets__toggle .rpl-icon {
+    transform: rotate(45deg);
+  }
+
+  .rpl-facets__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rpl-space-md);
+    padding: 0 var(--rpl-space-sm) var(--rpl-space-sm);
+  }
+
+  .rpl-facets__sort {
+    max-width: 20rem;
+  }
+
+  .rpl-facets__active {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--rpl-space-2xs);
+  }
+
+  .rpl-facets__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+  }
+
+  .rpl-facets__pill .rpl-icon {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  .rpl-facets__groups {
+    display: grid;
+    gap: var(--rpl-space-md);
+  }
+
+  .rpl-facets__group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .rpl-facets__group legend {
+    margin-block-end: var(--rpl-space-2xs);
+  }
+
+  .rpl-facets__values {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rpl-space-3xs);
+    max-height: 12rem;
+    overflow-y: auto;
+  }
+
+  .rpl-facets__value {
+    display: flex;
+    align-items: center;
+    gap: var(--rpl-space-2xs);
+    min-height: 32px;
+    cursor: pointer;
+  }
+
+  .rpl-facets__value:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .rpl-facets__price-range {
+    display: flex;
+    align-items: center;
+    gap: var(--rpl-space-2xs);
+    max-width: 16rem;
+  }
+
+  .rpl-facets__actions {
+    display: flex;
+  }
+
+  @media screen and (min-width: 750px) {
+    .rpl-facets__groups {
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.main_collection.name",
+  "tag": "section",
+  "class": "rpl-section-main-collection",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "label": "t:sections.main_collection.settings.products_per_page.label",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "label": "t:sections.all.columns_desktop.label",
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "t:sections.all.columns_mobile.label",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.all.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.all.columns_mobile.options__2.label"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "t:sections.main_collection.settings.show_description.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "t:sections.all.show_vendor.label",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}
