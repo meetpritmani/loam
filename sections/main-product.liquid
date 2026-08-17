@@ -40,7 +40,7 @@
       <div
         class="rpl-product__media"
         data-product-gallery
-        data-image-available-template="{{ 'products.product.media.image_available' | t: index: '{index}' | escape }}"
+        data-image-available-template="{{ 'products.product.media.image_available' | t: index: '__INDEX__' | escape }}"
         id="ProductGallery-{{ section.id }}"
       >
         {%- if product.media.size > 0 -%}

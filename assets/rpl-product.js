@@ -64,7 +64,7 @@
         }
         var template = gallery.getAttribute('data-image-available-template');
         if (template) {
-          RPL.announce(template.replace('{index}', index));
+          RPL.announce(template.replace('__INDEX__', index));
         }
       }
     }
