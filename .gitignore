@@ -4,3 +4,7 @@ Thumbs.db
 *.log
 .shopify/
 .env
+
+# Scratch test harnesses must never land in the theme
+*.mjs
+*profile/
