@@ -8,3 +8,6 @@ Thumbs.db
 # Scratch test harnesses must never land in the theme
 *.mjs
 *profile/
+
+# Internal build docs — not part of the distributable theme
+PROGRESS.md
