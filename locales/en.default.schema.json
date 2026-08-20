@@ -713,6 +713,15 @@
       "wide": "Wide",
       "tall": "Tall",
       "large": "Large"
+    },
+    "heading_level": {
+      "h1": "H1",
+      "h2": "H2",
+      "h3": "H3"
+    },
+    "count": {
+      "one": "1",
+      "two": "2"
     }
   }
 }

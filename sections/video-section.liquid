@@ -59,7 +59,9 @@
 
     <video-player
       class="video-section reveal"
-      data-external-src="{{ external_src }}"
+      {% if external_src != blank %}
+        data-external-src="{{ external_src }}"
+      {% endif %}
       {% if shopify_video != blank %}
         data-video-src="{{ shopify_video.sources[1].url | default: shopify_video.sources[0].url }}"
       {% endif %}

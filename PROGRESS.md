@@ -592,6 +592,97 @@ re-run once the media lands.
 
 ---
 
+## 2026-08-20 — Spec updated: CRO added as §9
+
+`CLAUDE.md` replaced with the version adding **§9 Conversion (CRO)**. Verified
+it is a pure superset before installing: §0-§8 identical apart from two
+cross-reference numbers, and everything after §9 identical apart from section
+renumbering (old §9-§15 became §10-§16). The previous copy is kept in the
+session scratchpad.
+
+New obligations: a banned-pattern list (§9.1), ten rules (§9.2), a coverage
+rule making every `.liquid` file accountable (§9.3), per-section /
+per-template / per-snippet requirement tables (§9.4-§9.6), a PDP spec (§9.7),
+a GA4 dataLayer snippet (§9.8), a `cro_*` settings group (§9.9), and a
+`CRO-CHECKLIST.md` buyer deliverable (§9.10).
+
+### Audited phases 1-3 against §9
+
+**§9.1 banned patterns: none present.** No countdown, no fabricated activity,
+no pre-ticked add-ons, no entry popup, no fake compare-at anchor, no disabled
+overlay close. `aggregateRating` appears only inside its real-review-metafield
+guard, which is what §9.1 requires rather than forbids. `price.liquid` already
+refuses any compare-at that is not Shopify's own `compare_at_price` — the EU
+Omnibus problem was designed out before the rule existed.
+
+**§9.2 rule 2 + §9.4 hero row — measured, not assumed.** Heading, support
+line and primary CTA are all fully visible without scrolling, and the CTA
+falls in the thumb zone:
+
+| Viewport | Heading | Support | CTA | CTA position |
+|---|---|---|---|---|
+| 375x812 | 257-399 | 415-492 | 508-556 | 508 of 812 (lower two-thirds) |
+| 360x640 | 227-370 | 386-463 | 479-527 | 479 of 640 (lower two-thirds) |
+
+**Section gaps found (phase 3 work, fixable now):**
+
+| Section | §9.4 requirement | Status |
+|---|---|---|
+| `announcement-bar` | optional session-persisting dismiss | not built |
+| `lookbook-collage` | carries a CTA when it has no hotspots | not built |
+| `video-section` | CTA below the video | not built |
+| `cart-drawer` | express checkout above the fold in the drawer | not built |
+
+**Not yet built, and correctly belonging to later phases:** the `cro_*`
+settings group (§9.9), `analytics-events.liquid` (§9.8), `CRO-CHECKLIST.md`
+(§9.10), and 18 of the 27 snippets in §9.6 — most of which are the PDP,
+collection and customer-template pieces scheduled for phase 4.
+
+Snippet inventory against §9.6: **9 of 27 built** — image-fallback,
+card-product, price, quantity-input, cart-line, meta-tags, structured-data,
+icon, theme-tokens.
+
+---
+
+## 2026-08-20 — Full regression, phases 1-3
+
+Re-tested everything before the spec change.
+
+**Static:** `theme check` 61 files 0 offenses; exactly two assets;
+`!important` confined to `.visually-hidden`; no `{% include %}`, bare
+`<img src>`, external host, per-section stylesheet, or `max-width` query;
+44 range settings all with 3+ steps; 17 sections with presets; all JSON valid.
+CSS 11.1KB / JS 11.0KB gzipped.
+
+Fixed during this pass: seven schema labels were literal strings (`"1"`,
+`"2"`, `"H1"`-`"H3"`). Arguably not English, but §4 is absolute, so they are
+now `t:options.count.*` and `t:options.heading_level.*`. Also removed an empty
+`data-external-src=""` that `video-section` emitted when no external video was
+set.
+
+**Live compiler:** 16 routes including pagination, sort, filter, empty search,
+404 and four products — all compile clean, zero Liquid errors in any rendered
+body, JSON-LD valid everywhere it is emitted.
+
+**Browser, driven for real:** 45 checks across foundation, chrome and sections
+— palette tokens, drawers, focus trap, cart add/quantity/remove through the
+Section Rendering API with the drawer element surviving the swap, mega menu
+with real three-level Liquid, announcement wrap, marquee duplication,
+lookbook tiling at 0% unfilled, count-up, accordion, click-to-play video,
+no overflow at 320/375/768/1440, one h1 with no skipped levels, 20/20
+keyboard focus rings, editor lifecycle, reduced motion. **All passed.**
+
+**Console: zero theme-originated errors or failed requests** across 14 page
+loads, with 71 Shopify-infrastructure messages filtered out.
+
+Three "failures" in this run were the harness, not the theme, and are recorded
+so they are not chased again: a straggler request from an injected test
+fixture bleeding across a navigation, `shopifysvc.com` analytics domains
+missing from the infrastructure filter, and the 404 route's own intended 404
+being counted as a fault.
+
+---
+
 ## Open, needs you
 
 **1. Phase 1 is verified and the checkpoint is met.** Nothing outstanding here
