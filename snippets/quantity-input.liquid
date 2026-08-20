@@ -1,0 +1,57 @@
+{%- comment -%}
+  quantity-input.liquid — a stepper around a real <input type="number">.
+
+  The input stays the source of truth so the control works with the keyboard
+  and with the form submitted normally when JavaScript has not loaded. The
+  buttons are progressive enhancement.
+
+  Params:
+    id       (string, required) — unique id for the input
+    name     (string, optional) — input name, defaults to 'quantity'
+    value    (number, required) — current quantity
+    min      (number, optional) — defaults to 0
+    max      (number, optional) — inventory ceiling, omitted when unlimited
+    label    (string, optional) — visually hidden label
+    line     (number, optional) — cart line index, for cart contexts
+{%- endcomment -%}
+
+{%- liquid
+  assign input_name = name | default: 'quantity'
+  assign input_min = min | default: 0
+  assign input_label = label | default: 'cart.quantity' | t
+-%}
+
+<quantity-input class="quantity">
+  <button
+    class="quantity__button"
+    type="button"
+    data-quantity-step="-1"
+    aria-label="{{ 'products.product.decrease_quantity' | t }}"
+  >
+    {%- render 'icon', icon: 'minus', size: 14 -%}
+  </button>
+
+  <label class="visually-hidden" for="{{ id }}">{{ input_label }}</label>
+  <input
+    class="quantity__input"
+    id="{{ id }}"
+    type="number"
+    name="{{ input_name }}"
+    value="{{ value }}"
+    min="{{ input_min }}"
+    {% if max %}max="{{ max }}"{% endif %}
+    step="1"
+    inputmode="numeric"
+    autocomplete="off"
+    {% if line %}data-line="{{ line }}"{% endif %}
+  >
+
+  <button
+    class="quantity__button"
+    type="button"
+    data-quantity-step="1"
+    aria-label="{{ 'products.product.increase_quantity' | t }}"
+  >
+    {%- render 'icon', icon: 'plus', size: 14 -%}
+  </button>
+</quantity-input>

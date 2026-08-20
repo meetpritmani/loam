@@ -1,52 +1,185 @@
 {%- comment -%}
-  PLACEHOLDER — the real header (mega menu, predictive search, mobile drawer,
-  cart count via Section Rendering API) is phase 2, build spec §9.
+  header.liquid — logo, navigation, and the three header entry points
+  (search, account, cart).
 
-  This version already sits inside <sticky-header> and uses icon.liquid, so
-  the shell, the sticky behaviour and the --header-height custom property are
-  live and testable from phase 1.
+  Navigation is built on native <details>/<summary>. That is deliberate: the
+  mega menu is keyboard operable and screen-reader announced before any
+  JavaScript runs, and <mega-menu> in global.js only adds hover-intent,
+  Escape, and close-on-focus-leave on top. A div-and-aria implementation
+  would be inert until the module loads.
+
+  The mega panel needs two levels of menu nesting to fill its columns: each
+  child of a top-level link becomes a column heading, and that child's own
+  links become the column. A menu only one level deep degrades to a single
+  row of column headings, which still reads correctly.
+
+  Feature cards are `menu_promo` blocks, matched to a top-level link by
+  title.
 {%- endcomment -%}
 
-<sticky-header class="sticky-header" data-sticky="{{ section.settings.enable_sticky }}">
-  <div class="header page-width">
-    <a class="header__logo link" href="{{ routes.root_url }}">
-      {%- if settings.logo != blank -%}
-        {%- render 'image-fallback',
-          image: settings.logo,
-          alt: shop.name,
-          widths: '120,240,360,480',
-          sizes: '(min-width: 750px) 200px, 140px',
-          loading: 'eager'
-        -%}
-      {%- else -%}
-        <span class="h4">{{ shop.name | escape }}</span>
-      {%- endif -%}
-    </a>
+{%- liquid
+  assign menu = section.settings.menu
 
-    <nav class="header__nav only-desktop" aria-label="{{ 'general.menu' | t }}">
-      <ul class="cluster">
-        {%- for link in section.settings.menu.links -%}
-          <li>
-            <a
-              class="link text-body-sm"
-              href="{{ link.url }}"
-              {% if link.active %}aria-current="page"{% endif %}
-            >
-              {{- link.title | escape -}}
-            </a>
-          </li>
-        {%- endfor -%}
-      </ul>
-    </nav>
+  assign cart_is_drawer = false
+  if settings.cart_type == 'drawer'
+    assign cart_is_drawer = true
+  endif
+-%}
+
+<sticky-header
+  class="sticky-header color-{{ section.settings.color_scheme }}"
+  data-sticky="{{ section.settings.enable_sticky }}"
+>
+  <div class="header page-width" style="--header-padding: {{ section.settings.padding }}px;">
+    <button
+      class="icon-button header__menu-toggle"
+      type="button"
+      data-drawer-toggle
+      aria-controls="menu-drawer"
+      aria-expanded="false"
+      aria-label="{{ 'accessibility.open_menu' | t }}"
+    >
+      {%- render 'icon', icon: 'menu' -%}
+    </button>
+
+    <div class="header__logo">
+      <a class="header__logo-link link" href="{{ routes.root_url }}">
+        {%- if settings.logo != blank -%}
+          {%- assign logo_sizes = settings.logo_width | default: 120 | append: 'px' -%}
+          {%- render 'image-fallback',
+            image: settings.logo,
+            alt: shop.name,
+            widths: '120,240,360,480',
+            sizes: logo_sizes,
+            class: 'header__logo-image',
+            loading: 'eager',
+            fetchpriority: 'high'
+          -%}
+        {%- else -%}
+          <span class="header__logo-text h4">{{ shop.name | escape }}</span>
+        {%- endif -%}
+      </a>
+    </div>
+
+    <mega-menu class="header__nav">
+      <nav aria-label="{{ 'general.menu' | t }}">
+        <ul class="header__nav-list">
+          {%- for link in menu.links -%}
+            {%- if link.links.size > 0 -%}
+              {%- liquid
+                assign promo_found = false
+                for block in section.blocks
+                  if block.type == 'menu_promo' and block.settings.menu_item != blank
+                    assign promo_target = block.settings.menu_item | downcase | strip
+                    assign link_title = link.title | downcase | strip
+                    if promo_target == link_title
+                      assign promo_found = true
+                      assign promo_block = block
+                    endif
+                  endif
+                endfor
+              -%}
+              <li class="header__nav-item">
+                <details class="mega" data-mega>
+                  <summary
+                    class="header__nav-link"
+                    {% if link.active or link.child_active %}
+                      aria-current="page"
+                    {% endif %}
+                  >
+                    {{ link.title | escape }}
+                    {%- render 'icon', icon: 'chevron-down', class: 'header__nav-chevron', size: 14 -%}
+                  </summary>
+
+                  <div class="mega__panel" data-mega-panel>
+                    <div class="page-width mega__inner">
+                      <div class="mega__columns">
+                        {%- for child in link.links -%}
+                          <div class="mega__column">
+                            <a class="mega__column-title link" href="{{ child.url }}">
+                              {{- child.title | escape -}}
+                            </a>
+                            {%- if child.links.size > 0 -%}
+                              <ul class="mega__column-list">
+                                {%- for grandchild in child.links -%}
+                                  <li>
+                                    <a class="mega__link link" href="{{ grandchild.url }}">
+                                      {{- grandchild.title | escape -}}
+                                    </a>
+                                  </li>
+                                {%- endfor -%}
+                              </ul>
+                            {%- endif -%}
+                          </div>
+                        {%- endfor -%}
+                      </div>
+
+                      {%- if promo_found -%}
+                        <a
+                          class="mega__promo"
+                          href="{{ promo_block.settings.link | default: link.url }}"
+                          {{ promo_block.shopify_attributes }}
+                        >
+                          <span class="mega__promo-media media media--portrait">
+                            {%- render 'image-fallback',
+                              image: promo_block.settings.image,
+                              fallback: 'demo-mega-feature.webp',
+                              alt: promo_block.settings.heading,
+                              width: 800,
+                              height: 1000,
+                              widths: '400,600,800',
+                              sizes: '260px'
+                            -%}
+                          </span>
+                          {%- if promo_block.settings.heading != blank -%}
+                            <span class="mega__promo-heading h5">
+                              {{- promo_block.settings.heading | escape -}}
+                            </span>
+                          {%- endif -%}
+                          {%- if promo_block.settings.text != blank -%}
+                            <span class="mega__promo-text text-body-sm text-muted">
+                              {{- promo_block.settings.text | escape -}}
+                            </span>
+                          {%- endif -%}
+                        </a>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                </details>
+              </li>
+            {%- else -%}
+              <li class="header__nav-item">
+                <a
+                  class="header__nav-link link"
+                  href="{{ link.url }}"
+                  {% if link.active %}
+                    aria-current="page"
+                  {% endif %}
+                >
+                  {{- link.title | escape -}}
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </nav>
+    </mega-menu>
 
     <div class="header__actions">
-      <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
+      <button
+        class="icon-button"
+        type="button"
+        data-drawer-toggle
+        aria-controls="search-drawer"
+        aria-expanded="false"
+        aria-label="{{ 'general.search' | t }}"
+      >
         {%- render 'icon', icon: 'search' -%}
-      </a>
+      </button>
 
       {%- if shop.customer_accounts_enabled -%}
         <a
-          class="icon-button only-desktop"
+          class="icon-button header__account"
           href="{{ routes.account_url }}"
           aria-label="{{ 'general.account' | t }}"
         >
@@ -54,36 +187,233 @@
         </a>
       {%- endif -%}
 
-      <a class="icon-button" href="{{ routes.cart_url }}" aria-label="{{ 'accessibility.cart_count' | t: count: cart.item_count }}">
-        {%- render 'icon', icon: 'cart' -%}
-        {%- if cart.item_count > 0 -%}
-          <span class="header__cart-count" aria-hidden="true">{{ cart.item_count }}</span>
-        {%- endif -%}
-      </a>
+      {%- if cart_is_drawer -%}
+        <button
+          class="icon-button header__cart"
+          type="button"
+          data-drawer-toggle
+          aria-controls="cart-drawer"
+          aria-expanded="false"
+          aria-label="{{ 'accessibility.cart_count' | t: count: cart.item_count }}"
+        >
+          {%- render 'icon', icon: 'cart' -%}
+          {%- render 'cart-count' -%}
+        </button>
+      {%- else -%}
+        <a
+          class="icon-button header__cart"
+          href="{{ routes.cart_url }}"
+          aria-label="{{ 'accessibility.cart_count' | t: count: cart.item_count }}"
+        >
+          {%- render 'icon', icon: 'cart' -%}
+          {%- render 'cart-count' -%}
+        </a>
+      {%- endif -%}
     </div>
   </div>
+
+  {%- comment -%} Mobile navigation {%- endcomment -%}
+  <loam-drawer id="menu-drawer" class="menu-drawer">
+    <div
+      class="drawer drawer--start color-{{ section.settings.color_scheme }}"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ 'general.menu' | t }}"
+    >
+      <div class="drawer__overlay" data-drawer-close></div>
+      <div class="drawer__panel">
+        <div class="drawer__header">
+          <span class="caption">{{ 'general.menu' | t }}</span>
+          <button
+            class="icon-button"
+            type="button"
+            data-drawer-close
+            aria-label="{{ 'accessibility.close_drawer' | t }}"
+          >
+            {%- render 'icon', icon: 'close' -%}
+          </button>
+        </div>
+
+        <nav class="drawer__body" aria-label="{{ 'general.menu' | t }}">
+          <ul class="menu-drawer__list">
+            {%- for link in menu.links -%}
+              <li>
+                {%- if link.links.size > 0 -%}
+                  <details class="menu-drawer__group">
+                    <summary class="menu-drawer__summary">
+                      {{ link.title | escape }}
+                      {%- render 'icon', icon: 'chevron-down', class: 'menu-drawer__chevron', size: 16 -%}
+                    </summary>
+                    <ul class="menu-drawer__sublist">
+                      <li>
+                        <a class="menu-drawer__link link" href="{{ link.url }}">
+                          {{- 'general.view_all' | t -}}
+                        </a>
+                      </li>
+                      {%- for child in link.links -%}
+                        <li>
+                          <a class="menu-drawer__link link" href="{{ child.url }}">
+                            {{- child.title | escape -}}
+                          </a>
+                          {%- if child.links.size > 0 -%}
+                            <ul class="menu-drawer__sublist menu-drawer__sublist--deep">
+                              {%- for grandchild in child.links -%}
+                                <li>
+                                  <a class="menu-drawer__link text-body-sm link" href="{{ grandchild.url }}">
+                                    {{- grandchild.title | escape -}}
+                                  </a>
+                                </li>
+                              {%- endfor -%}
+                            </ul>
+                          {%- endif -%}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </details>
+                {%- else -%}
+                  <a class="menu-drawer__link menu-drawer__link--top link" href="{{ link.url }}">
+                    {{- link.title | escape -}}
+                  </a>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+
+        {%- if shop.customer_accounts_enabled -%}
+          <div class="drawer__footer">
+            <a class="button button--secondary button--full" href="{{ routes.account_url }}">
+              {%- render 'icon', icon: 'account', size: 18 -%}
+              {{ 'general.account' | t }}
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </loam-drawer>
+
+  {%- comment -%} Search {%- endcomment -%}
+  <loam-drawer id="search-drawer">
+    <div
+      class="drawer drawer--top color-{{ section.settings.color_scheme }}"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ 'search.title' | t }}"
+    >
+      <div class="drawer__overlay" data-drawer-close></div>
+      <div class="drawer__panel drawer__panel--top">
+        <div class="page-width search-drawer__inner">
+          <form class="search-drawer__form" action="{{ routes.search_url }}" method="get" role="search">
+            <label class="visually-hidden" for="search-drawer-input">
+              {{- 'search.placeholder' | t -}}
+            </label>
+            {%- render 'icon', icon: 'search', class: 'search-drawer__icon' -%}
+            <input
+              class="search-drawer__input"
+              id="search-drawer-input"
+              type="search"
+              name="q"
+              placeholder="{{ 'search.placeholder' | t }}"
+              autocomplete="off"
+            >
+            <input type="hidden" name="options[prefix]" value="last">
+            <button class="button button--primary" type="submit">
+              {{- 'search.submit' | t -}}
+            </button>
+          </form>
+
+          <button
+            class="icon-button"
+            type="button"
+            data-drawer-close
+            aria-label="{{ 'accessibility.close_drawer' | t }}"
+          >
+            {%- render 'icon', icon: 'close' -%}
+          </button>
+        </div>
+      </div>
+    </div>
+  </loam-drawer>
 </sticky-header>
 
 {% schema %}
 {
   "name": "t:sections.header.name",
+  "class": "header-section",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "max_blocks": 6,
   "settings": [
     {
       "type": "link_list",
       "id": "menu",
       "label": "t:labels.menu",
+      "info": "t:sections.header.menu.info",
       "default": "main-menu"
     },
     {
-      "type": "link_list",
-      "id": "customer_account_menu",
-      "label": "t:labels.customer_account_menu"
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
     },
     {
       "type": "checkbox",
       "id": "enable_sticky",
       "label": "t:sections.header.enable_sticky.label",
       "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "t:labels.padding",
+      "min": 8,
+      "max": 32,
+      "step": 2,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 14
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu_promo",
+      "name": "t:sections.header.blocks.menu_promo.name",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.header.blocks.menu_promo.paragraph"
+        },
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "t:sections.header.blocks.menu_promo.menu_item.label",
+          "info": "t:sections.header.blocks.menu_promo.menu_item.info",
+          "default": "Shop"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:labels.heading",
+          "default": "New in — Autumn"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Wool loungers, back in three new colourways."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:labels.link"
+        }
+      ]
     }
   ]
 }

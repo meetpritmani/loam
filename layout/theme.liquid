@@ -73,6 +73,17 @@
     {% sections 'footer-group' %}
 
     {%- comment -%}
+      The cart drawer is a static section rather than part of a section
+      group: it has to exist on every template, it is never reordered, and
+      the Section Rendering API can target it by name from anywhere. It is
+      not rendered at all when the merchant has chosen a cart page, so the
+      markup and its JS never load for stores that do not use it.
+    {%- endcomment -%}
+    {%- if settings.cart_type == 'drawer' -%}
+      {% section 'cart-drawer' %}
+    {%- endif -%}
+
+    {%- comment -%}
       The single polite live region for the whole theme. Cart updates, form
       results, and any failed fetch announce through global.js's announce().
     {%- endcomment -%}

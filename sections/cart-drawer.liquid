@@ -1,0 +1,182 @@
+{%- comment -%}
+  cart-drawer.liquid — the cart, as a drawer.
+
+  Rendered statically from theme.liquid on every page (not placed in a
+  template), and only when the cart type setting is "drawer".
+
+  Section Rendering API contract
+  -----------------------------
+  global.js posts to /cart/change.js or /cart/add.js with
+  `sections=cart-drawer,cart-count`, then swaps in the returned markup. It
+  replaces the innerHTML of `[data-cart-body]` and `[data-cart-footer]`
+  ONLY — never the <loam-drawer> element itself. Replacing the custom
+  element while it is open would destroy the focus trap, the scroll lock,
+  and the reference to whatever opened it, stranding the shopper in a
+  drawer they cannot close with the keyboard.
+
+  So: the two data-cart-* wrappers are the contract. Do not remove them, and
+  do not move state onto the element that surrounds them.
+{%- endcomment -%}
+
+{%- liquid
+  assign threshold = settings.cart_free_shipping_threshold | times: 100
+  assign show_progress = false
+  if settings.cart_show_free_shipping_bar and threshold > 0
+    assign show_progress = true
+  endif
+
+  assign remaining = threshold | minus: cart.total_price
+  comment
+    Formatted here, not inline in the `t:` call. A filter after a `t:`
+    argument binds to the output of `t`, not to the argument, so
+    `t: amount: remaining | money` would money-format the finished sentence.
+  endcomment
+  assign remaining_money = remaining | money
+
+  assign progress_percent = 0
+  if threshold > 0
+    assign progress_percent = cart.total_price | times: 100 | divided_by: threshold
+    if progress_percent > 100
+      assign progress_percent = 100
+    endif
+  endif
+-%}
+
+<loam-drawer id="cart-drawer">
+  <div
+    class="drawer color-{{ section.settings.color_scheme }}"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cart-drawer-title"
+  >
+    <div class="drawer__overlay" data-drawer-close></div>
+
+    <div class="drawer__panel">
+      <div class="drawer__header">
+        <h2 class="h5" id="cart-drawer-title">
+          {{ 'cart.title' | t }}
+        </h2>
+        <button
+          class="icon-button"
+          type="button"
+          data-drawer-close
+          aria-label="{{ 'accessibility.close_drawer' | t }}"
+        >
+          {%- render 'icon', icon: 'close' -%}
+        </button>
+      </div>
+
+      <cart-items class="drawer__body" data-cart-body>
+        {%- if cart.item_count == 0 -%}
+          <div class="cart-drawer__empty stack">
+            <p class="text-muted">{{ 'cart.empty' | t }}</p>
+            <a class="button button--primary" href="{{ routes.all_products_collection_url }}">
+              {{ 'cart.continue_shopping' | t }}
+            </a>
+          </div>
+        {%- else -%}
+          {%- if show_progress -%}
+            <div class="shipping-bar">
+              <p class="shipping-bar__label text-body-sm">
+                {%- if remaining > 0 -%}
+                  {{ 'cart.free_shipping_progress_html' | t: amount: remaining_money }}
+                {%- else -%}
+                  {%- render 'icon', icon: 'check', size: 14 -%}
+                  {{ 'cart.free_shipping_reached' | t }}
+                {%- endif -%}
+              </p>
+              <div
+                class="shipping-bar__track"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ progress_percent }}"
+                aria-label="{{ 'cart.free_shipping_reached' | t }}"
+              >
+                <span class="shipping-bar__fill" style="--progress: {{ progress_percent }}%;"></span>
+              </div>
+            </div>
+          {%- endif -%}
+
+          <ul class="cart-lines">
+            {%- for item in cart.items -%}
+              {%- render 'cart-line', item: item, context: 'drawer' -%}
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </cart-items>
+
+      {%- comment -%}
+        The wrapper is rendered unconditionally, empty cart or not. If it
+        only existed when the cart had items, the first add-to-cart would
+        have nothing to swap into and the totals would never appear until a
+        full page load.
+      {%- endcomment -%}
+      <div class="drawer__footer" data-cart-footer>
+        {%- if cart.item_count > 0 -%}
+          {%- if settings.cart_show_note -%}
+            <details class="cart-drawer__note">
+              <summary class="button--tertiary">{{ 'cart.note' | t }}</summary>
+              <label class="visually-hidden" for="cart-drawer-note">{{ 'cart.note' | t }}</label>
+              <textarea
+                class="field__textarea"
+                id="cart-drawer-note"
+                name="note"
+                placeholder="{{ 'cart.note_placeholder' | t }}"
+                data-cart-note
+              >{{ cart.note }}</textarea>
+            </details>
+          {%- endif -%}
+
+          {%- if cart.cart_level_discount_applications.size > 0 -%}
+            <ul class="cart-drawer__discounts">
+              {%- for discount in cart.cart_level_discount_applications -%}
+                <li class="cart-drawer__row text-body-sm">
+                  <span class="badge">{{ discount.title | escape }}</span>
+                  <span>−{{ discount.total_allocated_amount | money }}</span>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+
+          <div class="cart-drawer__row cart-drawer__subtotal">
+            <span class="h6">{{ 'cart.subtotal' | t }}</span>
+            <span class="price">
+              {%- if settings.show_currency_code -%}
+                {{ cart.total_price | money_with_currency }}
+              {%- else -%}
+                {{ cart.total_price | money }}
+              {%- endif -%}
+            </span>
+          </div>
+
+          <p class="field__hint">{{ 'cart.taxes_and_shipping_note' | t }}</p>
+
+          <form action="{{ routes.cart_url }}" method="post" novalidate>
+            <button class="button button--primary button--full" type="submit" name="checkout">
+              {{ 'cart.checkout' | t }}
+            </button>
+          </form>
+
+          <a class="button button--tertiary cart-drawer__view" href="{{ routes.cart_url }}">
+            {{ 'cart.view_cart' | t }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</loam-drawer>
+
+{% schema %}
+{
+  "name": "t:sections.cart_drawer.name",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-surface"
+    }
+  ]
+}
+{% endschema %}

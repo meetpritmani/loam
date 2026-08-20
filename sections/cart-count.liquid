@@ -1,0 +1,18 @@
+{%- comment -%}
+  A section wrapper around the cart-count snippet, so cart updates can ask
+  the Section Rendering API for just the bubble
+  (`/cart/change.js?sections=cart-drawer,cart-count`) instead of re-rendering
+  the whole header — which would mean recompiling the mega menu on every
+  quantity change.
+
+  Never placed in a template; it exists only as a rendering target.
+{%- endcomment -%}
+
+{%- render 'cart-count' -%}
+
+{% schema %}
+{
+  "name": "t:sections.cart_count.name",
+  "settings": []
+}
+{% endschema %}

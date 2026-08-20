@@ -20,6 +20,11 @@
    ========================================================================== */
 
 const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
+const CAN_HOVER = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+// Marks that the module parsed and is running, so CSS can hide the no-JS
+// fallbacks (the localization submit buttons) without a flash.
+document.documentElement.classList.add('js');
 
 const FOCUSABLE = [
   'a[href]',
@@ -367,3 +372,427 @@ class LoamDrawer extends HTMLElement {
 if (!customElements.get('loam-drawer')) {
   customElements.define('loam-drawer', LoamDrawer);
 }
+
+/* ==========================================================================
+   <mega-menu>
+   Progressive enhancement over native <details>/<summary>. The menu already
+   opens on click and is keyboard operable with no JavaScript at all; this
+   adds hover-intent for pointer users, Escape to close, and closing when
+   focus or the pointer leaves the menu entirely.
+   ========================================================================== */
+
+class MegaMenu extends HTMLElement {
+  connectedCallback() {
+    this.openDelay = 80;
+    this.closeDelay = 220;
+    this.timer = null;
+
+    this.onToggle = this.onToggle.bind(this);
+    this.onKeydown = this.onKeydown.bind(this);
+    this.onFocusOut = this.onFocusOut.bind(this);
+    this.onPointerOver = this.onPointerOver.bind(this);
+    this.onPointerLeave = this.onPointerLeave.bind(this);
+
+    // `toggle` does not bubble, so it is captured rather than delegated.
+    this.addEventListener('toggle', this.onToggle, true);
+    this.addEventListener('keydown', this.onKeydown);
+    this.addEventListener('focusout', this.onFocusOut);
+
+    if (CAN_HOVER.matches) {
+      this.addEventListener('pointerover', this.onPointerOver);
+      this.addEventListener('pointerleave', this.onPointerLeave);
+    }
+  }
+
+  disconnectedCallback() {
+    window.clearTimeout(this.timer);
+    this.removeEventListener('toggle', this.onToggle, true);
+    this.removeEventListener('keydown', this.onKeydown);
+    this.removeEventListener('focusout', this.onFocusOut);
+    this.removeEventListener('pointerover', this.onPointerOver);
+    this.removeEventListener('pointerleave', this.onPointerLeave);
+  }
+
+  /** @returns {HTMLDetailsElement[]} */
+  get panels() {
+    return Array.from(this.querySelectorAll('[data-mega]'));
+  }
+
+  /** @param {HTMLDetailsElement} [except] */
+  closeAll(except) {
+    this.panels.forEach((panel) => {
+      if (panel !== except) panel.open = false;
+    });
+  }
+
+  /** Only one mega panel may be open at a time. */
+  onToggle(event) {
+    const panel = event.target;
+    if (panel instanceof HTMLDetailsElement && panel.open) this.closeAll(panel);
+  }
+
+  onPointerOver(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const panel = target.closest('[data-mega]');
+    window.clearTimeout(this.timer);
+
+    if (!panel) {
+      // Hovering a top-level link that has no dropdown still dismisses an
+      // open panel — otherwise it hangs over the page.
+      this.timer = window.setTimeout(() => this.closeAll(), this.closeDelay);
+      return;
+    }
+
+    this.timer = window.setTimeout(() => {
+      panel.open = true;
+      this.closeAll(panel);
+    }, this.openDelay);
+  }
+
+  onPointerLeave() {
+    window.clearTimeout(this.timer);
+    this.timer = window.setTimeout(() => this.closeAll(), this.closeDelay);
+  }
+
+  onKeydown(event) {
+    if (event.key !== 'Escape') return;
+    const open = this.panels.find((panel) => panel.open);
+    if (!open) return;
+    event.preventDefault();
+    open.open = false;
+    // Focus must land somewhere predictable, not on <body>.
+    open.querySelector('summary')?.focus();
+  }
+
+  onFocusOut() {
+    // Where focus actually landed is not reliably readable synchronously, so
+    // check on the next frame.
+    window.requestAnimationFrame(() => {
+      if (!this.contains(document.activeElement)) this.closeAll();
+    });
+  }
+}
+
+if (!customElements.get('mega-menu')) {
+  customElements.define('mega-menu', MegaMenu);
+}
+
+/* ==========================================================================
+   <announcement-bar>
+   Crossfades between stacked messages. Messages are absolutely positioned on
+   top of each other so the bar's height never changes mid-rotation.
+
+   Auto-rotation stops entirely under reduced motion while the previous and
+   next buttons keep working — the shopper can still read every message, they
+   are just not moved through them. It also pauses on hover, on focus, and
+   when the tab is hidden.
+   ========================================================================== */
+
+class AnnouncementBar extends HTMLElement {
+  connectedCallback() {
+    this.slides = Array.from(this.querySelectorAll('[data-announcement-slide]'));
+    if (this.slides.length < 2) return;
+
+    this.index = 0;
+    this.interval = Number(this.dataset.interval) || 6000;
+    this.autoplay = this.dataset.rotate === 'true' && !PREFERS_REDUCED_MOTION.matches;
+
+    this.onClick = this.onClick.bind(this);
+    this.pause = this.pause.bind(this);
+    this.resume = this.resume.bind(this);
+    this.onVisibilityChange = this.onVisibilityChange.bind(this);
+
+    this.addEventListener('click', this.onClick);
+    this.addEventListener('pointerenter', this.pause);
+    this.addEventListener('pointerleave', this.resume);
+    this.addEventListener('focusin', this.pause);
+    this.addEventListener('focusout', this.resume);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+
+    this.resume();
+  }
+
+  disconnectedCallback() {
+    this.pause();
+    this.removeEventListener('click', this.onClick);
+    this.removeEventListener('pointerenter', this.pause);
+    this.removeEventListener('pointerleave', this.resume);
+    this.removeEventListener('focusin', this.pause);
+    this.removeEventListener('focusout', this.resume);
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
+  }
+
+  onClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const control = target.closest('[data-announcement-step]');
+    if (!control) return;
+    this.pause();
+    this.go(this.index + Number(control.dataset.announcementStep));
+    this.resume();
+  }
+
+  onVisibilityChange() {
+    if (document.hidden) this.pause();
+    else this.resume();
+  }
+
+  pause() {
+    window.clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  resume() {
+    if (!this.autoplay || this.timer) return;
+    this.timer = window.setInterval(() => this.go(this.index + 1), this.interval);
+  }
+
+  /** @param {number} next */
+  go(next) {
+    const total = this.slides.length;
+    const index = ((next % total) + total) % total;
+
+    this.slides.forEach((slide, i) => {
+      const isActive = i === index;
+      slide.classList.toggle('is-active', isActive);
+      if (isActive) slide.removeAttribute('aria-hidden');
+      else slide.setAttribute('aria-hidden', 'true');
+    });
+
+    this.index = index;
+  }
+}
+
+if (!customElements.get('announcement-bar')) {
+  customElements.define('announcement-bar', AnnouncementBar);
+}
+
+/* ==========================================================================
+   <quantity-input>
+   The <input type="number"> stays the source of truth so the control still
+   works when this module has not loaded; the buttons only step it and fire a
+   change event, which is what the cart listens for.
+   ========================================================================== */
+
+class QuantityInput extends HTMLElement {
+  connectedCallback() {
+    this.input = this.querySelector('input');
+    this.onClick = this.onClick.bind(this);
+    this.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.onClick);
+  }
+
+  onClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('[data-quantity-step]');
+    if (!button || !this.input) return;
+
+    event.preventDefault();
+    const step = Number(button.dataset.quantityStep) || 0;
+    const min = Number(this.input.min) || 0;
+    const max = this.input.max === '' ? Infinity : Number(this.input.max);
+    const next = Math.min(max, Math.max(min, Number(this.input.value) + step));
+
+    if (next === Number(this.input.value)) return;
+    this.input.value = String(next);
+    this.input.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
+if (!customElements.get('quantity-input')) {
+  customElements.define('quantity-input', QuantityInput);
+}
+
+/* ==========================================================================
+   Cart
+   Every mutation goes through the Section Rendering API: the request asks
+   Shopify to re-render the cart sections and hands back their HTML, which is
+   swapped in wholesale. Cart markup is never rebuilt in JavaScript, so Liquid
+   stays the single source of truth for money formatting, discounts, and the
+   free-shipping threshold.
+   ========================================================================== */
+
+const CART_SECTIONS = 'cart-drawer,cart-count';
+
+function cartRoute(path) {
+  const root = window.Shopify?.routes?.root || '/';
+  return root + path;
+}
+
+const Cart = {
+  /**
+   * @param {string} url
+   * @param {object} payload
+   * @returns {Promise<object|null>} the cart JSON, or null on failure
+   */
+  async post(url, payload) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          ...payload,
+          sections: CART_SECTIONS,
+          sections_url: window.location.pathname,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Shopify puts the human-readable reason in `description`, e.g.
+        // "You can only add 3 of this item to your cart."
+        throw new Error(data?.description || data?.message || response.statusText);
+      }
+
+      this.render(data.sections);
+      document.dispatchEvent(new CustomEvent('cart:updated', { detail: { cart: data } }));
+      return data;
+    } catch (error) {
+      console.warn('[Loam] Cart update failed:', error);
+      announce(error?.message || '');
+      return null;
+    }
+  },
+
+  /**
+   * Swap the rendered sections in.
+   *
+   * Only the inner regions are replaced. The <loam-drawer> element itself is
+   * left alone: replacing it while open would tear down the focus trap and
+   * the scroll lock mid-interaction.
+   * @param {Record<string,string>|undefined} sections
+   */
+  render(sections) {
+    if (!sections) return;
+    const parser = new DOMParser();
+
+    const drawerHtml = sections['cart-drawer'];
+    if (drawerHtml) {
+      const parsed = parser.parseFromString(drawerHtml, 'text/html');
+      ['[data-cart-body]', '[data-cart-footer]'].forEach((selector) => {
+        const next = parsed.querySelector(selector);
+        const current = document.querySelector(selector);
+        if (next && current) current.innerHTML = next.innerHTML;
+      });
+    }
+
+    const countHtml = sections['cart-count'];
+    if (countHtml) {
+      const parsed = parser.parseFromString(countHtml, 'text/html');
+      const next = parsed.querySelector('.cart-count');
+      if (next) {
+        document.querySelectorAll('.cart-count').forEach((node) => {
+          node.replaceWith(next.cloneNode(true));
+        });
+      }
+    }
+  },
+
+  /**
+   * @param {number} line 1-based cart line
+   * @param {number} quantity
+   */
+  change(line, quantity) {
+    return this.post(cartRoute('cart/change.js'), { line, quantity });
+  },
+
+  /** @param {string} note */
+  updateNote(note) {
+    return this.post(cartRoute('cart/update.js'), { note });
+  },
+};
+
+/* --------------------------------------------------------------------------
+   <cart-items>
+   Owns the line-level controls inside the cart drawer. Quantity changes are
+   debounced so holding the stepper fires one request, not eight.
+   -------------------------------------------------------------------------- */
+
+class CartItems extends HTMLElement {
+  connectedCallback() {
+    this.debounce = null;
+
+    this.onChange = this.onChange.bind(this);
+    this.onClick = this.onClick.bind(this);
+
+    this.addEventListener('change', this.onChange);
+    this.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    window.clearTimeout(this.debounce);
+    this.removeEventListener('change', this.onChange);
+    this.removeEventListener('click', this.onClick);
+  }
+
+  /** @param {boolean} busy */
+  setBusy(busy) {
+    this.toggleAttribute('aria-busy', busy);
+  }
+
+  onChange(event) {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || !input.dataset.line) return;
+
+    const line = Number(input.dataset.line);
+    const quantity = Math.max(0, Number(input.value) || 0);
+
+    window.clearTimeout(this.debounce);
+    this.debounce = window.setTimeout(async () => {
+      this.setBusy(true);
+      await Cart.change(line, quantity);
+      this.setBusy(false);
+    }, 350);
+  }
+
+  async onClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const remove = target.closest('[data-cart-remove]');
+    if (!remove) return;
+
+    event.preventDefault();
+    this.setBusy(true);
+    await Cart.change(Number(remove.getAttribute('data-cart-remove')), 0);
+    this.setBusy(false);
+  }
+}
+
+if (!customElements.get('cart-items')) {
+  customElements.define('cart-items', CartItems);
+}
+
+/* --------------------------------------------------------------------------
+   Cart note. Delegated from the document because the textarea sits inside the
+   footer region that is replaced on every cart update, so a listener bound
+   directly to it would not survive the first change.
+   -------------------------------------------------------------------------- */
+
+let noteDebounce = null;
+document.addEventListener('input', (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLTextAreaElement) || !target.hasAttribute('data-cart-note')) return;
+  window.clearTimeout(noteDebounce);
+  noteDebounce = window.setTimeout(() => Cart.updateNote(target.value), 600);
+});
+
+/* ==========================================================================
+   Localization
+   The selects live inside real <form> elements with a submit button, so
+   changing market works with no JavaScript. When this module is running the
+   button is hidden by CSS and changing the select submits directly.
+   ========================================================================== */
+
+document.addEventListener('change', (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLSelectElement) || !target.hasAttribute('data-localization-select')) {
+    return;
+  }
+  target.form?.submit();
+});

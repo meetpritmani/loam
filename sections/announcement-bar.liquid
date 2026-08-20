@@ -1,0 +1,192 @@
+{%- comment -%}
+  announcement-bar.liquid — rotating messages, with optional country and
+  language selectors.
+
+  Rotation is a crossfade between absolutely-stacked messages, so the bar's
+  height is fixed by the tallest one and never reflows mid-rotation. With one
+  block, or under reduced motion, nothing rotates and the controls are not
+  rendered at all — manual controls for a single item would be noise.
+{%- endcomment -%}
+
+{%- liquid
+  assign scheme = section.settings.color_scheme
+  assign block_count = section.blocks.size
+  assign should_rotate = false
+  if block_count > 1 and section.settings.rotate
+    assign should_rotate = true
+  endif
+-%}
+
+{%- if block_count > 0 or section.settings.show_country or section.settings.show_language -%}
+  <div
+    class="announcement-bar color-{{ scheme }}"
+    style="--announcement-padding: {{ section.settings.padding }}px;"
+  >
+    <div class="page-width announcement-bar__inner">
+      {%- if block_count > 0 -%}
+        <announcement-bar
+          class="announcement-bar__messages"
+          data-rotate="{{ should_rotate }}"
+          data-interval="{{ section.settings.rotate_interval | times: 1000 }}"
+          {% if should_rotate %}
+            role="region"
+            aria-roledescription="{{ 'announcement.label' | t }}"
+            aria-label="{{ 'announcement.label' | t }}"
+          {% endif %}
+        >
+          {%- if should_rotate -%}
+            <button
+              class="announcement-bar__control icon-button"
+              type="button"
+              data-announcement-step="-1"
+              aria-label="{{ 'announcement.previous' | t }}"
+            >
+              {%- render 'icon', icon: 'chevron-left', size: 16 -%}
+            </button>
+          {%- endif -%}
+
+          <div class="announcement-bar__track">
+            {%- for block in section.blocks -%}
+              <div
+                class="announcement-bar__message{% if forloop.first %} is-active{% endif %}"
+                data-announcement-slide
+                {% if should_rotate and forloop.first == false %}aria-hidden="true"{% endif %}
+                {{ block.shopify_attributes }}
+              >
+                {%- if block.settings.link != blank -%}
+                  <a class="announcement-bar__link" href="{{ block.settings.link }}">
+                    {{- block.settings.text | escape -}}
+                  </a>
+                {%- else -%}
+                  <span>{{ block.settings.text | escape }}</span>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {%- if should_rotate -%}
+            <button
+              class="announcement-bar__control icon-button"
+              type="button"
+              data-announcement-step="1"
+              aria-label="{{ 'announcement.next' | t }}"
+            >
+              {%- render 'icon', icon: 'chevron-right', size: 16 -%}
+            </button>
+          {%- endif -%}
+        </announcement-bar>
+      {%- endif -%}
+
+      {%- render 'localization-form',
+        show_country: section.settings.show_country,
+        show_language: section.settings.show_language,
+        id_prefix: 'announcement'
+      -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.announcement_bar.name",
+  "class": "announcement-bar-section",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-ink"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "t:labels.padding",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "t:sections.announcement_bar.rotation.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "rotate",
+      "label": "t:sections.announcement_bar.rotate.label",
+      "info": "t:sections.announcement_bar.rotate.info",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "rotate_interval",
+      "label": "t:sections.announcement_bar.rotate_interval.label",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "unit": "t:sections.announcement_bar.rotate_interval.unit",
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "t:sections.announcement_bar.localization.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country",
+      "label": "t:sections.announcement_bar.show_country.label",
+      "info": "t:sections.announcement_bar.show_country.info",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_language",
+      "label": "t:sections.announcement_bar.show_language.label",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "t:sections.announcement_bar.blocks.announcement.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Free shipping over $75. Free returns for 30 days."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:labels.link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.announcement_bar.name",
+      "blocks": [
+        {
+          "type": "announcement",
+          "settings": { "text": "Free shipping over $75. Free returns for 30 days." }
+        },
+        {
+          "type": "announcement",
+          "settings": { "text": "Carbon neutral shipping on every order." }
+        },
+        {
+          "type": "announcement",
+          "settings": { "text": "Machine washable. Wear them everywhere." }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

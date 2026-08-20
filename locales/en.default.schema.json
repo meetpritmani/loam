@@ -230,12 +230,47 @@
   "sections": {
     "header": {
       "name": "Header",
+      "menu": {
+        "info": "For the mega menu to fill four columns, the menu needs three levels: a top-level item, its children, and their children."
+      },
       "enable_sticky": {
         "label": "Stick to the top of the screen on scroll"
+      },
+      "blocks": {
+        "menu_promo": {
+          "name": "Menu feature card",
+          "paragraph": "Adds an image card to the right of one menu item’s dropdown.",
+          "menu_item": {
+            "label": "Menu item",
+            "info": "Must match a top-level menu item exactly, for example \"Shop\". Capitalisation does not matter."
+          }
+        }
       }
     },
     "footer": {
-      "name": "Footer"
+      "name": "Footer",
+      "bottom_bar": {
+        "content": "Bottom bar"
+      },
+      "copyright_extra": {
+        "label": "Additional copyright text",
+        "info": "Appears after the year and your store name."
+      },
+      "show_social": {
+        "label": "Show social links",
+        "info": "Set the links in Theme settings → Social media."
+      },
+      "blocks": {
+        "menu": {
+          "name": "Menu"
+        },
+        "newsletter": {
+          "name": "Newsletter",
+          "fine_print": {
+            "label": "Fine print"
+          }
+        }
+      }
     },
     "main_404": {
       "name": "404 page"
@@ -266,6 +301,41 @@
     },
     "main_search": {
       "name": "Search results"
+    },
+    "announcement_bar": {
+      "name": "Announcement bar",
+      "rotation": {
+        "content": "Rotation"
+      },
+      "rotate": {
+        "label": "Rotate through messages",
+        "info": "Rotation always stops for visitors who have reduced motion turned on. The arrows keep working."
+      },
+      "rotate_interval": {
+        "label": "Change every",
+        "unit": "s"
+      },
+      "localization": {
+        "content": "Country and language"
+      },
+      "show_country": {
+        "label": "Show country/region selector",
+        "info": "Only appears when your store sells in more than one country."
+      },
+      "show_language": {
+        "label": "Show language selector"
+      },
+      "blocks": {
+        "announcement": {
+          "name": "Message"
+        }
+      }
+    },
+    "cart_drawer": {
+      "name": "Cart drawer"
+    },
+    "cart_count": {
+      "name": "Cart count"
     }
   },
   "labels": {
@@ -274,6 +344,14 @@
     "show_payment_icons": "Show payment icons",
     "color_scheme": "Color scheme",
     "padding_top": "Top padding",
-    "padding_bottom": "Bottom padding"
+    "padding_bottom": "Bottom padding",
+    "image": "Image",
+    "heading": "Heading",
+    "link": "Link",
+    "text": "Text",
+    "padding": "Padding"
+  },
+  "general": {
+    "padding": "Padding"
   }
 }

@@ -1,0 +1,17 @@
+{%- comment -%}
+  cart-count.liquid — the bubble on the header cart button.
+
+  Always rendered, even at zero, and positioned absolutely over the icon, so
+  adding the first item never changes the header's layout. Hidden from
+  assistive tech because the button's own aria-label already carries the
+  count as a sentence.
+
+  Params: none.
+{%- endcomment -%}
+
+<span
+  class="cart-count{% if cart.item_count == 0 %} cart-count--empty{% endif %}"
+  aria-hidden="true"
+>
+  {{- cart.item_count -}}
+</span>

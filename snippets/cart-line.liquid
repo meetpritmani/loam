@@ -1,0 +1,96 @@
+{%- comment -%}
+  cart-line.liquid — one line item. Shared by the cart drawer and, from
+  phase 4, the cart page, so the two can never drift apart.
+
+  Params:
+    item    (line_item, required)
+    context (string, optional) — 'drawer' or 'page', used only for the id
+                                 prefix so both can be on the page at once
+{%- endcomment -%}
+
+{%- liquid
+  assign prefix = context | default: 'drawer'
+  assign line = item.index | plus: 1
+  assign input_id = prefix | append: '-quantity-' | append: line
+-%}
+
+<li class="cart-line" data-cart-line="{{ line }}" data-key="{{ item.key }}">
+  <a class="cart-line__media media media--portrait" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+    {%- render 'image-fallback',
+      image: item.image,
+      alt: item.title,
+      widths: '150,200,300,400',
+      sizes: '100px'
+    -%}
+  </a>
+
+  <div class="cart-line__body">
+    <div class="cart-line__heading">
+      <a class="cart-line__title link" href="{{ item.url }}">{{ item.product.title | escape }}</a>
+
+      {%- unless item.product.has_only_default_variant -%}
+        <p class="cart-line__variant text-body-sm text-muted">{{ item.variant.title | escape }}</p>
+      {%- endunless -%}
+
+      {%- if item.properties.size > 0 -%}
+        <ul class="cart-line__properties text-body-sm text-muted">
+          {%- for property in item.properties -%}
+            {%- assign first_character = property.first | slice: 0 -%}
+            {%- unless property.last == blank or first_character == '_' -%}
+              <li>{{ property.first | escape }}: {{ property.last | escape }}</li>
+            {%- endunless -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if item.line_level_discount_allocations.size > 0 -%}
+        <ul class="cart-line__discounts">
+          {%- for allocation in item.line_level_discount_allocations -%}
+            <li class="badge">
+              {{- allocation.discount_application.title | escape }}
+              (−{{ allocation.amount | money }})
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    <div class="cart-line__controls">
+      {%- render 'quantity-input',
+        id: input_id,
+        value: item.quantity,
+        min: 0,
+        max: item.variant.inventory_quantity,
+        line: line,
+        label: item.title
+      -%}
+
+      <button
+        class="cart-line__remove button--tertiary"
+        type="button"
+        data-cart-remove="{{ line }}"
+      >
+        {{- 'cart.remove' | t -}}
+        <span class="visually-hidden">: {{ item.title | escape }}</span>
+      </button>
+    </div>
+
+    <div class="cart-line__price price">
+      {%- if item.original_line_price != item.final_line_price -%}
+        <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+        <s class="price__compare">{{ item.original_line_price | money }}</s>
+        <span class="visually-hidden">{{ 'products.product.price.sale_price' | t }}</span>
+        <span class="price__sale">{{ item.final_line_price | money }}</span>
+      {%- else -%}
+        <span>{{ item.final_line_price | money }}</span>
+      {%- endif -%}
+
+      {%- if item.unit_price_measurement -%}
+        <span class="price__unit">
+          {{- item.unit_price | money }}/{{ item.unit_price_measurement.reference_value }}
+          {{- item.unit_price_measurement.reference_unit -}}
+        </span>
+      {%- endif -%}
+    </div>
+  </div>
+</li>

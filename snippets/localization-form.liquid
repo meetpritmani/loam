@@ -1,0 +1,83 @@
+{%- comment -%}
+  localization-form.liquid — country/region and language selectors.
+
+  Rendered in the announcement bar and the footer. Both are plain <select>
+  elements inside a real {% form 'localization' %}: a custom dropdown would
+  need JavaScript to be operable, and this has to work when a shopper
+  changes market before the theme's JS has run. The submit button is shown
+  only when JavaScript is unavailable; global.js submits on change.
+
+  Params:
+    show_country  (boolean, optional)
+    show_language (boolean, optional)
+    id_prefix     (string, required) — both forms can be on one page
+{%- endcomment -%}
+
+{%- liquid
+  assign show_country_selector = false
+  if show_country and localization.available_countries.size > 1
+    assign show_country_selector = true
+  endif
+
+  assign show_language_selector = false
+  if show_language and localization.available_languages.size > 1
+    assign show_language_selector = true
+  endif
+-%}
+
+{%- if show_country_selector or show_language_selector -%}
+  <div class="localization">
+    {%- if show_country_selector -%}
+      {%- form 'localization', class: 'localization__form' -%}
+        <label class="visually-hidden" for="{{ id_prefix }}-country">
+          {{- 'localization.country_label' | t -}}
+        </label>
+        <select
+          class="localization__select"
+          id="{{ id_prefix }}-country"
+          name="country_code"
+          data-localization-select
+        >
+          {%- for country in localization.available_countries -%}
+            <option
+              value="{{ country.iso_code }}"
+              {% if country.iso_code == localization.country.iso_code %}selected{% endif %}
+            >
+              {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+            </option>
+          {%- endfor -%}
+        </select>
+        <button class="localization__submit button button--tertiary" type="submit">
+          {{- 'localization.update' | t -}}
+        </button>
+      {%- endform -%}
+    {%- endif -%}
+
+    {%- if show_language_selector -%}
+      {%- form 'localization', class: 'localization__form' -%}
+        <label class="visually-hidden" for="{{ id_prefix }}-language">
+          {{- 'localization.language_label' | t -}}
+        </label>
+        <select
+          class="localization__select"
+          id="{{ id_prefix }}-language"
+          name="locale_code"
+          data-localization-select
+        >
+          {%- for language in localization.available_languages -%}
+            <option
+              value="{{ language.iso_code }}"
+              lang="{{ language.iso_code }}"
+              {% if language.iso_code == localization.language.iso_code %}selected{% endif %}
+            >
+              {{ language.endonym_name | capitalize }}
+            </option>
+          {%- endfor -%}
+        </select>
+        <button class="localization__submit button button--tertiary" type="submit">
+          {{- 'localization.update' | t -}}
+        </button>
+      {%- endform -%}
+    {%- endif -%}
+  </div>
+{%- endif -%}

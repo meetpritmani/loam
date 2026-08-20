@@ -75,7 +75,8 @@
     "free_shipping_reached": "You have earned free shipping.",
     "item_added": "{{ title }} added to your cart.",
     "item_removed": "{{ title }} removed from your cart.",
-    "update_error": "Your cart could not be updated. Please try again."
+    "update_error": "Your cart could not be updated. Please try again.",
+    "view_cart": "View cart"
   },
   "collections": {
     "title": "Collections",
@@ -258,5 +259,19 @@
     "related_products": {
       "title": "You might also like"
     }
+  },
+  "announcement": {
+    "label": "Announcement",
+    "previous": "Previous announcement",
+    "next": "Next announcement"
+  },
+  "localization": {
+    "country_label": "Country/region",
+    "language_label": "Language",
+    "update": "Update"
+  },
+  "footer": {
+    "follow_us": "Follow us",
+    "payment_methods": "Payment methods"
   }
 }

@@ -44,7 +44,7 @@ scratch in phase 3 against Loam's price rules, not ported.
 | # | Phase | Status |
 |---|---|---|
 | 1 | Foundation | **Done** — theme-check clean, live compiler clean, zero theme console errors |
-| 2 | Chrome (announcement bar, header + mega menu, footer, cart drawer) | Not started |
+| 2 | Chrome (announcement bar, header + mega menu, footer, cart drawer) | **Done** — cart verified end to end in a browser; one gap, see below |
 | 3 | Homepage sections (§9, 3–17) | Not started |
 | 4 | Templates | Not started |
 | 5 | Demo store seeding (§11) | Not started |
@@ -261,6 +261,93 @@ for in-place edits instead.
 
 ---
 
+## Phase 2 — Chrome
+
+### Delivered
+
+| File | Notes |
+|---|---|
+| `sections/announcement-bar.liquid` | New. Rotating messages, localization selectors |
+| `sections/header.liquid` | Rebuilt. Mega menu, mobile drawer, search drawer, cart entry |
+| `sections/footer.liquid` | Rebuilt. Menu/text/newsletter blocks, social, payment, localization |
+| `sections/cart-drawer.liquid` | New. Free-shipping progress, line quantity, note |
+| `sections/cart-count.liquid` | New. Render target for the Section Rendering API |
+| `snippets/cart-line.liquid` | New. Shared by the drawer and, from phase 4, the cart page |
+| `snippets/cart-count.liquid`, `snippets/quantity-input.liquid`, `snippets/localization-form.liquid` | New |
+| `sections/header-group.json`, `sections/footer-group.json` | Rebuilt with populated demo blocks |
+| `assets/global.js` | `<mega-menu>`, `<announcement-bar>`, `<quantity-input>`, `<cart-items>`, the `Cart` module |
+| `assets/base.css` | Region 5 rewritten |
+
+Budgets after phase 2: CSS **8.2KB** gzipped, JS **7.6KB** gzipped.
+`shopify theme check`: 44 files, 0 offenses.
+
+### Decisions worth recording
+
+**Navigation is native `<details>`/`<summary>`, not divs with aria.** The mega
+menu opens, is keyboard operable and is screen-reader announced before any
+JavaScript runs; `<mega-menu>` only layers on hover-intent, Escape, and
+close-on-focus-leave. An aria-driven implementation would be inert until the
+module loads, which on a cold 4G connection is exactly when a shopper is most
+likely to reach for the menu.
+
+**The cart swap never replaces `<loam-drawer>`.** `Cart.render()` replaces the
+innerHTML of `[data-cart-body]` and `[data-cart-footer]` only. Replacing the
+custom element itself — the obvious implementation — would destroy the focus
+trap, the scroll lock, and the stored opener reference mid-interaction,
+stranding a keyboard shopper inside a drawer they cannot close. Those two
+wrappers are a contract; the section file documents them as such.
+
+**`[data-cart-footer]` renders even when the cart is empty.** If the wrapper
+only existed when the cart had items, the first add-to-cart would have no
+target to swap into and the totals would not appear until a full page load.
+
+**Quantity uses a real `<input type="number">`.** The stepper buttons are
+enhancement: they set the input and dispatch `change`. The control still works
+with the keyboard, and the form still submits, with the module absent.
+
+**The localization selects sit in real `{% form 'localization' %}` elements**
+with a visible submit button. `global.js` adds `.js` to `<html>`, which hides
+the button and submits on change instead — so changing market works before the
+theme's JS has run.
+
+### Verified in a real browser (Chrome over the DevTools Protocol)
+
+The phase 2 checkpoint is "cart add/remove/qty works via Section Rendering API,
+keyboard nav clean, drawer focus trap verified". Driven as real interactions,
+not asserted from source:
+
+| Check | Result |
+|---|---|
+| Drawer opens, `aria-modal`, focus moves inside panel | Pass |
+| Body scroll locked, toggle `aria-expanded=true` | Pass |
+| Tab at the last focusable wraps to the first (trap holds) | Pass |
+| Quantity change updates the bubble via the API | Pass — 2 → 4 |
+| **Drawer stayed open and the element was NOT replaced through the swap** | Pass |
+| Scroll lock survived the swap; subtotal re-rendered | Pass — $99.80 |
+| Remove line → empty state renders in place, bubble 0 | Pass |
+| Escape closes, focus returns to the opener, scroll unlocks | Pass |
+| Search drawer opens and focuses its input; Escape closes | Pass |
+| Announcement: next advances, prev from 0 wraps to last, one message exposed | Pass |
+| `<mega-menu>`: opening a second panel closes the first; Escape closes and returns focus; closes on focus leave | Pass |
+| Reduced motion: autoplay off, manual controls kept, no `.reveal` stranded invisible | Pass |
+| Theme-originated console messages | **Zero** (4 total, all Shopify infra) |
+
+Server side, the Section Rendering API contract was exercised directly against
+`/cart/add.js` and `/cart/change.js`: both return `cart-drawer` and
+`cart-count`, the drawer HTML carries both swap targets, and the free-shipping
+maths is right — qty 1 gives "You are $50.05 away from free shipping." at 33%,
+qty 5 crosses the $75 threshold at 100%, qty 0 renders the empty state.
+
+Two harness bugs surfaced during this and are worth remembering, because both
+would have read as theme bugs:
+
+1. `toggle` fires **asynchronously**, so checking `[open]` count in the same
+   tick as setting `.open` shows both panels open. The component is correct.
+2. The announcement bar autoplays, so a rotation test that assumes it starts
+   at index 0 is racing the timer. Re-run with `bar.pause()` first.
+
+---
+
 ## Open, needs you
 
 **1. Phase 1 is verified and the checkpoint is met.** Nothing outstanding here
@@ -270,6 +357,19 @@ against the real compiler are all now confirmed working: the
 `asset_url | image_url | image_tag` chain, `color_mix` argument order,
 `font_modify: 'weight', 'bolder'` (returns nil and emits nothing, as expected,
 no error), and the `color_scheme_group` `role` map.
+
+**2. The mega menu's Liquid rendering is not yet exercised.** The dev store's
+`main-menu` is flat — Home / Catalog / Contact — so no link has children and
+the `<details class="mega">` branch never runs. The `<mega-menu>` component
+itself is verified (against injected markup), and a flat menu correctly
+degrades to plain links, but the two-level column rendering and the feature
+card have only been read, not seen.
+
+This is the exact thing §11.5 warns about: "the mega menu renders `link.links`
+two levels deep — Shop must have children *with children*, or the mega
+collapses to one column. Verify nesting depth after creating." Phase 5 seeds
+these menus properly. To close it sooner, create a menu in admin with, say,
+Shop → Men's / Women's, and give Men's its own children.
 
 **2. No `templates/customers/*`.** skeleton-theme does not ship them and they
 were removed with the Replenish work. They are a Theme Store requirement and

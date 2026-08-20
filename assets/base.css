@@ -924,9 +924,8 @@ dialog {
 
 /* ==========================================================================
    5. SECTIONS
-   Section-specific rules live here, one commented block per section, in the
-   order they appear in the theme. Sections are built in phases 2-4; this
-   region currently holds only the page shell.
+   Section-specific rules, one commented block per section, in the order they
+   appear in the theme. Homepage sections land here in phase 3.
    ========================================================================== */
 
 /* --- Page shell --------------------------------------------------------- */
@@ -958,14 +957,22 @@ dialog {
   flex: 1 1 auto;
 }
 
+/* A drawer must not create a box of its own — it sits inside grid and flex
+   containers (the header, the page shell) whose layout it would otherwise
+   join as a phantom child. Its panel is fixed-position anyway. */
+loam-drawer {
+  display: contents;
+}
+
 /* --- Sticky header ------------------------------------------------------
    The element reports its own height into --header-height so anchored
-   content and drawers can offset against it. */
+   content and the mega panel can offset against it. */
 
 .sticky-header {
   display: block;
   position: relative;
   z-index: 20;
+  background-color: var(--c-paper);
 }
 
 .sticky-header--stuck {
@@ -978,56 +985,622 @@ dialog {
   transform: translateY(-100%);
 }
 
-/* --- Header -------------------------------------------------------------
-   Placeholder layout; the mega menu, predictive search and mobile drawer
-   land in phase 2 and extend this block. */
+/* --- Announcement bar ---------------------------------------------------
+   Messages are stacked in a single grid cell rather than absolutely
+   positioned, so the bar is exactly as tall as its tallest message and
+   nothing reflows as they rotate. */
 
-.header {
+.announcement-bar {
+  padding-block: var(--announcement-padding, 10px);
+  background-color: var(--c-paper);
+  color: var(--c-ink);
+  font-size: var(--t-xs);
+  letter-spacing: var(--caption-tracking);
+}
+
+.announcement-bar__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-5);
-  min-height: 64px;
-  padding-block: var(--sp-3);
-  background-color: var(--c-paper);
+  justify-content: center;
+  gap: var(--sp-4);
+}
+
+.announcement-bar__messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.announcement-bar__track {
+  display: grid;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.announcement-bar__message {
+  grid-area: 1 / 1;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
+}
+
+.announcement-bar__message.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.announcement-bar__link {
+  color: inherit;
+  text-underline-offset: 0.25em;
+}
+
+.announcement-bar__control {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  color: inherit;
+}
+
+/* --- Header ------------------------------------------------------------- */
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-block: var(--header-padding, 14px);
+}
+
+.header__menu-toggle {
+  display: inline-flex;
+  justify-self: start;
+  margin-inline-start: calc(var(--sp-3) * -1);
 }
 
 .header__logo {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.header__logo-link {
+  display: flex;
+  align-items: center;
   text-decoration: none;
 }
 
-.header__logo img {
+.header__logo-image {
   width: auto;
   max-height: 40px;
 }
 
+.header__logo-text {
+  white-space: nowrap;
+}
+
 .header__nav {
-  flex: 1 1 auto;
+  display: none;
+  min-width: 0;
+}
+
+.header__nav-list {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+.header__nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding-block: var(--sp-2);
+  font-size: var(--t-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+
+.header__nav-chevron {
+  transition: transform var(--dur) var(--ease);
 }
 
 .header__actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--sp-1);
-  flex: 0 0 auto;
+  justify-self: end;
+  margin-inline-end: calc(var(--sp-3) * -1);
 }
 
-.header__cart-count {
-  min-width: 18px;
-  margin-inline-start: calc(var(--sp-1) * -1);
-  align-self: flex-start;
-  font-size: var(--t-xs);
-  font-variant-numeric: tabular-nums;
+.header__account {
+  display: none;
+}
+
+.header__cart {
+  position: relative;
+}
+
+/* The bubble is absolutely positioned over the icon, so appearing at the
+   first add-to-cart cannot shift the header. */
+.cart-count {
+  position: absolute;
+  inset-block-start: 5px;
+  inset-inline-end: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding-inline: 4px;
+  border-radius: 8px;
+  background-color: var(--c-accent);
+  color: var(--c-paper);
+  font-size: 10px;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-@media (min-width: 990px) {
-  .header {
-    min-height: 76px;
+.cart-count--empty {
+  display: none;
+}
+
+@media (hover: hover) {
+  .header__nav-link:hover {
+    color: var(--c-accent);
   }
+}
+
+@media (min-width: 750px) {
+  .header {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .header__menu-toggle {
+    display: none;
+  }
+
+  .header__nav {
+    display: block;
+  }
+
+  .header__account {
+    display: inline-flex;
+  }
+
+  .menu-drawer {
+    display: none;
+  }
+}
+
+/* --- Mega menu ----------------------------------------------------------
+   Built on <details>, so it opens and is keyboard navigable with no JS. The
+   panel is positioned against .sticky-header, which is the containing block
+   in both its static and stuck states. */
+
+.mega {
+  position: static;
+}
+
+.mega[open] > .header__nav-link .header__nav-chevron {
+  transform: rotate(180deg);
+}
+
+.mega__panel {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  z-index: 10;
+  background-color: var(--c-surface);
+  border-block-start: 1px solid var(--c-ink-12);
+  box-shadow: var(--shadow-soft);
+}
+
+.mega[open] .mega__panel {
+  animation: mega-in var(--dur) var(--ease) both;
+}
+
+@keyframes mega-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.mega__inner {
+  display: flex;
+  gap: var(--sp-8);
+  padding-block: var(--sp-7);
+}
+
+.mega__columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mega__column-title {
+  display: block;
+  font-size: var(--t-sm);
+  font-weight: var(--f-body-weight-bold);
+  text-decoration: none;
+}
+
+.mega__column-list {
+  display: grid;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-3);
+}
+
+.mega__link {
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+  text-decoration: none;
+}
+
+.mega__promo {
+  display: grid;
+  gap: var(--sp-2);
+  flex: 0 0 260px;
+  text-decoration: none;
+}
+
+.mega__promo-media {
+  display: block;
+  margin-block-end: var(--sp-1);
+}
+
+/* --- Menu drawer (mobile navigation) ------------------------------------ */
+
+.menu-drawer {
+  display: contents;
+}
+
+.menu-drawer__list {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.menu-drawer__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+  font-size: var(--t-md);
+}
+
+.menu-drawer__chevron {
+  transition: transform var(--dur) var(--ease);
+}
+
+.menu-drawer__group[open] .menu-drawer__chevron {
+  transform: rotate(180deg);
+}
+
+.menu-drawer__sublist {
+  display: grid;
+  gap: var(--sp-1);
+  padding-inline-start: var(--sp-4);
+  padding-block-end: var(--sp-3);
+}
+
+.menu-drawer__sublist--deep {
+  padding-block-end: 0;
+}
+
+.menu-drawer__link {
+  display: block;
+  padding-block: var(--sp-2);
+  text-decoration: none;
+}
+
+.menu-drawer__link--top {
+  font-size: var(--t-md);
+  padding-block: var(--sp-3);
+}
+
+/* --- Search drawer ------------------------------------------------------
+   Slides down from the top rather than in from the side, so the input lands
+   directly under the control that opened it. */
+
+.drawer__panel--top {
+  inset-block: 0 auto;
+  inset-inline: 0;
+  width: 100%;
+  transform: translateY(-100%);
+}
+
+.drawer[open] .drawer__panel--top {
+  transform: translateY(0);
+}
+
+[dir='rtl'] .drawer__panel--top {
+  transform: translateY(-100%);
+}
+
+[dir='rtl'] .drawer[open] .drawer__panel--top {
+  transform: translateY(0);
+}
+
+.search-drawer__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding-block: var(--sp-5);
+}
+
+.search-drawer__form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 1 1 auto;
+}
+
+.search-drawer__icon {
+  position: absolute;
+  inset-inline-start: var(--sp-4);
+  color: var(--c-ink-45);
+  pointer-events: none;
+}
+
+.search-drawer__input {
+  flex: 1 1 auto;
+  min-height: 48px;
+  padding-block: var(--sp-3);
+  padding-inline-start: calc(var(--sp-4) * 2 + 20px);
+  padding-inline-end: var(--sp-4);
+  background-color: var(--c-surface);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+  color: var(--c-ink);
+  font-size: var(--t-base);
+}
+
+.search-drawer__input::placeholder {
+  color: var(--c-ink-45);
+}
+
+/* --- Cart drawer -------------------------------------------------------- */
+
+.cart-drawer__empty {
+  align-items: flex-start;
+  gap: var(--sp-4);
+}
+
+.cart-lines {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.cart-line {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: var(--sp-4);
+}
+
+.cart-line__media {
+  width: 88px;
+}
+
+.cart-line__body {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-3);
+}
+
+.cart-line__heading {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.cart-line__title {
+  font-size: var(--t-sm);
+  font-weight: var(--f-body-weight-bold);
+  text-decoration: none;
+}
+
+.cart-line__properties,
+.cart-line__discounts {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.cart-line__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.cart-line__remove {
+  font-size: var(--t-xs);
+  color: var(--c-ink-70);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  cursor: pointer;
+}
+
+.cart-line__price {
+  font-size: var(--t-sm);
+}
+
+/* While a cart request is in flight the region is dimmed and inert, so a
+   second click cannot race the first. */
+cart-items[aria-busy] {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+
+.cart-drawer__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.cart-drawer__discounts {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.cart-drawer__subtotal {
+  padding-block: var(--sp-2);
+}
+
+.cart-drawer__note summary {
+  display: inline-flex;
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+  margin-block-end: var(--sp-2);
+}
+
+.cart-drawer__view {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.drawer__footer > * + * {
+  margin-block-start: var(--sp-3);
+}
+
+/* --- Free shipping progress --------------------------------------------- */
+
+.shipping-bar {
+  display: grid;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-5);
+}
+
+.shipping-bar__label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.shipping-bar__track {
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--c-ink-12);
+  overflow: hidden;
+}
+
+.shipping-bar__fill {
+  display: block;
+  width: var(--progress, 0%);
+  height: 100%;
+  background-color: var(--c-accent);
+  transition: width var(--dur-slow) var(--ease);
+}
+
+/* --- Quantity stepper --------------------------------------------------- */
+
+.quantity {
+  display: inline-flex;
+  align-items: center;
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+}
+
+.quantity__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--c-ink-70);
+  transition: color var(--dur) var(--ease);
+}
+
+.quantity__input {
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: center;
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.quantity__input::-webkit-outer-spin-button,
+.quantity__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@media (hover: hover) {
+  .quantity__button:hover {
+    color: var(--c-ink);
+  }
+}
+
+/* --- Newsletter --------------------------------------------------------- */
+
+.newsletter__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-block-start: var(--sp-3);
+}
+
+.newsletter__input {
+  padding-inline-end: 52px;
+}
+
+.newsletter__submit {
+  position: absolute;
+  inset-inline-end: 2px;
+  color: var(--c-ink);
+}
+
+/* --- Localization ------------------------------------------------------- */
+
+.localization {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.localization__form {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.localization__select {
+  padding: var(--sp-1) var(--sp-2);
+  border: var(--border-hairline) solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: inherit;
+  font-size: var(--t-xs);
+  cursor: pointer;
+}
+
+.localization__select:hover {
+  border-color: var(--c-ink-12);
+}
+
+/* The submit button only exists for the no-JavaScript case; global.js adds
+   `.js` to <html> and submits on change instead. */
+.js .localization__submit {
+  display: none;
 }
 
 /* --- Gift card ---------------------------------------------------------- */
@@ -1048,10 +1621,52 @@ dialog {
   background-color: var(--c-paper);
 }
 
-.footer__inner {
+.footer__columns {
+  display: grid;
+  gap: var(--sp-6) var(--grid-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+}
+
+.footer__column--newsletter {
+  grid-column: 1 / -1;
+}
+
+.footer__heading {
+  margin-block-end: var(--sp-3);
+  color: var(--c-ink);
+}
+
+.footer__links {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.footer__bottom {
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-5);
+  border-block-start: 1px solid var(--c-ink-12);
+}
+
+.footer__bottom-start,
+.footer__bottom-end {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.footer__social {
+  gap: var(--sp-1);
+}
+
+.footer__payment {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
 }
 
 .footer__payment-icon {
@@ -1060,7 +1675,11 @@ dialog {
 }
 
 @media (min-width: 750px) {
-  .footer__inner {
+  .footer__column--newsletter {
+    grid-column: auto / span 2;
+  }
+
+  .footer__bottom {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;

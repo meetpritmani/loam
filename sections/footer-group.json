@@ -1,25 +1,45 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "type": "footer",
   "name": "t:sections.footer.name",
   "sections": {
     "footer": {
       "type": "footer",
+      "blocks": {
+        "about": {
+          "type": "text",
+          "settings": {
+            "heading": "Fernway",
+            "text": "<p>Shoes made from merino wool, eucalyptus fibre, and sugarcane foam. Built to be worn out, then recycled.</p>"
+          }
+        },
+        "shop": {
+          "type": "menu",
+          "settings": { "heading": "Shop", "menu": "footer" }
+        },
+        "help": {
+          "type": "menu",
+          "settings": { "heading": "Help", "menu": "footer" }
+        },
+        "newsletter": {
+          "type": "newsletter",
+          "settings": {
+            "heading": "Get first access.",
+            "text": "New colourways, restocks, and the occasional field note. Two emails a month, no more.",
+            "fine_print": "Unsubscribe any time."
+          }
+        }
+      },
+      "block_order": ["about", "shop", "help", "newsletter"],
       "settings": {
-        "menu": "",
-        "show_payment_icons": true
+        "color_scheme": "scheme-paper",
+        "show_social": true,
+        "show_payment_icons": true,
+        "show_country": true,
+        "show_language": true,
+        "padding_top": 64,
+        "padding_bottom": 40
       }
     }
   },
-  "order": [
-    "footer"
-  ]
+  "order": ["footer"]
 }
