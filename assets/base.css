@@ -1,581 +1,1156 @@
-/*
-  base.css — non-critical global stylesheet.
-
-  Loaded non-render-blocking from layout/theme.liquid. Anything required for the
-  first viewport belongs in snippets/critical-css.liquid instead.
-
-  Convention: BEM, `rpl-` prefix on every block. No !important without a
-  comment stating why. No hardcoded colors — always a color-scheme token.
-*/
-
 /* ==========================================================================
-   Layout helpers
+   Loam — base.css
+   The only stylesheet in the theme. Ordered by numbered region; keep new
+   rules inside the region they belong to and never introduce a second file.
+
+   1. Reset and document base
+   2. Typography
+   3. Layout
+   4. Components
+   5. Sections
+   6. Utilities
+
+   Conventions
+   - Mobile first. `min-width` media queries only. Breakpoints 750 / 990 / 1100.
+   - BEM-ish: .block, .block__element, .block--modifier.
+   - Max specificity 0,2,0. No element selectors for components.
+   - Logical properties (padding-inline, margin-block) so RTL works.
+   - Section padding lives on `.section` only — never also on a component.
+   - No `!important` anywhere except `.visually-hidden`.
    ========================================================================== */
 
-.rpl-section--tight {
-  padding-block: var(--rpl-space-md);
+/* ==========================================================================
+   1. RESET AND DOCUMENT BASE
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.rpl-section--loose {
-  padding-block: var(--rpl-space-xl);
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
-.rpl-container--narrow {
-  max-width: 46rem;
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--f-body);
+  font-style: var(--f-body-style);
+  font-weight: var(--f-body-weight);
+  font-size: calc(var(--t-base) * var(--body-scale));
+  line-height: var(--lh-body);
+  color: var(--c-ink);
+  background-color: var(--c-paper);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+  overflow-wrap: break-word;
 }
 
-.rpl-container--full {
-  max-width: none;
-  padding-inline: 0;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
 }
 
-.rpl-stack > * + * {
-  margin-block-start: var(--rpl-space-sm);
-}
-
-.rpl-grid {
-  display: grid;
-  gap: var(--rpl-grid-gap-vertical) var(--rpl-grid-gap-horizontal);
-  grid-template-columns: repeat(var(--rpl-grid-columns-mobile, 1), minmax(0, 1fr));
-  list-style: none;
+ul,
+ol {
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
-@media screen and (min-width: 750px) {
-  .rpl-grid {
-    grid-template-columns: repeat(var(--rpl-grid-columns-desktop, 3), minmax(0, 1fr));
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+dialog {
+  border: 0;
+  padding: 0;
+  max-width: none;
+  max-height: none;
+  background: none;
+  color: inherit;
+}
+
+/* Focus — a visible ring on every interactive element. Never remove this
+   without providing an equally visible replacement. */
+:focus-visible {
+  outline: var(--focus-width) solid var(--c-accent);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-sm);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Reduced motion: kill every transition and animation, including the
+   reveal. global.js additionally short-circuits the observer and marks
+   every element visible so nothing is left at opacity 0. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
   }
 }
 
 /* ==========================================================================
-   Rich text (merchant-authored HTML)
+   2. TYPOGRAPHY
    ========================================================================== */
 
-.rpl-rte > :last-child {
-  margin-block-end: 0;
+.h0,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-family: var(--f-heading);
+  font-style: var(--f-heading-style);
+  font-weight: var(--f-heading-weight);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--heading-tracking);
+  text-transform: var(--heading-transform);
+  text-wrap: balance;
 }
 
-.rpl-rte img {
-  border-radius: var(--rpl-media-radius);
+.h0 {
+  font-size: calc(var(--t-3xl) * var(--heading-scale));
+  line-height: var(--lh-tight);
 }
 
-.rpl-rte ul,
-.rpl-rte ol {
-  padding-inline-start: 1.25rem;
-  margin-block: 0 var(--rpl-space-sm);
+.h1 {
+  font-size: calc(var(--t-2xl) * var(--heading-scale));
+  line-height: var(--lh-tight);
 }
 
-.rpl-rte li + li {
-  margin-block-start: var(--rpl-space-3xs);
+.h2 {
+  font-size: calc(var(--t-xl) * var(--heading-scale));
 }
 
-.rpl-rte blockquote {
-  margin-inline: 0;
-  padding-inline-start: var(--rpl-space-sm);
-  border-inline-start: 2px solid rgb(var(--rpl-color-foreground) / 0.2);
+.h3 {
+  font-size: calc(var(--t-lg) * var(--heading-scale));
 }
 
-.rpl-rte table {
-  width: 100%;
-  border-collapse: collapse;
-  display: block;
-  overflow-x: auto;
+.h4 {
+  font-size: calc(var(--t-md) * var(--heading-scale));
 }
 
-.rpl-rte th,
-.rpl-rte td {
-  padding: var(--rpl-space-2xs);
-  border: 1px solid rgb(var(--rpl-color-foreground) / 0.15);
-  text-align: start;
+.h5 {
+  font-size: calc(var(--t-base) * var(--heading-scale));
+}
+
+.h6 {
+  font-size: calc(var(--t-sm) * var(--heading-scale));
+}
+
+.rte {
+  line-height: var(--lh-body);
+}
+
+.rte > * + * {
+  margin-block-start: var(--sp-4);
+}
+
+.rte a {
+  color: var(--c-ink);
+  text-decoration: underline;
+}
+
+.rte a:hover {
+  color: var(--c-accent);
+}
+
+.rte ul,
+.rte ol {
+  padding-inline-start: var(--sp-5);
+}
+
+.rte ul {
+  list-style: disc;
+}
+
+.rte ol {
+  list-style: decimal;
+}
+
+.rte li + li {
+  margin-block-start: var(--sp-2);
+}
+
+.rte img {
+  border-radius: var(--radius);
+}
+
+.rte blockquote {
+  padding-inline-start: var(--sp-5);
+  border-inline-start: 2px solid var(--c-ink-12);
+  color: var(--c-ink-70);
+}
+
+/* Caption — small uppercase label. The eyebrow above a section heading,
+   the source line under a testimonial, the material tag's type style. */
+.caption {
+  font-size: var(--t-xs);
+  line-height: 1.4;
+  letter-spacing: var(--caption-tracking);
+  text-transform: uppercase;
+  color: var(--c-ink-70);
+}
+
+.text-body-sm {
+  font-size: var(--t-sm);
+}
+
+.text-muted {
+  color: var(--c-ink-70);
 }
 
 /* ==========================================================================
-   Media
+   3. LAYOUT
    ========================================================================== */
 
-.rpl-media {
+.page-width {
+  max-width: var(--page-width);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+.page-width--narrow {
+  max-width: 760px;
+}
+
+.page-width--full {
+  max-width: none;
+  padding-inline: 0;
+}
+
+/* Section — the ONLY place vertical section padding is set. A component
+   inside a section must never also set block padding, or the two stack and
+   the spacing controls in the editor appear to do nothing. */
+.section {
+  padding-block-start: var(--section-padding-block-start, var(--sp-8));
+  padding-block-end: var(--section-padding-block-end, var(--sp-8));
+}
+
+@media (min-width: 750px) {
+  .section {
+    padding-block-start: var(--section-padding-block-start-desktop, var(--sp-9));
+    padding-block-end: var(--section-padding-block-end-desktop, var(--sp-9));
+  }
+}
+
+.section__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-6);
+}
+
+.section__header--center {
+  align-items: center;
+  text-align: center;
+}
+
+.section__header--split {
+  gap: var(--sp-4);
+}
+
+@media (min-width: 750px) {
+  .section__header--split {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.section__title {
+  max-width: 24ch;
+}
+
+.section__header--center .section__title {
+  max-width: 32ch;
+}
+
+/* Seam divider — a dashed hairline between sections. Loam's second
+   signature element; it replaces the solid rule everywhere. */
+.seam {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background-image: var(--seam);
+}
+
+.seam--inset {
+  max-width: var(--page-width);
+  margin-inline: auto;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  gap: var(--grid-gap);
+  grid-template-columns: repeat(var(--grid-cols-mobile, 1), minmax(0, 1fr));
+}
+
+@media (min-width: 750px) {
+  .grid {
+    grid-template-columns: repeat(var(--grid-cols-tablet, var(--grid-cols, 2)), minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 990px) {
+  .grid {
+    grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr));
+  }
+}
+
+.grid--2-mobile {
+  --grid-cols-mobile: 2;
+}
+
+/* Horizontal scroller — the mobile counterpart of a grid, used by product
+   rows and testimonials. Snap points, hidden scrollbar, still keyboard
+   scrollable because it is a real overflow container. */
+.scroller {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--scroller-item-width, 72vw);
+  gap: var(--grid-gap);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-inline: var(--page-gutter);
+  margin-inline: calc(var(--page-gutter) * -1);
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.scroller > * {
+  scroll-snap-align: start;
+}
+
+@media (min-width: 750px) {
+  .scroller {
+    --scroller-item-width: 38vw;
+  }
+}
+
+@media (min-width: 990px) {
+  .scroller {
+    --scroller-item-width: 25vw;
+  }
+}
+
+/* Media box — every image and video sits in one of these so the space is
+   reserved before the asset loads. No exceptions; this is how CLS stays
+   under 0.05. */
+.media {
   position: relative;
   display: block;
   overflow: hidden;
-  border-radius: var(--rpl-media-radius);
-  background-color: rgb(var(--rpl-color-foreground) / 0.04);
+  aspect-ratio: var(--media-ratio, 1);
+  background-color: var(--c-sand);
+  border-radius: var(--radius);
 }
 
-/* Reserved aspect box — prevents CLS while the image decodes. */
-.rpl-media--ratio {
-  aspect-ratio: var(--rpl-media-ratio, 1);
-}
-
-.rpl-media img,
-.rpl-media svg {
+.media > img,
+.media > video,
+.media > svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.rpl-media--contain img {
+.media--portrait {
+  --media-ratio: 4 / 5;
+}
+
+.media--square {
+  --media-ratio: 1;
+}
+
+.media--landscape {
+  --media-ratio: 3 / 2;
+}
+
+.media--wide {
+  --media-ratio: 16 / 9;
+}
+
+.media--contain > img {
   object-fit: contain;
 }
 
-.rpl-media__placeholder {
-  width: 100%;
-  height: 100%;
-  fill: rgb(var(--rpl-color-foreground) / 0.25);
-  background-color: rgb(var(--rpl-color-foreground) / 0.04);
-}
-
-/* ==========================================================================
-   Forms
-   ========================================================================== */
-
-.rpl-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rpl-space-3xs);
-}
-
-.rpl-field__label {
-  font-size: calc(0.875rem * var(--rpl-font-body-scale));
-  font-weight: var(--rpl-font-body-weight-bold);
-}
-
-.rpl-input,
-.rpl-select,
-.rpl-textarea {
-  width: 100%;
-  min-height: 44px;
-  padding: var(--rpl-space-2xs) var(--rpl-space-xs);
-  border: 1px solid rgb(var(--rpl-color-foreground) / 0.3);
-  border-radius: var(--rpl-buttons-radius);
-  background-color: rgb(var(--rpl-color-background));
-  color: rgb(var(--rpl-color-foreground));
-}
-
-.rpl-textarea {
-  min-height: 8rem;
-  resize: vertical;
-}
-
-.rpl-input::placeholder,
-.rpl-textarea::placeholder {
-  color: rgb(var(--rpl-color-foreground) / 0.55);
-}
-
-.rpl-input[aria-invalid='true'],
-.rpl-textarea[aria-invalid='true'] {
-  border-color: rgb(var(--rpl-color-foreground));
-  border-width: 2px;
-}
-
-.rpl-field__error {
-  font-size: calc(0.8125rem * var(--rpl-font-body-scale));
-  font-weight: var(--rpl-font-body-weight-bold);
-}
-
-.rpl-form-status {
-  padding: var(--rpl-space-2xs) var(--rpl-space-xs);
-  border: 1px solid rgb(var(--rpl-color-foreground) / 0.3);
-  border-radius: var(--rpl-radius-sm);
-  margin-block-end: var(--rpl-space-sm);
-}
-
-/* ==========================================================================
-   Cards
-   ========================================================================== */
-
-.rpl-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--rpl-space-2xs);
-  height: 100%;
-  border-radius: var(--rpl-card-radius);
-  border: var(--rpl-card-border-width) solid rgb(var(--rpl-color-foreground) / 0.15);
-  box-shadow: 0 6px 16px rgb(var(--rpl-color-shadow) / var(--rpl-card-shadow-opacity));
-  transition: transform var(--rpl-duration-base) var(--rpl-ease);
-}
-
-.rpl-card--boxed {
-  padding: var(--rpl-space-xs);
-  background-color: rgb(var(--rpl-color-background));
-}
-
-.rpl-card__title {
-  margin: 0;
-  font-size: calc(1rem * var(--rpl-font-body-scale));
-  font-weight: var(--rpl-font-body-weight-bold);
-}
-
-/* Whole-card click target: the real link stays the only focusable element. */
-.rpl-card__link::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-}
-
-.rpl-card--lift:hover {
-  transform: translateY(-4px);
-}
-
-.rpl-card--zoom:hover .rpl-media img {
-  transform: scale(1.04);
-}
-
-.rpl-card .rpl-media img {
-  transition: transform var(--rpl-duration-slow) var(--rpl-ease);
-}
-
-.rpl-card__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rpl-space-3xs);
-  padding-block-start: var(--rpl-space-2xs);
-}
-
-.rpl-card__vendor {
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.rpl-card__subscription {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  align-self: flex-start;
-  margin: var(--rpl-space-3xs) 0 0;
-}
-
-.rpl-card__subscription .rpl-icon {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-
-/* ==========================================================================
-   Price
-   ========================================================================== */
-
-.rpl-price {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--rpl-space-3xs);
-}
-
-.rpl-price__compare {
-  opacity: 0.6;
-}
-
-.rpl-price__unit {
-  flex-basis: 100%;
-}
-
-.rpl-badge {
-  display: inline-block;
-  padding: 0.125rem var(--rpl-space-2xs);
-  border-radius: var(--rpl-radius-full);
-  background-color: rgb(var(--rpl-color-foreground));
-  color: rgb(var(--rpl-color-background));
-  font-size: calc(0.75rem * var(--rpl-font-body-scale));
-  font-weight: var(--rpl-font-body-weight-bold);
-  letter-spacing: 0.02em;
-}
-
-.rpl-badge--subtle {
-  background-color: rgb(var(--rpl-color-foreground) / 0.1);
-  color: rgb(var(--rpl-color-foreground));
-}
-
-/* ==========================================================================
-   Product form + gallery (shared by main-product and featured-product)
-   ========================================================================== */
-
-.rpl-product__layout {
-  display: grid;
-  gap: var(--rpl-space-lg);
-}
-
-.rpl-product__media-list {
-  display: grid;
-  gap: var(--rpl-space-2xs);
-}
-
-/* Collapses to a single visible slide only when JS is available — .js is
-   already set on <html> before first paint (see layout/theme.liquid), so
-   there's no flash of the stacked no-JS layout before this applies. */
-.js .rpl-product__media-list > li {
-  display: none;
-}
-
-.js .rpl-product__media-list > li[data-media-active] {
+/* Every image rendered through image-fallback.liquid carries this class, so
+   an image used outside a `.media` box is still fluid rather than
+   overflowing its column. Inside `.media`, the `.media > img` rule above
+   wins on specificity and takes over. */
+.image-fallback__img {
   display: block;
+  width: 100%;
+  height: auto;
 }
 
-.rpl-product__thumbnails {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--rpl-space-3xs);
-  margin-block-start: var(--rpl-space-2xs);
+.media--zoom > img {
+  transition: transform var(--dur-slow) var(--ease);
 }
 
-.rpl-product__thumbnail {
-  display: block;
-  width: 4rem;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: var(--rpl-media-radius);
-  background: none;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.rpl-product__thumbnail[aria-selected='true'] {
-  border-color: rgb(var(--rpl-color-foreground));
-}
-
-.rpl-product__info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rpl-space-2xs);
-}
-
-.rpl-product__title {
-  margin: 0;
-}
-
-.rpl-product-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rpl-space-sm);
-  margin-block: var(--rpl-space-sm);
-}
-
-.rpl-product-form__quantity-input {
-  width: 6rem;
-}
-
-.rpl-product__description {
-  margin-block-start: var(--rpl-space-sm);
-}
-
-@media screen and (min-width: 990px) {
-  .rpl-product__layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-    align-items: start;
+@media (hover: hover) {
+  .media--zoom:hover > img {
+    transform: scale(1.03);
   }
 }
 
 /* ==========================================================================
-   Cart (shared by the cart page and the cart drawer)
+   4. COMPONENTS
    ========================================================================== */
 
-.rpl-cart-item__properties {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0 var(--rpl-space-3xs);
-  margin: var(--rpl-space-3xs) 0;
-}
+/* --- Buttons ------------------------------------------------------------ */
 
-.rpl-cart-item__properties dd {
-  margin: 0;
-}
-
-.rpl-cart__subtotal {
-  display: flex;
-  gap: var(--rpl-space-sm);
-  margin: 0;
-  font-size: calc(1.125rem * var(--rpl-font-body-scale));
-  font-weight: var(--rpl-font-body-weight-bold);
-}
-
-/* ==========================================================================
-   Pagination
-   ========================================================================== */
-
-.rpl-pagination {
-  display: flex;
-  justify-content: center;
-  gap: var(--rpl-space-3xs);
-  margin-block-start: var(--rpl-space-lg);
-  list-style: none;
-  padding: 0;
-}
-
-.rpl-pagination__item a,
-.rpl-pagination__item span {
+.button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: var(--rpl-radius-sm);
+  gap: var(--sp-2);
+  min-height: 48px;
+  padding-inline: var(--sp-5);
+  padding-block: var(--sp-3);
+  border: var(--border-hairline) solid transparent;
+  border-radius: var(--radius);
+  font-family: var(--f-body);
+  font-size: var(--t-sm);
+  font-weight: var(--f-body-weight-bold);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-align: center;
   text-decoration: none;
-}
-
-.rpl-pagination__item--current span {
-  background-color: rgb(var(--rpl-color-foreground) / 0.1);
-  font-weight: var(--rpl-font-body-weight-bold);
-}
-
-/* ==========================================================================
-   Overlay + drawer primitives (consumed by cart drawer, menu drawer, modals)
-   ========================================================================== */
-
-.rpl-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--rpl-z-overlay);
-  background-color: rgb(0 0 0 / 0.4);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--rpl-duration-base) var(--rpl-ease), visibility var(--rpl-duration-base) var(--rpl-ease);
-}
-
-.rpl-overlay[data-open='true'] {
-  opacity: 1;
-  visibility: visible;
-}
-
-.rpl-drawer {
-  position: fixed;
-  z-index: var(--rpl-z-drawer);
-  inset-block: 0;
-  inset-inline-end: 0;
-  width: min(28rem, 100vw);
-  display: flex;
-  flex-direction: column;
-  background-color: rgb(var(--rpl-color-background));
-  color: rgb(var(--rpl-color-foreground));
-  transform: translateX(100%);
-  visibility: hidden;
-  transition: transform var(--rpl-duration-base) var(--rpl-ease), visibility var(--rpl-duration-base) var(--rpl-ease);
-}
-
-.rpl-drawer[data-open='true'] {
-  transform: translateX(0);
-  visibility: visible;
-}
-
-.rpl-drawer__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--rpl-space-sm);
-  padding: var(--rpl-space-sm);
-  border-block-end: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
-}
-
-.rpl-drawer__body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: var(--rpl-space-sm);
-}
-
-.rpl-drawer__footer {
-  padding: var(--rpl-space-sm);
-  border-block-start: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
-}
-
-/* Locks background scroll while a drawer or modal owns the viewport. */
-.rpl-scroll-locked {
-  overflow: hidden;
-}
-
-.rpl-icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--rpl-radius-full);
-  background: none;
-  color: inherit;
   cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
 }
 
-.rpl-icon-button:hover {
-  background-color: rgb(var(--rpl-color-foreground) / 0.08);
+.button--primary {
+  background-color: var(--c-button);
+  border-color: var(--c-button);
+  color: var(--c-button-label);
 }
 
-.rpl-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+.button--secondary {
+  background-color: transparent;
+  border-color: var(--c-ink);
+  color: var(--c-ink);
+}
+
+.button--tertiary {
+  min-height: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+}
+
+.button--full {
+  width: 100%;
+}
+
+.button[aria-disabled='true'],
+.button:disabled {
+  cursor: not-allowed;
+  background-color: var(--c-ink-12);
+  border-color: var(--c-ink-12);
+  color: var(--c-ink-45);
+}
+
+@media (hover: hover) {
+  .button--primary:hover {
+    background-color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .button--secondary:hover {
+    background-color: var(--c-ink);
+    color: var(--c-paper);
+  }
+
+  .button--tertiary:hover {
+    color: var(--c-accent);
+  }
+
+  .button[aria-disabled='true']:hover,
+  .button:disabled:hover {
+    background-color: var(--c-ink-12);
+    border-color: var(--c-ink-12);
+    color: var(--c-ink-45);
+  }
+}
+
+/* --- Links -------------------------------------------------------------- */
+
+.link {
+  color: var(--c-ink);
+  text-decoration: none;
+  transition: color var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--c-accent);
+  }
+}
+
+.link--underline {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* --- Icons -------------------------------------------------------------- */
+
+.icon {
+  display: block;
+  width: var(--icon-size, 20px);
+  height: var(--icon-size, 20px);
+  flex: 0 0 auto;
   fill: none;
-  stroke: currentcolor;
+  stroke: currentColor;
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* ==========================================================================
-   Reveal-on-scroll (opt-in via theme setting; JS adds .rpl-reveal--in)
-   ========================================================================== */
-
-.rpl-reveal {
-  opacity: 0;
-  transform: translateY(1rem);
-  transition: opacity var(--rpl-duration-slow) var(--rpl-ease), transform var(--rpl-duration-slow) var(--rpl-ease);
+.icon--filled {
+  fill: currentColor;
+  stroke: none;
 }
 
-.rpl-reveal--in {
-  opacity: 1;
-  transform: none;
+.icon--lg {
+  --icon-size: 28px;
 }
 
-/* No JS: never leave content invisible. */
-.no-js .rpl-reveal {
-  opacity: 1;
-  transform: none;
+.icon--sm {
+  --icon-size: 16px;
 }
 
-.no-js .rpl-no-js-hidden {
-  display: none;
+/* Icon-only control. Always carries an aria-label in the markup. */
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  color: var(--c-ink);
+  transition: color var(--dur) var(--ease);
 }
 
-.rpl-js-only {
-  display: none;
+@media (hover: hover) {
+  .icon-button:hover {
+    color: var(--c-accent);
+  }
 }
 
-.js .rpl-js-only {
-  display: revert;
+/* --- Material tag -------------------------------------------------------
+   Loam's first signature element: a small uppercase caption preceded by a
+   hollow dot. Driven by product.metafields.custom.material. The dot is a
+   pseudo-element so the tag stays a single text node for screen readers. */
+
+.material-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--t-xs);
+  line-height: 1.4;
+  letter-spacing: var(--caption-tracking);
+  text-transform: uppercase;
+  color: var(--c-ink-70);
 }
 
-/* ==========================================================================
-   Utilities
-   ========================================================================== */
-
-.rpl-text-center {
-  text-align: center;
+.material-tag::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border: 1px solid currentColor;
+  border-radius: 50%;
 }
 
-.rpl-muted {
-  color: rgb(var(--rpl-color-foreground) / 0.7);
+/* --- Badges ------------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding-inline: var(--sp-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--c-sand);
+  color: var(--c-ink);
+  font-size: var(--t-xs);
+  line-height: 1;
+  letter-spacing: var(--caption-tracking);
+  text-transform: uppercase;
 }
 
-.rpl-caption {
-  font-size: calc(0.8125rem * var(--rpl-font-body-scale));
-  letter-spacing: 0.03em;
+/* --c-signal is reserved for sale, and nothing else. */
+.badge--sale {
+  background-color: var(--c-signal);
+  color: var(--c-paper);
 }
 
-.rpl-empty-state {
+.badge--sold-out {
+  background-color: var(--c-ink-12);
+  color: var(--c-ink-70);
+}
+
+/* Badge row — reserved height so a card without badges and a card with
+   badges are the same height and nothing shifts. */
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-height: 24px;
+}
+
+/* --- Price -------------------------------------------------------------- */
+
+.price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.price__sale {
+  color: var(--c-signal);
+}
+
+.price__compare {
+  color: var(--c-ink-45);
+  text-decoration: line-through;
+}
+
+.price__unit {
+  font-size: var(--t-xs);
+  color: var(--c-ink-70);
+}
+
+/* --- Forms -------------------------------------------------------------- */
+
+.field {
   display: flex;
   flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.field__label {
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+}
+
+.field__input,
+.field__select,
+.field__textarea {
+  width: 100%;
+  min-height: 48px;
+  padding-inline: var(--sp-4);
+  padding-block: var(--sp-3);
+  background-color: var(--c-surface);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+  color: var(--c-ink);
+  font-size: var(--t-base);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.field__textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.field__input::placeholder,
+.field__textarea::placeholder {
+  color: var(--c-ink-45);
+}
+
+.field__input:hover,
+.field__select:hover,
+.field__textarea:hover {
+  border-color: var(--c-ink-45);
+}
+
+.field__error {
+  font-size: var(--t-sm);
+  color: var(--c-signal);
+}
+
+.field__hint {
+  font-size: var(--t-xs);
+  color: var(--c-ink-70);
+}
+
+/* --- Cards -------------------------------------------------------------- */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* One tab stop per card: the title link stretches over the whole card and
+   the image link is removed from the tab order in the markup. */
+.card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* --- Drawer -------------------------------------------------------------
+   Shared by the cart drawer, the mobile nav, and the size-guide drawer.
+   The dialog element handles the top layer; JS handles the focus trap,
+   Escape, and returning focus to the opener. */
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  pointer-events: none;
+}
+
+.drawer[open] {
+  display: block;
+  pointer-events: auto;
+}
+
+.drawer__overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgb(var(--c-ink-rgb) / 0.4);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.drawer[open] .drawer__overlay {
+  opacity: 1;
+}
+
+.drawer__panel {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 420px);
+  background-color: var(--c-surface);
+  transform: translateX(100%);
+  transition: transform var(--dur-slow) var(--ease);
+}
+
+.drawer[open] .drawer__panel {
+  transform: translateX(0);
+}
+
+.drawer--start .drawer__panel {
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+  transform: translateX(-100%);
+}
+
+.drawer__header {
+  display: flex;
   align-items: center;
-  gap: var(--rpl-space-sm);
-  padding-block: var(--rpl-space-xl);
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  border-block-end: 1px solid var(--c-ink-12);
+}
+
+.drawer__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-5);
+}
+
+.drawer__footer {
+  padding: var(--sp-5);
+  border-block-start: 1px solid var(--c-ink-12);
+}
+
+/* RTL: the panel slides from the mirrored edge. */
+[dir='rtl'] .drawer__panel {
+  transform: translateX(-100%);
+}
+
+[dir='rtl'] .drawer--start .drawer__panel {
+  transform: translateX(100%);
+}
+
+[dir='rtl'] .drawer[open] .drawer__panel {
+  transform: translateX(0);
+}
+
+/* --- Accordion ---------------------------------------------------------- */
+
+.accordion__item + .accordion__item {
+  border-block-start: 1px solid var(--c-ink-12);
+}
+
+.accordion__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-block: var(--sp-4);
+}
+
+.accordion__icon {
+  transition: transform var(--dur) var(--ease);
+}
+
+.accordion__item[open] .accordion__icon {
+  transform: rotate(180deg);
+}
+
+.accordion__content {
+  padding-block-end: var(--sp-4);
+  color: var(--c-ink-70);
+}
+
+/* --- Reveal -------------------------------------------------------------
+   Driven by one shared IntersectionObserver in global.js. Stagger is set
+   per element with --reveal-delay, capped at four steps / 240ms total. */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-shift));
+  transition: opacity var(--dur-slow) var(--ease) var(--reveal-delay),
+    transform var(--dur-slow) var(--ease) var(--reveal-delay);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   5. SECTIONS
+   Section-specific rules live here, one commented block per section, in the
+   order they appear in the theme. Sections are built in phases 2-4; this
+   region currently holds only the page shell.
+   ========================================================================== */
+
+/* --- Page shell --------------------------------------------------------- */
+
+.skip-link {
+  position: absolute;
+  inset-block-start: var(--sp-2);
+  inset-inline-start: var(--sp-2);
+  z-index: 60;
+  padding: var(--sp-3) var(--sp-4);
+  background-color: var(--c-surface);
+  color: var(--c-ink);
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+  transition: transform var(--dur) var(--ease);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.shell__main {
+  flex: 1 1 auto;
+}
+
+/* --- Sticky header ------------------------------------------------------
+   The element reports its own height into --header-height so anchored
+   content and drawers can offset against it. */
+
+.sticky-header {
+  display: block;
+  position: relative;
+  z-index: 20;
+}
+
+.sticky-header--stuck {
+  position: sticky;
+  inset-block-start: 0;
+  transition: transform var(--dur) var(--ease);
+}
+
+.sticky-header--hidden {
+  transform: translateY(-100%);
+}
+
+/* --- Header -------------------------------------------------------------
+   Placeholder layout; the mega menu, predictive search and mobile drawer
+   land in phase 2 and extend this block. */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  min-height: 64px;
+  padding-block: var(--sp-3);
+  background-color: var(--c-paper);
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  text-decoration: none;
+}
+
+.header__logo img {
+  width: auto;
+  max-height: 40px;
+}
+
+.header__nav {
+  flex: 1 1 auto;
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: 0 0 auto;
+}
+
+.header__cart-count {
+  min-width: 18px;
+  margin-inline-start: calc(var(--sp-1) * -1);
+  align-self: flex-start;
+  font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+@media (min-width: 990px) {
+  .header {
+    min-height: 76px;
+  }
+}
+
+/* --- Gift card ---------------------------------------------------------- */
+
+.gift-card__code {
+  padding: var(--sp-4);
+  border: 1px dashed var(--c-ink-45);
+  border-radius: var(--radius);
+  background-color: var(--c-surface);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  overflow-wrap: anywhere;
+}
+
+/* --- Footer ------------------------------------------------------------- */
+
+.footer {
+  background-color: var(--c-paper);
+}
+
+.footer__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.footer__payment-icon {
+  width: 38px;
+  height: 24px;
+}
+
+@media (min-width: 750px) {
+  .footer__inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* ==========================================================================
+   6. UTILITIES
+   ========================================================================== */
+
+/* The one permitted use of !important in the theme: this must win against
+   any component rule, or content intended only for screen readers becomes
+   visible. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.visually-hidden--focusable:focus-visible {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+  white-space: normal !important;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--sp-4));
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cluster-gap, var(--sp-3));
+}
+
+.text-center {
   text-align: center;
 }
 
-.rpl-divider {
-  border: 0;
-  border-block-start: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
-  margin-block: var(--rpl-space-md);
+.text-start {
+  text-align: start;
 }
 
-.rpl-list-unstyled {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.text-end {
+  text-align: end;
+}
+
+/* Scroll lock for open overlays. `overflow: hidden` alone does not hold on
+   iOS Safari, so the body is pinned at its current offset (written into
+   --locked-scroll-y by global.js) and the position restored on unlock. */
+.no-scroll {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-start: var(--locked-scroll-y, 0);
+  width: 100%;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Breakpoint visibility. Written mobile-first so the theme never needs a
+   `max-width` query: `.only-desktop` starts hidden and is revealed at the
+   750px breakpoint, where `.only-mobile` is hidden in the same block. */
+.only-desktop {
+  display: none;
+}
+
+@media (min-width: 750px) {
+  .only-desktop {
+    display: block;
+  }
+
+  .only-mobile {
+    display: none;
+  }
 }

@@ -1,0 +1,74 @@
+{%- comment -%}
+  PLACEHOLDER — rebuilt in phase 4 as main-product with gallery, sticky info,
+  variant picker, accordion blocks and @app block support
+  (build spec §9, Templates).
+{%- endcomment -%}
+
+<div class="section">
+  <div class="page-width">
+    <div class="grid" style="--grid-cols: 2;">
+      <div class="stack">
+        {%- for media in product.media -%}
+          <div class="media media--portrait">
+            {%- render 'image-fallback',
+              image: media,
+              alt: product.title,
+              sizes: '(min-width: 750px) 50vw, 100vw',
+              loading: 'eager'
+            -%}
+          </div>
+        {%- else -%}
+          <div class="media media--portrait">
+            {%- render 'image-fallback', alt: product.title -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <div class="stack">
+        <h1 class="h1">{{ product.title | escape }}</h1>
+        <p class="price">{{ product.price | money }}</p>
+
+        {%- form 'product', product -%}
+          {%- assign current_variant = product.selected_or_first_available_variant -%}
+
+          <div class="field">
+            <label class="field__label" for="variant-select">{{ product.options_with_values.first.name | escape }}</label>
+            <select class="field__select" name="id" id="variant-select">
+              {%- for variant in product.variants -%}
+                <option
+                  value="{{ variant.id }}"
+                  {% if variant == current_variant %}selected{% endif %}
+                  {% unless variant.available %}disabled{% endunless %}
+                >
+                  {{ variant.title }} — {{ variant.price | money }}
+                </option>
+              {%- endfor -%}
+            </select>
+          </div>
+
+          <button class="button button--primary button--full" type="submit" {% unless product.available %}disabled{% endunless %}>
+            {%- if product.available -%}
+              {{ 'products.product.add_to_cart' | t }}
+            {%- else -%}
+              {{ 'products.product.sold_out' | t }}
+            {%- endif -%}
+          </button>
+
+          {{ form | payment_button }}
+        {%- endform -%}
+
+        <div class="rte">{{ product.description }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_product.name",
+  "settings": [],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,35 @@
+{%- comment -%}
+  PLACEHOLDER — rebuilt in phase 4 (build spec §9, Templates).
+{%- endcomment -%}
+
+<div class="section">
+  <div class="page-width stack">
+    <h1 class="h1">{{ 'collections.title' | t }}</h1>
+
+    <div class="grid" style="--grid-cols: 3; --grid-cols-mobile: 2;">
+      {%- for collection in collections -%}
+        <div class="card">
+          <a class="media media--portrait" href="{{ collection.url }}" tabindex="-1" aria-hidden="true">
+            {%- render 'image-fallback',
+              image: collection.featured_image,
+              alt: collection.title,
+              sizes: '(min-width: 990px) 33vw, 50vw'
+            -%}
+          </a>
+          <div class="card__body">
+            <h2 class="h5">
+              <a class="card__link link" href="{{ collection.url }}">{{ collection.title | escape }}</a>
+            </h2>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_list_collections.name",
+  "settings": []
+}
+{% endschema %}

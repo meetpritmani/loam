@@ -1,148 +1,293 @@
-# PROGRESS
+# PROGRESS — Loam
 
-Tracks what's built, what's verified, and what's still open on the Replenish
-theme. Workflow rules for this file are defined in
-`shopify-theme-claude-code-prompts.md` — update this after every section.
+Execution log for the **Loam** premium Shopify theme (demo brand: Fernway).
+Spec: `CLAUDE.md` — follow it exactly; this file tracks execution against its
+§12 build phases.
 
-Prefix: `rpl-`. Convention: BEM class names, JSON templates + sections
-everywhere (including header/footer), no jQuery, native Shopify APIs
-preferred over hand-rolled equivalents.
+---
 
-## Status summary
+## 2026-08-20 — Spec change: Replenish → Loam
 
-`shopify theme check` — **0 errors, 0 warnings** (68 files inspected, last run
-2026-08-17). Mobile navigation, the AJAX cart drawer, product page JS,
-collection filtering, a first pass of homepage sections, and a product
-discovery batch are all done. Not yet fully Theme-Store-submittable end to
-end (see Known gaps).
+`CLAUDE.md` replaced the previous build spec. The two are different products,
+not revisions of one:
 
-The repo is pushed to `github.com/meetpritmani/replenish` (`main`). A dev
-store (`tes-store-7r6dce1z`) is connected via `shopify theme dev`, which means
-**every change from this point on is verified two ways**: `shopify theme
-check` locally, and the actual Shopify Liquid compiler on the live store (the
-dev-server sync log). This matters — local theme-check has already missed
-real compiler errors twice (a literal `{brace}` inside a `t:` filter argument,
-and an invalid `role` key in `settings_schema.json`) that only surfaced on
-the real store.
-
-A second planning doc, `shopify-theme-sections-prompts.md`, was added with a
-much larger section list (~20 sections across homepage, product discovery,
-trust/conversion, content, cart, and footer/utility) plus a template-wiring
-pass. This pass covers the homepage batch only — see Known gaps for the rest.
-
-## Built and verified
-
-| File | State | Tested against |
+| | Previous ("Replenish") | Current ("Loam") |
 |---|---|---|
-| `layout/theme.liquid`, `layout/password.liquid` | Complete | theme-check; deferred CSS/JS wiring, skip link, live regions |
-| `sections/header.liquid` | Mobile nav done; mega menu/predictive search/sticky still open | theme-check; 0/1/many menu items (with/without submenus), with/without logo, index vs. non-index `<h1>`, mobile off-canvas menu open/close with JS on and off, keyboard-only traversal, resize past desktop breakpoint while open |
-| `snippets/header-menu.liquid` (new) | Complete | theme-check; extracted from header.liquid so desktop nav and mobile off-canvas nav can't drift — 0/1/many links, with/without submenu |
-| `sections/footer.liquid` | **Scaffold** — no newsletter/localization | theme-check; 0/1/many blocks, social block with no links configured |
-| `sections/main-cart.liquid` | Complete no-JS baseline; drawer built separately (see below) | theme-check; empty cart |
-| `sections/main-product.liquid` | Complete — no-JS baseline plus gallery/variant/sticky-ATC JS hooks | theme-check; 1 variant (no select, gallery/sticky ATC still work), 10+ variants, no image, 1 image (no thumbnails rendered), many images, sold out, unavailable/no variant, no SKU / show_sku off, with/without selling plans (selling-plan-per-variant eligibility deliberately not handled — see gaps) |
-| `assets/rpl-product.js` (new) | Complete | theme-check; thumbnail gallery is an ARIA tablist/tabpanel with roving tabindex and arrow-key nav, screen-reader announcements via the existing `products.product.media.image_available` locale key; variant change never reconstructs price or translated labels in JS — it only toggles Liquid-rendered hidden blocks; sticky ATC resubmits the real form via `requestSubmit` (no duplicated add-to-cart logic); `IntersectionObserver`-unsupported and Theme Editor `shopify:section:load` re-init both handled |
-| `sections/cart-drawer.liquid` (new) | Complete | theme-check; empty cart, no-image line item, subscription line item, line item properties/discounts, cart-level discounts, unit pricing, many items (scrolls), sold-out/error response, keyboard-only use, screen reader (dialog role, live status), reduced motion (reuses existing `.rpl-drawer`/`.rpl-overlay` transitions) |
-| `assets/rpl-cart.js` (new) | Complete | theme-check; add-to-cart intercepted only when the drawer exists (cart_type: drawer) — falls through to native full-page POST otherwise; quantity change/remove/note update; header badge sync via the refreshed section's own item count, not per-endpoint response shape |
-| `sections/main-collection.liquid` | Complete — native Search & Discovery filtering/sorting | theme-check; no filters (S&D not configured), sort-only, filter with 0/1/many values, price range, several active filters at once, filters producing zero results (reuses `products.use_fewer_filters_html`), empty collection, no image/price products |
-| `sections/trending-products.liquid` (new) | Complete | theme-check + live store; reuses `snippets/product-card.liquid` as-is (badge is an overlay added in the section, not a snippet change); no collection picked, empty collection, badge on/off. Sort order comes from the picked collection's own setting — not a hand-rolled "best selling" computation |
-| `sections/featured-product.liquid` (new) | Complete | theme-check + live store; deliberately reuses `main-product.liquid`'s exact data-hooks/classes (`data-product-gallery`, `data-product-json`, `data-product-variant-select`, `data-product-price`, `data-product-submit`, `.rpl-product-form`) so `rpl-product.js`/`rpl-cart.js` drive it with zero new JS — required moving the shared gallery/product-form CSS out of `main-product.liquid`'s section-scoped stylesheet into `base.css` first (same class-sharing issue fixed once already for the cart drawer). Simplified vs. the full PDP on purpose: no selling plans, no SKU, no sticky ATC. No product picked (onboarding placeholder), 1 variant, many variants, sold out |
-| `sections/frequently-bought-together.liquid` (new) + `assets/rpl-fbt.js` (new) | Complete | theme-check + live store; product-page only; per-item variant selection is a plain inline `<select>`, not a modal (deliberate scope reduction — documented below); running total computed via a small `formatMoney()` — the one deliberate exception to "never reformat money in JS" in this theme, since a sum across independently-selectable items can't be pre-rendered by Liquid; single combined `/cart/add.js` call with an `items` array; reuses `RPL.refreshCartDrawer` (newly exposed from `rpl-cart.js`) instead of duplicating drawer-refresh logic |
-| `sections/recently-viewed.liquid` (new) + `sections/product-card-fetch.liquid` (new) + `assets/rpl-recently-viewed.js` (new) | Complete | theme-check + live store; localStorage-tracked (handle + timestamp, capped at 12, 30-day expiry), current product excluded from its own list, a since-unpublished product's fetch just returns nothing. `product-card-fetch.liquid` is a second "always-rendered, normally invisible" section (same trick as `cart-drawer.liquid`) giving a *stable* `?section_id=product-card-fetch` endpoint — needed because the original single-section dual-purpose design would have broken if a merchant ever added "Recently viewed" directly onto a product page (caught and fixed before it shipped, not after) |
-| `assets/rpl-facets.js` (new) | Complete | theme-check; every entry point (checkbox, sort select, price input, pill remove link, clear-all) funnels through one refresh() using the Section Rendering API; debounced for price inputs, immediate for checkbox/select; `history.pushState` + `popstate` handling so filtered URLs are bookmarkable and back/forward work; re-runs `RPL.initReveal` on swapped-in product cards; network-failure fallback is a real navigation |
-| `sections/main-404.liquid`, `main-page.liquid`, `main-search.liquid`, `main-blog.liquid`, `main-article.liquid`, `main-list-collections.liquid` | Complete | theme-check; empty/blank states per section comments |
-| `sections/main-account.liquid`, `main-login.liquid`, `main-register.liquid`, `main-addresses.liquid`, `main-order.liquid`, `main-activate-account.liquid`, `main-reset-password.liquid`, `main-password.liquid` | Complete | theme-check |
-| `sections/hero.liquid` | Complete — rebuilt as a slideshow | theme-check + live store; 1 slide (plain static hero, no controls rendered), 2-5 slides, a slide with no image/video, a slide with video overriding its image (native Shopify video, own pause control), a slide with no button, autoplay on/off, `prefers-reduced-motion` (disables autoplay outright), keyboard arrow-key nav. Blocks changed from separate heading/text/buttons types to one bundled "slide" type — `templates/index.json` updated to match |
-| `assets/rpl-hero.js` (new) | Complete | theme-check + live store; prev/next, dot indicators, reference-counted autoplay pause reasons (hover/focus/manual/tab-hidden) so they can't cancel each other out, video play/pause synced to slide-active state |
-| `sections/feature-highlights.liquid` (new) | Complete | theme-check + live store; 0 blocks (renders nothing), no icon on a block, no heading setting, a block with no link, many blocks. Icon is an `image_picker`, not a fixed icon library — merchants aren't limited to whatever the theme ships |
-| `sections/collection-list.liquid` (new) + `snippets/collection-card.liquid` (new) | Complete | theme-check + live store; 0 collections picked (renders nothing), a picked collection later deleted (skipped, not broken), no collection image, grid and carousel layout, title-overlay on/off |
-| `sections/testimonials.liquid` (new) + `snippets/testimonial-card.liquid` (new) | Complete | theme-check + live store; 0 blocks, no photo, no linked product, rating 1-5, grid and carousel layout |
-| `sections/trust-badges.liquid` (new) | Complete | theme-check + live store; 0 blocks, a block with no image (falls back to a placeholder, not a broken image — `image_picker` can't have a programmatic default), auto-scroll on/off, `prefers-reduced-motion` (drops the duplicate track and the animation, falls back to one static wrapping row), grayscale-until-hover on/off |
-| `assets/rpl-core.js` — `initCarousels` (new) | Complete | theme-check + live store; generic `[data-carousel]` enhancement shared by collection-list and testimonials — actual swipe/scroll is native CSS scroll-snap (no JS), this only wires optional prev/next buttons |
-| `snippets/icon.liquid` — `pause`/`play`/`star` icons (new) | Complete | theme-check + live store |
-| `snippets/*` (13 files total) | Complete | theme-check; referenced by all sections above |
-| `assets/base.css`, `rpl-core.js`, `rpl-customer.js` | Infrastructure | shared primitives (drawer, focus trap, scroll lock, reveal-on-scroll, carousel) consumed by the JS modules above |
-| `config/settings_schema.json`, `settings_data.json` | Complete | theme-check; 14 groups, 35 keys, cross-checked 1:1 |
-| `locales/en.default.json` | Complete | theme-check; added 4 previously-missing storefront keys (`sections.cart.remove_short`, `sections.collection_list.count`, `sections.footer.blocks.social.no_links`, `products.product.sku`) |
-| `locales/en.default.schema.json` (new) | Complete | theme-check; this file did not exist before — every `t:` reference in every section schema and in `settings_schema.json` was resolving against nothing. Built from a full audit of every `t:` key actually referenced in the codebase |
-| `templates/` (new — 17 files: index, 404, article, blog, cart, collection, list-collections, page, password, product, search, customers/{account,activate_account,addresses,login,order,register,reset_password}) | Complete | theme-check. **This directory did not exist at all before this pass** — no page could render in Shopify without it |
+| Product | Subscriptions / reorder theme | Natural-materials footwear theme |
+| Palette | Chalk / Pine / Shelf / Verdigris | Ink / Paper / Surface / Accent / Sand / Signal |
+| Stylesheet | `assets/critical.css` | `assets/base.css` |
+| Tokens | `snippets/css-variables.liquid` | `snippets/theme-tokens.liquid` |
+| Script | none | `assets/global.js` |
 
-## Verification performed this pass
+The Replenish-era work has been retired. Preserved in git history and in
+`git stash` (`stash@{0}: pre-skeleton-theme-rebuild checkpoint`) if anything
+needs recovering.
 
-- `shopify theme check` run to completion after every file change.
-- Every file also verified against the live dev store via `shopify theme
-  dev`'s sync log. Real errors caught there and fixed, most theme-check
-  didn't catch:
-  - A literal `{index}` placeholder inside a `t:` filter's string argument
-    (Shopify's Liquid tokenizer trips on raw braces there).
-  - An invalid `role: "shadow"` key in the color_scheme_group `role` map.
-  - A `templates/index.json` referencing three section types
-    (`trending-products`, `image-with-text`, `newsletter-signup`) written in
-    before actually building them — briefly broke the live homepage.
-  - `columns_desktop` written as a quoted string (`"4"`) in
-    `templates/index.json` for `trending-products`, whose schema defines it
-    as a `range` (needs a plain number) rather than the `select` type
-    (needs a string) used by the other sections with a same-named setting —
-    an inconsistency across my own sections, not obvious without the real
-    validator's exact error message.
-  - `theme check` *did* catch one itself this pass: a schema `name` over
-    Shopify's 25-character limit (`"Frequently bought together"`).
-- `templates/product.json` wired with `frequently-bought-together` and
-  `recently-viewed`; `templates/index.json` gained `trending-products`.
-  `featured-product` is built but **not wired anywhere** — its `product`
-  setting needs a real product reference I don't have for this store, so
-  leaving it unconfigured was more honest than guessing.
-- Still not interacted with in an actual browser by me — verification is
-  theme-check + the real Liquid compiler's sync log + code-path reasoning,
-  not a rendered/clicked page.
+**Removed this pass** (superseded by the Loam spec, or skeleton-theme demo
+scaffolding that has no place in a commercial theme):
 
-## Known gaps / TODO (priority order)
+- `assets/critical.css`, `assets/shoppy-x-ray.svg`, `assets/icon-account.svg`,
+  `assets/icon-cart.svg`
+- `snippets/css-variables.liquid`, `snippets/price.liquid`, `snippets/image.liquid`
+- `sections/hello-world.liquid`, `sections/custom-section.liquid`
+- `blocks/group.liquid`, `blocks/text.liquid` (the whole `blocks/` directory —
+  not part of the file structure in §3)
 
-1. **Rest of `shopify-theme-sections-prompts.md`** — homepage batch and
-   product discovery are both done now. Still open: countdown-banner,
-   faq-accordion (trust/conversion — testimonials and trust-badges are
-   done); image-with-text, video-section, ugc-gallery (content);
-   announcement-bar (cart/checkout-adjacent — the cart drawer itself is
-   already done, but without the free-shipping progress bar or upsell block
-   the doc describes); newsletter-signup, mega-menu (footer/utility). Plus
-   the full template-wiring pass across every page, not just home/product.
-2. `collection-list`'s `collections` setting is empty, `trust-badges` has no
-   blocks, and `featured-product` isn't wired into any template at all —
-   all three need real store data (actual collections, actual payment/press
-   logo images, an actual product to spotlight) only the merchant can
-   supply. Not a code gap, a content gap.
-3. Frequently-bought-together's per-item variant selection is a plain
-   inline `<select>`, not the modal the original doc described — a
-   deliberate scope reduction to avoid building a whole popup UI for
-   marginal UX gain over an inline picker every other product form in this
-   theme already uses.
-4. **Footer newsletter + localization** — `locales/en.default.json` already
-   has an unused top-level `newsletter` key; `footer.liquid` doesn't render a
-   signup form or a country/language selector yet.
-5. **Contact page** — no contact-form template/section. `locales` has unused
-   `templates.contact.form.*` keys reserved for this.
-6. **Gift card page** — `templates/gift_card.liquid` doesn't exist yet.
-   `locales.gift_cards.issued.*` is a complete, unused key set reserved for
-   it. (Not a JSON template — gift card pages use a standalone Liquid
-   template with `layout: none`.)
-7. **Theme blocks** (`blocks/` directory) — OS 2.0 theme-blocks feature is
-   entirely unused. Not required, but worth a decision before Theme Store
-   submission.
-8. Performance/Lighthouse and full WCAG AA audits haven't been run.
-9. Selling-plan-per-variant eligibility isn't checked by `rpl-product.js` —
-   all selling plans always show regardless of the selected variant. Only
-   matters for stores with variant-restricted subscription plans.
-10. The cart drawer's visible error text and screen-reader announcements
-    don't yet cover every edge case a real store might hit (e.g. Shopify
-    Scripts/Functions rejecting a line) — only the standard `/cart/add`,
-    `/cart/change`, `/cart/update` error shapes are handled.
-11. Active price-range filters don't get a removable pill in
-    `main-collection.liquid` (only list/boolean values do) — "Clear all"
-    still removes them, but there's no one-click way to drop just the price
-    bound. Also, the min price input's placeholder is hardcoded to "0" rather
-    than read from a filter field, since `filter.range_min` isn't a field I
-    could confirm exists on Shopify's price_range filter object from memory
-    alone (`range_max` is used with confidence; unverified fields were avoided
-    rather than guessed at).
+`snippets/price.liquid` was built around selling-plan allocations and read
+settings (`show_savings_badge`) that no longer exist. It is rebuilt from
+scratch in phase 3 against Loam's price rules, not ported.
 
-Ask which of these to build next (per the project's own workflow doc) rather
-than assuming an order.
+---
+
+## Phase status (§12)
+
+| # | Phase | Status |
+|---|---|---|
+| 1 | Foundation | **Done** — theme-check clean, live compiler clean, zero theme console errors |
+| 2 | Chrome (announcement bar, header + mega menu, footer, cart drawer) | Not started |
+| 3 | Homepage sections (§9, 3–17) | Not started |
+| 4 | Templates | Not started |
+| 5 | Demo store seeding (§11) | Not started |
+| 6 | Demo data in the repo | Not started |
+| 7 | Hardening | Not started |
+
+---
+
+## Phase 1 — Foundation
+
+### Delivered
+
+| File | Notes |
+|---|---|
+| `snippets/theme-tokens.liquid` | New. Font faces, `:root` tokens, one `.color-{id}` class per scheme |
+| `assets/base.css` | New. Regions 1–6, the only stylesheet |
+| `assets/global.js` | New. Reveal + `<sticky-header>` + `<loam-drawer>`, the only script |
+| `config/settings_schema.json` | Rebuilt for Loam: 11 groups |
+| `config/settings_data.json` | Rebuilt: 4 named schemes + defaults for every setting |
+| `snippets/meta-tags.liquid` | Rebuilt |
+| `snippets/structured-data.liquid` | Rebuilt |
+| `snippets/icon.liquid` | New. 30 icons |
+| `snippets/image-fallback.liquid` | New. The three-layer image path (§6) |
+| `locales/en.default.json` | Rebuilt |
+| `locales/en.default.schema.json` | Rebuilt |
+| `layout/theme.liquid`, `layout/password.liquid` | Rebuilt on the new shell |
+| `templates/gift_card.liquid` | Rebuilt (it is a `{% layout none %}` document, so it carries its own head) |
+| `templates/index.json` | Emptied — the homepage is populated in phase 3/6 |
+
+### Design system
+
+Palette is per-scheme, not global. §2 specifies six fixed roles, §13 requires
+a colour-scheme setting on every section; those are reconciled by making the
+six roles the *fields of a colour scheme*, so `--c-ink` / `--c-paper` /
+`--c-surface` / `--c-accent` / `--c-sand` / `--c-signal` resolve differently
+inside a section that has picked a different scheme. `:root` carries the
+default palette as a fallback only.
+
+`--c-ink-70 / -45 / -12` are derived with the Liquid `color_mix` filter against
+each scheme's own background, per §2. Separate `--c-ink-rgb` / `--c-paper-rgb`
+triplets exist for legitimate alpha surfaces (scrims, drawer overlays) and are
+never used for text.
+
+Four schemes ship: `scheme-paper` (default), `scheme-surface`, `scheme-sand`,
+`scheme-ink`. Contrast checked against WCAG 2.1 AA for the default
+combinations:
+
+| Combination | Ratio | AA normal text |
+|---|---|---|
+| Ink on Paper | 16.15:1 | Pass |
+| Ink on Surface | 17.78:1 | Pass |
+| Ink on Sand | 13.23:1 | Pass |
+| Accent `#2E6B4F` on Paper | 5.73:1 | Pass |
+| Accent on Surface | 6.30:1 | Pass |
+| Accent on Sand | 4.69:1 | Pass (tightest combination in the theme) |
+| Signal `#B23A2F` on Paper | 5.39:1 | Pass |
+| Paper on Ink | 16.15:1 | Pass |
+
+`scheme-ink` needs its own accent and signal — the Paper-scheme accent
+`#2E6B4F` on `#101A16` is **2.82:1 and fails outright** — so it ships
+`#8FBFA4` (8.60:1) and `#E08C82` (6.98:1). Worth knowing before anyone
+"simplifies" the scheme definitions back down to a single shared accent.
+
+Accent on Sand at 4.69:1 has only 0.19 of headroom over the 4.5 threshold.
+If a merchant darkens Sand or lightens Accent it fails, which is what the
+`info` text on those two settings is there to signal.
+
+### Budgets
+
+| Budget | Limit | Actual |
+|---|---|---|
+| Theme CSS | < 60KB gzipped | **6.2KB** |
+| Theme JS | < 40KB gzipped | **4.0KB** |
+| `shopify theme check` | 0 errors, 0 warnings | **0 / 0**, 37 files |
+
+### Decisions worth recording
+
+**Reveal is a module singleton, not a custom element.** §4 says "custom
+elements only, one class per behaviour". The scroll-reveal engine is the one
+exception: it is a document-wide service, and wrapping every revealable
+heading in a custom element would allocate one element instance per revealed
+node — which is the cost the "one shared IntersectionObserver" rule exists to
+avoid. It re-scans on `shopify:section:load`, so editor lifecycle still works.
+`<sticky-header>` and `<loam-drawer>` are proper custom elements.
+
+**`rel=next` is not emitted.** §7 asks for `rel=prev/next` in
+`meta-tags.liquid`. A layout has no access to the `paginate` object, so the
+total page count is unknowable there — `prev` is always provable from
+`current_page`, `next` is not, and pointing `next` at a URL that 404s is worse
+for crawlers than omitting it. Shopify's `canonical_url` already resolves
+paginated URLs correctly. Revisit in phase 4 if a mechanism appears.
+
+**Scroll lock pins the body with `position: fixed`.** `overflow: hidden` alone
+does not hold on iOS Safari. The lock is reference-counted so a drawer opened
+from inside another drawer cannot unlock the page early, and the scroll offset
+is restored on unlock.
+
+**`image_tag` arguments are never nil.** A nil named argument renders an empty
+attribute (`fetchpriority=""`) rather than being omitted, which is invalid for
+enumerated attributes — so `image-fallback.liquid` resolves every default
+before the call, and branches on whether intrinsic dimensions were supplied
+rather than passing `width: nil`.
+
+**Placeholder sections.** `sections/{404,article,blog,cart,collection,`
+`collections,page,password,product,search}.liquid` and `header`/`footer` were
+skeleton-theme leftovers that rendered a bare `<img src>` and carried their own
+`{% stylesheet %}` blocks — both forbidden (§4, §5, §6). They have been reduced
+to minimal, valid placeholders on the Loam shell: `.section` / `.page-width`
+markup, all media through `image-fallback.liquid`, no per-section CSS. They are
+marked `PLACEHOLDER` in a comment at the top and are rebuilt properly in phases
+2 and 4. `header.liquid` already sits inside `<sticky-header>` and uses
+`icon.liquid`, so the sticky behaviour and `--header-height` are live and
+testable now.
+
+### Live-compiler verification (dev server, port 9292)
+
+Ran against the real Shopify compiler. **One genuine bug found, invisible to
+local `theme check`** — the pattern the previous build warned about, confirmed
+again on the first push:
+
+> `snippets/structured-data.liquid` — Liquid syntax error (line 89): Variable
+> `{{ shop.url | append: routes.search_url | append: '?q={search_term_string}'`
+> was not properly terminated with regexp: `/\}\}/`
+
+The `SearchAction` `urlTemplate` has to contain the literal token
+`{search_term_string}`. Inside a `{{ ... }}` output tag, Liquid's variable
+lexer scans for the closing braces and chokes on a brace-wrapped token in a
+string literal — even though the string is quoted. `theme check` passed it
+cleanly; the real compiler rejected the whole file, which 500'd every page.
+
+Fixed by building the token in the `{%- liquid -%}` block (a `{% %}` tag
+terminates on `%}`, so the braces are inert there) and outputting the finished
+variable. **Rule for the rest of the build: never put a `{` or `}` inside a
+string literal in an output tag.**
+
+Verified after the fix, on the rendered homepage:
+
+| Check | Result |
+|---|---|
+| Homepage | HTTP 200, no upload or Liquid errors |
+| JSON-LD | 1 block, parses as valid JSON, `@graph` = Organization + WebSite |
+| `color_mix` tints | Correct, and correctly *inverted* per scheme — `--c-ink-70` is `#555b57` on Paper and `#b0b3af` on Ink |
+| All four `.color-*` classes | Emitted; `<body>` carries `color-scheme-paper` |
+| `base.css` / `global.js` | Both linked, JS as `type="module"` |
+| Shell | skip link, `<sticky-header>`, `<main id="main">`, live region, seam divider, `icon.liquid` SVGs all present |
+| `charset` position | Byte 65 — inside the 1024-byte requirement |
+| Empty attributes | None — the `image_tag` nil-argument fix holds |
+
+`--c-ink-70/-45/-12` fallbacks in `:root` were hand-computed guesses; they have
+been corrected to the exact values `color_mix` produces.
+
+### Full template sweep — all clean
+
+Every template exercised against the real compiler on the dev store
+(`tes-store-7r6dce1z`, which carries Shopify's standard sample catalogue):
+
+| Route | Status | Compiler |
+|---|---|---|
+| `/` | 200 | clean |
+| `/collections/all` | 200 | clean |
+| `/collections` | 200 | clean |
+| `/cart` | 200 | clean |
+| `/search?q=shoe` | 200 | clean |
+| `/blogs/news` | 200 | clean |
+| `/this-page-does-not-exist` | 404 | clean, renders the 404 section |
+| `/products/{selling-plans-ski-wax, the-collection-snowboard-liquid, the-3p-fulfilled-snowboard, gift-card}` | 200 | clean |
+
+`/pages/about` returns 404 because the store has no such page — store content,
+not a theme fault.
+
+JSON-LD validated by parsing it, on every template that emits it:
+
+- Product: valid, **one Offer per variant** confirmed (3 offers on the
+  multi-variant product), availability resolved per variant
+- BreadcrumbList: `Home > The Collection Snowboard: Liquid`
+- CollectionPage: ItemList correctly capped at 12 with `numberOfItems: 13`
+- No `null` values anywhere in any graph
+
+`image_tag` output confirmed to carry `width`, `height`, 10 `srcset` entries,
+and **no empty attributes** — which also validates the decision not to pass
+`width`/`height` for a merchant image object: `image_tag` derives both, and
+that is what reserves the space keeping CLS at zero.
+
+### Browser runtime — zero theme console errors
+
+Checked in headless Chrome across `/`, product, collection, cart and search.
+
+`global.js` provably executed: the post-JS DOM shows
+`<sticky-header class="sticky-header sticky-header--stuck">` and
+`<html style="--header-height: 68px">`. Both are written by
+`connectedCallback` / `measure()`, so the module loaded, the custom element
+registered and upgraded, and its callbacks ran without throwing.
+
+**Every console message came from Shopify's own infrastructure, none from the
+theme:**
+
+1. `origin_trials-*.js` blocked by CORS — Shopify's storefront script, blocked
+   only because the dev proxy serves over `http://127.0.0.1`
+2. `[HotReload] Connected` — the CLI's own hot-reload client
+3. `Framing 'https://shop.app/' violates ... frame-ancestors` — the Shop Pay
+   iframe injected by `content_for_header`
+
+All three are `theme dev` proxy artifacts. Re-check on a published preview URL
+during phase 7 hardening — the same reason §14 requires Lighthouse to run
+there rather than against localhost.
+
+**Operational note: do not use `sed -i` inside the theme directory while
+`shopify theme dev` is running.** GNU sed writes its temp file as a sibling of
+the target, and the CLI's file watcher picked it up mid-write, failing the
+upload with "snippets/sedpdbrCl — Must have a .liquid file extension". Because
+the temp file is then deleted, nothing can re-upload to clear the record and
+the dev server serves that stale error until restarted. Use `python`/`Write`
+for in-place edits instead.
+
+---
+
+## Open, needs you
+
+**1. Phase 1 is verified and the checkpoint is met.** Nothing outstanding here
+— `theme check` clean, every template compiles and returns 200, JSON-LD valid,
+zero theme console errors. The four items previously flagged as unverified
+against the real compiler are all now confirmed working: the
+`asset_url | image_url | image_tag` chain, `color_mix` argument order,
+`font_modify: 'weight', 'bolder'` (returns nil and emits nothing, as expected,
+no error), and the `color_scheme_group` `role` map.
+
+**2. No `templates/customers/*`.** skeleton-theme does not ship them and they
+were removed with the Replenish work. They are a Theme Store requirement and
+are built in phase 4 (§9).
+
+**3. No demo media yet.** `assets/demo-*.webp` does not exist, so
+`image-fallback.liquid` currently resolves to layer 3 (`placeholder_svg_tag`)
+everywhere. That is correct behaviour, not a bug — layer 2 lights up in phase
+6 once the Burst-sourced CC0 files are processed and copied in (§6). Nothing
+before phase 6 should depend on those files existing.
+
+---
+
+## Verification method
+
+Every phase is checked two ways, per the previous build's lesson:
+
+1. `shopify theme check` locally — necessary, not sufficient
+2. The live dev-server sync log, which is Shopify's real compiler
+
+Phase 1 has passed (1) and is awaiting (2).

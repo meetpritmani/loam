@@ -1,0 +1,179 @@
+{%- comment -%}
+  theme-tokens.liquid — the single source of truth for the Loam design system.
+
+  Emits, in one inline <style> block:
+    1. @font-face declarations for the merchant's heading + body fonts
+    2. Global :root tokens (type scale, spacing, radius, motion, layout)
+    3. One `.color-{scheme.id}` class per colour scheme, exposing the six
+       Loam palette roles plus the three derived ink tints
+
+  Params: none. Rendered once, from the <head> of every layout.
+
+  Palette roles (build spec §2):
+    --c-ink      text, buttons, footer background
+    --c-paper    page background
+    --c-surface  cards, drawers, inputs
+    --c-accent   link hover, progress, focus ring
+    --c-sand     image placeholders, soft badges
+    --c-signal   sale price and sale badge ONLY
+
+  Ink tints are produced with the `color_mix` filter against the scheme's own
+  background, never with `opacity` on text — opacity would also fade any
+  child element and breaks sub-pixel antialiasing on dark schemes.
+
+  The RGB triplets (--c-ink-rgb etc.) exist purely for legitimate alpha
+  surfaces — hero scrims, drawer overlays — not for text.
+{%- endcomment -%}
+
+{%- liquid
+  assign heading_font = settings.heading_font
+  assign heading_font_bold = heading_font | font_modify: 'weight', 'bolder'
+  assign body_font = settings.body_font
+  assign body_font_bold = body_font | font_modify: 'weight', '600'
+  assign body_font_italic = body_font | font_modify: 'style', 'italic'
+-%}
+
+{% style %}
+  {{ heading_font | font_face: font_display: 'swap' }}
+  {{ heading_font_bold | font_face: font_display: 'swap' }}
+  {{ body_font | font_face: font_display: 'swap' }}
+  {{ body_font_bold | font_face: font_display: 'swap' }}
+  {{ body_font_italic | font_face: font_display: 'swap' }}
+
+  :root {
+    /* ---- Type families ------------------------------------------------ */
+    --f-heading: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+    --f-heading-style: {{ heading_font.style }};
+    --f-heading-weight: {{ heading_font.weight }};
+    --f-body: {{ body_font.family }}, {{ body_font.fallback_families }};
+    --f-body-style: {{ body_font.style }};
+    --f-body-weight: {{ body_font.weight }};
+    --f-body-weight-bold: 600;
+
+    /* ---- Type scale ---------------------------------------------------
+       Every heading level is a clamp() so there is no step-change in size
+       at a breakpoint. The merchant scale settings are applied as a
+       multiplier at the point of use, not baked in here, so the fluid
+       floor and ceiling stay proportional. */
+    --heading-scale: {{ settings.heading_scale | default: 100 | divided_by: 100.0 }};
+    --body-scale: {{ settings.body_scale | default: 100 | divided_by: 100.0 }};
+    --heading-tracking: {{ settings.heading_letter_spacing | default: 0 }}px;
+    --caption-tracking: {{ settings.caption_letter_spacing | default: 1 }}px;
+    --heading-transform: {% if settings.heading_uppercase %}uppercase{% else %}none{% endif %};
+
+    --t-xs: 0.75rem;
+    --t-sm: 0.875rem;
+    --t-base: 1rem;
+    --t-md: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
+    --t-lg: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+    --t-xl: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+    --t-2xl: clamp(2.125rem, 1.5rem + 2.6vw, 3.25rem);
+    --t-3xl: clamp(2.75rem, 1.6rem + 4.6vw, 4.5rem);
+
+    --lh-tight: 1.08;
+    --lh-heading: 1.16;
+    --lh-body: 1.6;
+
+    /* ---- Spacing ------------------------------------------------------ */
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 24px;
+    --sp-6: 32px;
+    --sp-7: 48px;
+    --sp-8: 64px;
+    --sp-9: 96px;
+
+    /* ---- Layout ------------------------------------------------------- */
+    --page-width: {{ settings.page_width | default: 1440 }}px;
+    --page-gutter: {{ settings.page_gutter | default: 24 }}px;
+    --grid-gap: {{ settings.grid_gap | default: 24 }}px;
+    --radius: {{ settings.corner_radius | default: 4 }}px;
+    --radius-sm: {{ settings.corner_radius | default: 4 | at_most: 4 }}px;
+    --border-hairline: 1px;
+
+    /* ---- Motion -------------------------------------------------------
+       One easing curve and three durations for the whole theme. Reveal
+       delay is set per-element by the shared IntersectionObserver. */
+    --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --dur-fast: 120ms;
+    --dur: 240ms;
+    --dur-slow: 420ms;
+    --reveal-delay: 0ms;
+    --reveal-shift: 20px;
+
+    /* ---- Focus -------------------------------------------------------- */
+    --focus-width: 2px;
+    --focus-offset: 3px;
+
+    /* ---- Elevation ----------------------------------------------------
+       Exactly two shadows exist in Loam: the mega menu and hovered value
+       cards. Anything else stays flat. */
+    --shadow-soft: 0 10px 30px -12px rgb(var(--c-shadow-rgb) / 0.22);
+
+    --header-height: 0px;
+
+    /* ---- Palette fallback ---------------------------------------------
+       The real palette lives on the `.color-*` classes below; <body>
+       always carries one. These defaults only guarantee that an element
+       rendered outside any scheme (a stray editor preview, say) still has
+       readable colour rather than resolving to an invalid value. */
+    --c-paper: #F5F4F0;
+    --c-surface: #FFFFFF;
+    --c-ink: #101A16;
+    --c-accent: #2E6B4F;
+    --c-sand: #E3DED1;
+    --c-signal: #B23A2F;
+    --c-ink-70: #555b57;
+    --c-ink-45: #8e928e;
+    --c-ink-12: #dadad6;
+    --c-button: #101A16;
+    --c-button-label: #F5F4F0;
+    --c-ink-rgb: 16 26 22;
+    --c-paper-rgb: 245 244 240;
+    --c-shadow-rgb: 16 26 22;
+    --seam: repeating-linear-gradient(to right, #dadad6 0 6px, transparent 6px 12px);
+  }
+
+  {%- for scheme in settings.color_schemes -%}
+    {%- liquid
+      assign s = scheme.settings
+      assign ink = s.text
+      assign paper = s.background
+      assign ink_70 = ink | color_mix: paper, 70
+      assign ink_45 = ink | color_mix: paper, 45
+      assign ink_12 = ink | color_mix: paper, 12
+      assign shadow = s.shadow | default: s.text
+    -%}
+    .color-{{ scheme.id }} {
+      --c-paper: {{ paper }};
+      --c-surface: {{ s.surface | default: paper }};
+      --c-ink: {{ ink }};
+      --c-accent: {{ s.accent | default: ink }};
+      --c-sand: {{ s.sand | default: paper }};
+      --c-signal: {{ s.signal | default: ink }};
+
+      --c-ink-70: {{ ink_70 }};
+      --c-ink-45: {{ ink_45 }};
+      --c-ink-12: {{ ink_12 }};
+
+      --c-button: {{ s.button | default: ink }};
+      --c-button-label: {{ s.button_label | default: paper }};
+
+      --c-ink-rgb: {{ ink.red }} {{ ink.green }} {{ ink.blue }};
+      --c-paper-rgb: {{ paper.red }} {{ paper.green }} {{ paper.blue }};
+      --c-shadow-rgb: {{ shadow.red }} {{ shadow.green }} {{ shadow.blue }};
+
+      /* The seam divider — a dashed hairline, never a solid rule. */
+      --seam: repeating-linear-gradient(
+        to right,
+        {{ ink_12 }} 0 6px,
+        transparent 6px 12px
+      );
+
+      color: var(--c-ink);
+      background-color: var(--c-paper);
+    }
+  {%- endfor -%}
+{% endstyle %}

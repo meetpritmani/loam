@@ -1,97 +1,91 @@
+{%- liquid
+  assign rtl_locales = 'ar,he,fa,ur,yi'
+  assign locale_root = request.locale.iso_code | split: '-' | first | downcase
+  assign rtl_list = rtl_locales | split: ','
+  assign text_direction = 'ltr'
+  if rtl_list contains locale_root
+    assign text_direction = 'rtl'
+  endif
+
+  assign default_scheme = 'scheme-paper'
+  for scheme in settings.color_schemes limit: 1
+    assign default_scheme = scheme.id
+  endfor
+-%}
 <!doctype html>
-<html class="no-js" lang="{{ request.locale.iso_code }}">
+<html
+  lang="{{ request.locale.iso_code }}"
+  dir="{{ text_direction }}"
+  {% unless settings.enable_reveal %}
+    data-reveal="off"
+  {% endunless %}
+>
   <head>
-    {% comment %}
-      No `dir` attribute: Liquid exposes no locale direction, so the theme is
-      built RTL-safe with CSS logical properties instead (margin-inline,
-      inset-inline-*, text-align: start) and inherits direction from the
-      browser/locale rather than hardcoding one.
-    {% endcomment %}
+    {%- comment -%}
+      charset and viewport come first and stay first — charset must fall
+      inside the first 1024 bytes of the document or the browser re-parses.
+      Nothing that can grow (tokens, meta tags) may be placed above them.
+    {%- endcomment -%}
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <link rel="canonical" href="{{ canonical_url }}">
-    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone=no">
+
+    {%- comment -%}
+      Fonts: preload both families the theme actually renders, then let
+      theme-tokens.liquid declare the @font-face rules with swap.
+    {%- endcomment -%}
+    {%- unless settings.heading_font.system? and settings.body_font.system? -%}
+      <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+    {%- endunless -%}
+    {%- unless settings.body_font.system? -%}
+      {{ settings.body_font | font_url | preload_tag: as: 'font', crossorigin: 'anonymous' }}
+    {%- endunless -%}
+    {%- unless settings.heading_font.system? -%}
+      {{ settings.heading_font | font_url | preload_tag: as: 'font', crossorigin: 'anonymous' }}
+    {%- endunless -%}
+
+    {%- render 'theme-tokens' -%}
+
+    {{ 'base.css' | asset_url | stylesheet_tag: preload: true }}
+
+    <script src="{{ 'global.js' | asset_url }}" type="module"></script>
+
+    {%- render 'meta-tags' -%}
+    {%- render 'structured-data' -%}
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
       <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180, height: 180 }}">
     {%- endif -%}
 
-    <title>
-      {{ page_title }}
-      {%- if current_tags %} &ndash; {{ 'general.meta.tags' | t: tags: current_tags | join: ', ' }}{% endif -%}
-      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
-      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
-    </title>
-
-    {%- if page_description -%}
-      <meta name="description" content="{{ page_description | escape }}">
-    {%- endif -%}
-
-    {% render 'meta-tags' %}
-
-    {% comment %}
-      Swap the no-js class before first paint so CSS can branch on JS
-      availability without a flash of the fallback state.
-    {% endcomment %}
-    <script>
-      document.documentElement.classList.replace('no-js', 'js');
-    </script>
-
-    {% render 'css-variables' %}
-    {% render 'critical-css' %}
-
-    {% comment %}
-      base.css is deferred: `media="print"` keeps it out of the critical path,
-      the onload handler promotes it once downloaded. The <noscript> copy keeps
-      the theme fully styled with JavaScript disabled.
-    {% endcomment %}
-    <link
-      rel="stylesheet"
-      href="{{ 'base.css' | asset_url }}"
-      media="print"
-      onload="this.media='all';this.onload=null;"
-    >
-    <noscript><link rel="stylesheet" href="{{ 'base.css' | asset_url }}"></noscript>
-
-    <script src="{{ 'rpl-core.js' | asset_url }}" defer="defer"></script>
-
     {{ content_for_header }}
   </head>
 
-  <body class="rpl-template-{{ request.page_type | handle }}">
-    <a class="rpl-skip-link" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>
+  <body class="shell color-{{ default_scheme }} template-{{ request.page_type | handle }}">
+    <a class="skip-link" href="#main">{{ 'accessibility.skip_to_content' | t }}</a>
 
     {% sections 'header-group' %}
 
-    <div class="rpl-page-container">
-      <main id="MainContent" class="rpl-main" role="main" tabindex="-1">
-        {{ content_for_layout }}
-      </main>
-    </div>
+    <main id="main" class="shell__main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
 
     {% sections 'footer-group' %}
 
     {%- comment -%}
-      Rendered directly (not through a section group) so it's always present
-      when cart_type is "drawer" and can't be deleted from the Theme
-      Editor's section list — see sections/cart-drawer.liquid.
+      The single polite live region for the whole theme. Cart updates, form
+      results, and any failed fetch announce through global.js's announce().
     {%- endcomment -%}
-    {%- if settings.cart_type == 'drawer' -%}
-      {% section 'cart-drawer' %}
-    {%- endif -%}
+    <div
+      id="a11y-announcer"
+      class="visually-hidden"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
 
-    {%- comment -%}
-      Same trick, different reason: this renders nothing on a normal page
-      (product is blank), but gives rpl-recently-viewed.js a stable
-      ?section_id=product-card-fetch endpoint to fetch a single product's
-      card by handle from any page — see sections/product-card-fetch.liquid.
-    {%- endcomment -%}
-    {% section 'product-card-fetch' %}
-
-    {% comment %} Shared live regions — see RPL.announce() in rpl-core.js. {% endcomment %}
-    <div id="rpl-live-status" class="rpl-visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
-    <div id="rpl-live-alert" class="rpl-visually-hidden" role="alert" aria-live="assertive" aria-atomic="true"></div>
+    <ul hidden>
+      <li id="a11y-new-window-message">{{ 'accessibility.new_window' | t }}</li>
+    </ul>
   </body>
 </html>

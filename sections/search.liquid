@@ -1,0 +1,71 @@
+{%- comment -%}
+  PLACEHOLDER — rebuilt in phase 4, with predictive search in the header
+  (build spec §9, Templates).
+{%- endcomment -%}
+
+<div class="section">
+  <div class="page-width stack">
+    <h1 class="h1">{{ 'search.title' | t }}</h1>
+
+    <form class="cluster" action="{{ routes.search_url }}" method="get" role="search">
+      <div class="field">
+        <label class="visually-hidden" for="search-input">{{ 'search.placeholder' | t }}</label>
+        <input
+          class="field__input"
+          type="search"
+          name="q"
+          id="search-input"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'search.placeholder' | t }}"
+        >
+      </div>
+      <button class="button button--primary" type="submit">{{ 'search.submit' | t }}</button>
+    </form>
+
+    {%- if search.performed -%}
+      {%- if search.results_count == 0 -%}
+        <p class="text-muted">{{ 'search.no_results_html' | t: terms: search.terms }}</p>
+      {%- else -%}
+        <p class="caption">{{ 'search.results_for_html' | t: terms: search.terms, count: search.results_count }}</p>
+
+        {%- paginate search.results by 24 -%}
+          <div class="grid" style="--grid-cols: 4; --grid-cols-mobile: 2;">
+            {%- for result in search.results -%}
+              {%- assign result_image = result.featured_image | default: result.image -%}
+              <div class="card">
+                <a class="media media--portrait" href="{{ result.url }}" tabindex="-1" aria-hidden="true">
+                  {%- render 'image-fallback',
+                    image: result_image,
+                    alt: result.title,
+                    sizes: '(min-width: 990px) 25vw, 50vw'
+                  -%}
+                </a>
+                <div class="card__body">
+                  <h2 class="h5">
+                    <a class="card__link link" href="{{ result.url }}">{{ result.title | escape }}</a>
+                  </h2>
+                  {%- if result.price -%}
+                    <p class="price">{{ result.price | money }}</p>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="text-center" aria-label="{{ 'general.pagination.label' | t }}">
+              {{- paginate | default_pagination -}}
+            </nav>
+          {%- endif -%}
+        {%- endpaginate -%}
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_search.name",
+  "settings": []
+}
+{% endschema %}

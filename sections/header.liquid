@@ -1,380 +1,90 @@
 {%- comment -%}
-  SCAFFOLD — see PROGRESS.md.
+  PLACEHOLDER — the real header (mega menu, predictive search, mobile drawer,
+  cart count via Section Rendering API) is phase 2, build spec §9.
 
-  Functional, accessible, and theme-check clean, but intentionally minimal:
-  mega menu, predictive search, cart drawer, and sticky behaviour are still a
-  dedicated build. Mobile navigation (this file) is done: a <details>-based
-  off-canvas menu that works with JavaScript disabled — the JS in rpl-core.js
-  only adds scroll lock, focus trap, and click-outside/Escape-to-close on top
-  of the native disclosure, it never replaces it.
+  This version already sits inside <sticky-header> and uses icon.liquid, so
+  the shell, the sticky behaviour and the --header-height custom property are
+  live and testable from phase 1.
 {%- endcomment -%}
 
-{%- liquid
-  assign menu = section.settings.menu
-  assign has_logo = false
-  if section.settings.logo != blank or shop.brand.logo != blank
-    assign has_logo = true
-  endif
-  assign logo_image = section.settings.logo | default: shop.brand.logo
-  assign logo_sizes = settings.logo_width | append: 'px'
--%}
-
-{%- comment -%}
-  Liquid-driven values go through {% style %} (a real stylesheet, scoped to this
-  section) rather than a style attribute, so the project's no-inline-style rule
-  holds even for merchant-configurable dimensions.
-{%- endcomment -%}
-{% style %}
-  #shopify-section-{{ section.id }} {
-    --rpl-logo-width: {{ settings.logo_width }}px;
-  }
-{% endstyle %}
-
-<div class="rpl-color-{{ section.settings.color_scheme }} rpl-header-shell">
-  <header class="rpl-container rpl-header" role="banner">
-    <div class="rpl-header__inner">
-      <div class="rpl-header__nav">
-        {%- if menu != blank and menu.links.size > 0 -%}
-          <details class="rpl-header__mobile-nav">
-            <summary class="rpl-icon-button rpl-header__menu-toggle" aria-label="{{ 'sections.header.menu' | t }}">
-              <span class="rpl-header__menu-toggle-icon rpl-header__menu-toggle-icon--menu">
-                {% render 'icon', icon: 'menu' %}
-              </span>
-              <span class="rpl-header__menu-toggle-icon rpl-header__menu-toggle-icon--close">
-                {% render 'icon', icon: 'close' %}
-              </span>
-            </summary>
-            <div class="rpl-header__mobile-nav-overlay" data-mobile-nav-overlay aria-hidden="true"></div>
-            <div class="rpl-header__mobile-nav-panel">
-              <div class="rpl-header__mobile-nav-header">
-                <p class="rpl-header__mobile-nav-title">{{ 'sections.header.menu' | t }}</p>
-              </div>
-              <nav class="rpl-header__mobile-nav-body" aria-label="{{ 'sections.header.menu' | t }}">
-                {% render 'header-menu', menu: menu, list_class: 'rpl-header__mobile-menu rpl-list-unstyled' %}
-              </nav>
-            </div>
-          </details>
-
-          <nav aria-label="{{ 'sections.header.menu' | t }}">
-            {% render 'header-menu', menu: menu, list_class: 'rpl-header__menu rpl-list-unstyled' %}
-          </nav>
-        {%- endif -%}
-      </div>
-
-      {%- comment -%} The store name is an <h1> only on the index template. {%- endcomment -%}
-      {%- if request.page_type == 'index' -%}
-        <h1 class="rpl-header__logo">
+<sticky-header class="sticky-header" data-sticky="{{ section.settings.enable_sticky }}">
+  <div class="header page-width">
+    <a class="header__logo link" href="{{ routes.root_url }}">
+      {%- if settings.logo != blank -%}
+        {%- render 'image-fallback',
+          image: settings.logo,
+          alt: shop.name,
+          widths: '120,240,360,480',
+          sizes: '(min-width: 750px) 200px, 140px',
+          loading: 'eager'
+        -%}
       {%- else -%}
-        <div class="rpl-header__logo">
+        <span class="h4">{{ shop.name | escape }}</span>
       {%- endif -%}
+    </a>
 
-      <a class="rpl-header__logo-link" href="{{ routes.root_url }}">
-        {%- if has_logo -%}
-          {% render 'responsive-image',
-            image: logo_image,
-            alt: shop.name,
-            loading: 'eager',
-            fetchpriority: 'high',
-            class: 'rpl-header__logo-image',
-            widths: '80, 120, 180, 240, 360',
-            sizes: logo_sizes
-          %}
-        {%- else -%}
-          <span class="rpl-header__logo-text">{{ shop.name }}</span>
-        {%- endif -%}
+    <nav class="header__nav only-desktop" aria-label="{{ 'general.menu' | t }}">
+      <ul class="cluster">
+        {%- for link in section.settings.menu.links -%}
+          <li>
+            <a
+              class="link text-body-sm"
+              href="{{ link.url }}"
+              {% if link.active %}aria-current="page"{% endif %}
+            >
+              {{- link.title | escape -}}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
+        {%- render 'icon', icon: 'search' -%}
       </a>
 
-      {%- if request.page_type == 'index' -%}
-        </h1>
-      {%- else -%}
-        </div>
+      {%- if shop.customer_accounts_enabled -%}
+        <a
+          class="icon-button only-desktop"
+          href="{{ routes.account_url }}"
+          aria-label="{{ 'general.account' | t }}"
+        >
+          {%- render 'icon', icon: 'account' -%}
+        </a>
       {%- endif -%}
 
-      <div class="rpl-header__actions">
-        <a class="rpl-icon-button" href="{{ routes.search_url }}">
-          <span class="rpl-visually-hidden">{{ 'sections.header.search' | t }}</span>
-          {% render 'icon', icon: 'search' %}
-        </a>
-
-        {%- if shop.customer_accounts_enabled and section.settings.show_account -%}
-          <a class="rpl-icon-button" href="{{ routes.account_url }}">
-            <span class="rpl-visually-hidden">
-              {%- if customer -%}
-                {{ 'customer.account.title' | t }}
-              {%- else -%}
-                {{ 'customer.log_in' | t }}
-              {%- endif -%}
-            </span>
-            {% render 'icon', icon: 'account' %}
-          </a>
+      <a class="icon-button" href="{{ routes.cart_url }}" aria-label="{{ 'accessibility.cart_count' | t: count: cart.item_count }}">
+        {%- render 'icon', icon: 'cart' -%}
+        {%- if cart.item_count > 0 -%}
+          <span class="header__cart-count" aria-hidden="true">{{ cart.item_count }}</span>
         {%- endif -%}
-
-        <a class="rpl-icon-button rpl-header__cart" href="{{ routes.cart_url }}" data-drawer-open="CartDrawer">
-          <span class="rpl-visually-hidden">
-            {{- 'sections.header.cart_count' | t: count: cart.item_count -}}
-          </span>
-          {% render 'icon', icon: 'cart' %}
-          {%- comment -%}
-            Always rendered (not just when > 0): rpl-cart.js needs a node to
-            find and toggle after an AJAX add from an empty cart, when a
-            server re-render hasn't happened to create one.
-          {%- endcomment -%}
-          <span class="rpl-header__cart-count" aria-hidden="true" {% if cart.item_count == 0 %}hidden{% endif %}>
-            {{- cart.item_count -}}
-          </span>
-        </a>
-      </div>
+      </a>
     </div>
-  </header>
-</div>
-
-{% stylesheet %}
-  .rpl-header__inner {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: var(--rpl-space-sm);
-    min-height: var(--rpl-header-height);
-  }
-
-  .rpl-header__logo {
-    margin: 0;
-    justify-self: center;
-    font-size: calc(1.125rem * var(--rpl-font-heading-scale));
-  }
-
-  .rpl-header__logo-link {
-    display: inline-block;
-    text-decoration: none;
-  }
-
-  .rpl-header__logo-image {
-    width: var(--rpl-logo-width, 120px);
-    height: auto;
-  }
-
-  .rpl-header__nav {
-    min-width: 0;
-  }
-
-  .rpl-header__menu {
-    display: none;
-    gap: var(--rpl-space-sm);
-    align-items: center;
-  }
-
-  .rpl-header__link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--rpl-space-3xs);
-    padding-block: var(--rpl-space-2xs);
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  .rpl-header__link:hover {
-    text-decoration: underline;
-    text-underline-offset: 0.25em;
-  }
-
-  .rpl-header__details {
-    position: relative;
-  }
-
-  .rpl-header__details > summary,
-  .rpl-header__mobile-nav > summary {
-    list-style: none;
-    cursor: pointer;
-  }
-
-  .rpl-header__details > summary::-webkit-details-marker,
-  .rpl-header__mobile-nav > summary::-webkit-details-marker {
-    display: none;
-  }
-
-  /* --------------------------------------------------------------------
-     Mobile off-canvas nav — a <details> element, not a JS component, so
-     open/close works with JavaScript disabled. rpl-core.js layers on
-     scroll-lock, focus trap, and click-outside/Escape-to-close; none of
-     that is required for the menu to be usable.
-     -------------------------------------------------------------------- */
-
-  .rpl-header__mobile-nav {
-    display: block;
-  }
-
-  .rpl-header__menu-toggle-icon--close {
-    display: none;
-  }
-
-  .rpl-header__mobile-nav[open] .rpl-header__menu-toggle-icon--menu {
-    display: none;
-  }
-
-  .rpl-header__mobile-nav[open] .rpl-header__menu-toggle-icon--close {
-    display: inline-flex;
-  }
-
-  .rpl-header__mobile-nav-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: var(--rpl-z-overlay);
-    background-color: rgb(0 0 0 / 0.4);
-  }
-
-  .rpl-header__mobile-nav-panel {
-    position: fixed;
-    z-index: var(--rpl-z-drawer);
-    inset-block: 0;
-    inset-inline-start: 0;
-    width: min(20rem, 85vw);
-    display: flex;
-    flex-direction: column;
-    background-color: rgb(var(--rpl-color-background));
-    color: rgb(var(--rpl-color-foreground));
-    box-shadow: 0 0 24px rgb(0 0 0 / 0.2);
-  }
-
-  .rpl-header__mobile-nav-header {
-    padding: var(--rpl-space-sm);
-    border-block-end: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
-  }
-
-  .rpl-header__mobile-nav-title {
-    margin: 0;
-    font-weight: var(--rpl-font-body-weight-bold);
-  }
-
-  .rpl-header__mobile-nav-body {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    padding: var(--rpl-space-sm);
-  }
-
-  .rpl-header__mobile-menu {
-    display: flex;
-    flex-direction: column;
-    gap: var(--rpl-space-3xs);
-  }
-
-  .rpl-header__mobile-menu .rpl-header__submenu {
-    position: static;
-    border: 0;
-    padding-inline-start: var(--rpl-space-sm);
-  }
-
-  /* Animates in on open (CSS animations fire even from display:none, unlike
-     transitions). Closing is instant — an acceptable no-JS baseline; the JS
-     layer doesn't add a close animation either, to keep both paths in sync. */
-  @keyframes rpl-mobile-nav-panel-in {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes rpl-mobile-nav-overlay-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  .rpl-header__mobile-nav[open] .rpl-header__mobile-nav-panel {
-    animation: rpl-mobile-nav-panel-in var(--rpl-duration-base) var(--rpl-ease);
-  }
-
-  .rpl-header__mobile-nav[open] .rpl-header__mobile-nav-overlay {
-    animation: rpl-mobile-nav-overlay-in var(--rpl-duration-base) var(--rpl-ease);
-  }
-
-  @media screen and (min-width: 990px) {
-    .rpl-header__mobile-nav {
-      display: none;
-    }
-  }
-
-  .rpl-header__submenu {
-    position: absolute;
-    inset-inline-start: 0;
-    top: 100%;
-    z-index: var(--rpl-z-header);
-    min-width: 12rem;
-    padding: var(--rpl-space-2xs);
-    background-color: rgb(var(--rpl-color-background));
-    border: 1px solid rgb(var(--rpl-color-foreground) / 0.12);
-    border-radius: var(--rpl-radius-sm);
-  }
-
-  .rpl-header__actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--rpl-space-3xs);
-  }
-
-  .rpl-header__cart {
-    position: relative;
-  }
-
-  .rpl-header__cart-count {
-    position: absolute;
-    top: 4px;
-    inset-inline-end: 2px;
-    min-width: 1.125rem;
-    padding-inline: 0.25rem;
-    border-radius: var(--rpl-radius-full);
-    background-color: rgb(var(--rpl-color-foreground));
-    color: rgb(var(--rpl-color-background));
-    font-size: 0.6875rem;
-    line-height: 1.125rem;
-    text-align: center;
-  }
-
-  @media screen and (min-width: 990px) {
-    .rpl-header__menu {
-      display: flex;
-    }
-  }
-{% endstylesheet %}
+  </div>
+</sticky-header>
 
 {% schema %}
 {
   "name": "t:sections.header.name",
-  "tag": "section",
-  "class": "rpl-section-header",
   "settings": [
-    {
-      "type": "image_picker",
-      "id": "logo",
-      "label": "t:sections.header.settings.logo.label",
-      "info": "t:sections.header.settings.logo.info"
-    },
     {
       "type": "link_list",
       "id": "menu",
-      "label": "t:sections.header.settings.menu.label",
+      "label": "t:labels.menu",
       "default": "main-menu"
     },
     {
-      "type": "checkbox",
-      "id": "show_account",
-      "label": "t:sections.header.settings.show_account.label",
-      "default": true
+      "type": "link_list",
+      "id": "customer_account_menu",
+      "label": "t:labels.customer_account_menu"
     },
     {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "t:sections.all.color_scheme.label",
-      "default": "scheme-1"
+      "type": "checkbox",
+      "id": "enable_sticky",
+      "label": "t:sections.header.enable_sticky.label",
+      "default": true
     }
-  ],
-  "enabled_on": {
-    "groups": ["header"]
-  }
+  ]
 }
 {% endschema %}
