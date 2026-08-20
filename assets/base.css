@@ -33,6 +33,13 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* Reserve the scrollbar gutter permanently. Locking scroll for a drawer
+     hides the scrollbar, which widens the page by the scrollbar's width,
+     rewraps text and nudges the scroll offset — the page visibly jumps
+     sideways as the cart opens. Reserving the gutter keeps the layout
+     identical locked or not. Older Safari ignores this and simply behaves
+     as before. */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -791,17 +798,27 @@ dialog {
    The dialog element handles the top layer; JS handles the focus trap,
    Escape, and returning focus to the opener. */
 
+/* Visibility, not display. A `display: none` -> `block` flip lands in the
+   same frame as the transform change, so the browser has no start value to
+   interpolate from and the panel snaps into place with no animation — and
+   worse, closing removes it instantly so there is no exit animation at all.
+   Visibility is animatable-adjacent: it flips instantly on open, and on
+   close it is delayed by the slide duration so the panel is still painted
+   while it slides away. Focusable children inside a hidden subtree stay out
+   of the tab order, exactly as they did under display: none. */
 .drawer {
   position: fixed;
   inset: 0;
   z-index: 30;
-  display: none;
+  visibility: hidden;
   pointer-events: none;
+  transition: visibility 0s linear var(--dur-slow);
 }
 
 .drawer[open] {
-  display: block;
+  visibility: visible;
   pointer-events: auto;
+  transition-delay: 0s;
 }
 
 .drawer__overlay {
@@ -2532,14 +2549,20 @@ cart-items[aria-busy] {
   text-align: end;
 }
 
-/* Scroll lock for open overlays. `overflow: hidden` alone does not hold on
-   iOS Safari, so the body is pinned at its current offset (written into
-   --locked-scroll-y by global.js) and the position restored on unlock. */
+/* Scroll lock for open overlays.
+
+   Applied to <html>, and deliberately NOT `position: fixed` on <body>.
+   Pinning the body takes it out of flow; the body's background then
+   propagates to the canvas while `overflow: hidden` clips its children
+   away, so the page behind an open drawer renders as a flat colour with
+   no content. It also collapses the document height, which silently
+   clamps any attempt to restore the scroll position on close.
+
+   Locking overflow on the root keeps the page painted and keeps the scroll
+   position untouched, so there is nothing to save or restore. The drawer
+   body already carries `overscroll-behavior: contain`, which stops a scroll
+   gesture inside the panel from chaining to the page behind it. */
 .no-scroll {
-  position: fixed;
-  inset-inline: 0;
-  inset-block-start: var(--locked-scroll-y, 0);
-  width: 100%;
   overflow: hidden;
 }
 

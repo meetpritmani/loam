@@ -65,28 +65,27 @@ export function announce(message) {
 
 /* --- Scroll lock ---------------------------------------------------------
    Reference-counted so two overlapping overlays (a drawer opened from
-   inside another) cannot unlock the page early. */
+   inside another) cannot unlock the page early.
+
+   The lock is `overflow: hidden` on <html>. It is not `position: fixed` on
+   <body>: that pins the body out of flow, at which point its background
+   propagates to the canvas while its children are clipped away, and the page
+   behind an open drawer paints as a flat colour with nothing on it. Because
+   the page never moves, there is no scroll position to save or restore. */
 
 let scrollLocks = 0;
-let lockedScrollY = 0;
 
 function lockScroll() {
   scrollLocks += 1;
   if (scrollLocks > 1) return;
-  lockedScrollY = window.scrollY;
-  document.body.style.setProperty('--locked-scroll-y', `-${lockedScrollY}px`);
-  document.body.classList.add('no-scroll');
+  document.documentElement.classList.add('no-scroll');
 }
 
 function unlockScroll() {
   if (scrollLocks === 0) return;
   scrollLocks -= 1;
   if (scrollLocks > 0) return;
-  document.body.classList.remove('no-scroll');
-  document.body.style.removeProperty('--locked-scroll-y');
-  // The body was pinned with position: fixed, so the page is now at the
-  // top — put the visitor back where they were.
-  window.scrollTo(0, lockedScrollY);
+  document.documentElement.classList.remove('no-scroll');
 }
 
 /* ==========================================================================
@@ -212,7 +211,7 @@ class StickyHeader extends HTMLElement {
 
       // Never hide while an overlay owns the screen, or the close button
       // scrolls out of reach.
-      const overlayOpen = document.body.classList.contains('no-scroll');
+      const overlayOpen = document.documentElement.classList.contains('no-scroll');
 
       if (!overlayOpen && current > height * 2 && current > this.lastScroll) {
         this.classList.add('sticky-header--hidden');
@@ -338,10 +337,10 @@ class LoamDrawer extends HTMLElement {
     // itself so the trap always has somewhere to start.
     const focusable = focusableWithin(this.panel ?? this.dialog);
     if (focusable.length > 0) {
-      focusable[0].focus();
+      focusable[0].focus({ preventScroll: true });
     } else {
       this.panel?.setAttribute('tabindex', '-1');
-      this.panel?.focus();
+      this.panel?.focus({ preventScroll: true });
     }
 
     this.dispatchEvent(new CustomEvent('drawer:open', { bubbles: true }));
@@ -355,7 +354,11 @@ class LoamDrawer extends HTMLElement {
     unlockScroll();
     document.removeEventListener('keydown', this.onKeydown);
 
-    this.opener?.focus?.();
+    // preventScroll matters: focusing the opener sits immediately after
+    // unlockScroll, and the browser's default scroll-into-view undoes the
+    // restore we just performed — landing the shopper back at the top of the
+    // page every time they close the cart.
+    this.opener?.focus?.({ preventScroll: true });
     this.opener = null;
 
     this.dispatchEvent(new CustomEvent('drawer:close', { bubbles: true }));
