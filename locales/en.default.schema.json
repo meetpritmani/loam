@@ -336,6 +336,150 @@
     },
     "cart_count": {
       "name": "Cart count"
+    },
+    "hero": {
+      "name": "Hero",
+      "media": {
+        "content": "Media"
+      },
+      "image": {
+        "info": "Recommended 2400 x 1350px. This is the largest image on your storefront — it decides how fast your homepage feels."
+      },
+      "image_mobile": {
+        "label": "Mobile image",
+        "info": "A portrait crop of the same scene. Falls back to the desktop image."
+      },
+      "video": {
+        "label": "Video",
+        "info": "Never loaded on phones. Visitors on mobile see the image instead, which keeps the homepage fast on cellular."
+      },
+      "height": {
+        "label": "Height"
+      },
+      "scrim_opacity": {
+        "label": "Image darkening",
+        "info": "Darkens the image behind the text. Raise it if your photo is light and the heading is hard to read."
+      },
+      "eyebrow": {
+        "label": "Eyebrow"
+      },
+      "text_position": {
+        "label": "Text position"
+      },
+      "buttons": {
+        "content": "Buttons"
+      },
+      "button_label": {
+        "label": "First button label"
+      },
+      "button_link": {
+        "label": "First button link"
+      },
+      "button_label_2": {
+        "label": "Second button label"
+      },
+      "button_link_2": {
+        "label": "Second button link"
+      },
+      "blocks": {
+        "stat": {
+          "name": "Stat",
+          "value": {
+            "label": "Value",
+            "info": "A short figure such as 4.8 or 95%. Leave empty for a plain line of text."
+          }
+        }
+      }
+    },
+    "marquee": {
+      "name": "Marquee",
+      "speed": {
+        "label": "Speed",
+        "info": "Seconds for one full pass. Higher is slower.",
+        "unit": "s"
+      },
+      "gap": {
+        "label": "Space between items"
+      },
+      "pause_on_hover": {
+        "label": "Pause on hover"
+      },
+      "blocks": {
+        "logo": {
+          "name": "Logo",
+          "text": {
+            "label": "Alt text",
+            "info": "Describes the logo for screen readers, for example \"B Corp certified\"."
+          }
+        }
+      }
+    },
+    "featured_collection": {
+      "name": "Featured collection",
+      "collection": {
+        "info": "Leave empty to preview with demo products. Your own products appear as soon as you pick a collection."
+      },
+      "products_to_show": {
+        "label": "Products to show"
+      },
+      "columns": {
+        "label": "Columns on desktop"
+      },
+      "layout": {
+        "label": "Layout"
+      },
+      "show_view_all": {
+        "label": "Show \"view all\" link"
+      }
+    },
+    "image_with_text": {
+      "name": "Image with text",
+      "media_position": {
+        "label": "Image position"
+      },
+      "blocks": {
+        "feature": {
+          "name": "Feature",
+          "tag": {
+            "label": "Material tag",
+            "info": "Rendered as the theme’s material tag — a small uppercase label with a hollow dot."
+          }
+        }
+      }
+    },
+    "value_props": {
+      "name": "Value props",
+      "card_style": {
+        "label": "Show as cards"
+      },
+      "blocks": {
+        "value": {
+          "name": "Value",
+          "icon": {
+            "label": "Icon"
+          },
+          "image": {
+            "info": "Replaces the icon when set."
+          }
+        }
+      }
+    },
+    "collection_list": {
+      "name": "Collection list",
+      "columns_mobile": {
+        "label": "Columns on mobile"
+      },
+      "blocks": {
+        "category": {
+          "name": "Category",
+          "image": {
+            "info": "Overrides the collection’s own image. A lifestyle crop usually reads better here."
+          },
+          "heading": {
+            "info": "Overrides the collection title."
+          }
+        }
+      }
     }
   },
   "labels": {
@@ -352,6 +496,50 @@
     "padding": "Padding"
   },
   "general": {
-    "padding": "Padding"
+    "padding": "Padding",
+    "content": "Content",
+    "collection": "Collection",
+    "layout": "Layout",
+    "section": "Section"
+  },
+  "options": {
+    "size": {
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "full": "Full screen"
+    },
+    "alignment": {
+      "left": "Left",
+      "center": "Center",
+      "right": "Right"
+    },
+    "layout": {
+      "grid": "Grid",
+      "slider": "Slider"
+    },
+    "position": {
+      "top_left": "Top left",
+      "top_center": "Top center",
+      "top_right": "Top right",
+      "middle_left": "Middle left",
+      "middle_center": "Middle center",
+      "middle_right": "Middle right",
+      "bottom_left": "Bottom left",
+      "bottom_center": "Bottom center",
+      "bottom_right": "Bottom right"
+    },
+    "icon": {
+      "leaf": "Leaf",
+      "truck": "Delivery",
+      "recycle": "Recycle",
+      "droplet": "Water",
+      "shield": "Shield",
+      "heart": "Heart",
+      "star": "Star",
+      "globe": "Globe",
+      "sun": "Sun",
+      "check": "Check"
+    }
   }
 }

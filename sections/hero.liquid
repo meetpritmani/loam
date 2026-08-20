@@ -1,0 +1,278 @@
+{%- comment -%}
+  hero.liquid — the above-the-fold section.
+
+  Performance notes, because this section owns the LCP:
+  - The image is the only one in the theme with loading="eager" and
+    fetchpriority="high". Nothing else may claim those.
+  - Video is never served to mobile. `<hero-media>` inserts the <video>
+    element only once the viewport is at least 750px wide, so a phone
+    downloads the poster and nothing else. Rendering the <video> with
+    `preload="metadata"` and hiding it in CSS would still cost the request.
+  - The media box carries an aspect-ratio, so swapping the video in does not
+    move a single pixel.
+
+  Text sits in a 3x3 grid for the nine positions rather than nine sets of
+  offsets, so the alignment setting is one line of CSS.
+{%- endcomment -%}
+
+{%- liquid
+  assign has_video = false
+  if section.settings.video != blank
+    assign has_video = true
+  endif
+
+  assign position = section.settings.text_position | split: '-'
+  assign v_align = position[0]
+  assign h_align = position[1]
+-%}
+
+<div
+  class="hero color-{{ section.settings.color_scheme }} hero--{{ section.settings.height }}"
+  style="
+    --scrim: {{ section.settings.scrim_opacity | divided_by: 100.0 }};
+    --hero-align-block: {{ v_align }};
+    --hero-align-inline: {{ h_align }};
+  "
+>
+  <hero-media
+    class="hero__media"
+    {% if has_video %}
+      data-video-src="{{ section.settings.video.sources[1].url | default: section.settings.video.sources[0].url }}"
+      data-video-width="750"
+    {% endif %}
+  >
+    <span class="hero__media-desktop">
+      {%- render 'image-fallback',
+        image: section.settings.image,
+        fallback: 'demo-hero.webp',
+        alt: section.settings.heading,
+        width: 2400,
+        height: 1350,
+        sizes: '100vw',
+        loading: 'eager',
+        fetchpriority: 'high',
+        placeholder: 'lifestyle-1'
+      -%}
+    </span>
+
+    <span class="hero__media-mobile">
+      {%- render 'image-fallback',
+        image: section.settings.image_mobile,
+        fallback: 'demo-hero-mobile.webp',
+        alt: section.settings.heading,
+        width: 1200,
+        height: 1600,
+        sizes: '100vw',
+        loading: 'eager',
+        fetchpriority: 'high',
+        placeholder: 'lifestyle-2'
+      -%}
+    </span>
+  </hero-media>
+
+  <div class="hero__scrim" aria-hidden="true"></div>
+
+  <div class="hero__inner page-width">
+    <div class="hero__content">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="hero__eyebrow caption reveal">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="hero__heading h0 reveal" style="--reveal-delay: 60ms;">
+          {{- section.settings.heading | escape -}}
+        </h2>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <p class="hero__text reveal" style="--reveal-delay: 120ms;">
+          {{- section.settings.text | escape -}}
+        </p>
+      {%- endif -%}
+
+      {%- if section.settings.button_label != blank or section.settings.button_label_2 != blank -%}
+        <div class="hero__buttons cluster reveal" style="--reveal-delay: 180ms;">
+          {%- if section.settings.button_label != blank -%}
+            <a class="button button--primary" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+              {{- section.settings.button_label | escape -}}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.button_label_2 != blank -%}
+            <a class="button button--secondary" href="{{ section.settings.button_link_2 | default: routes.all_products_collection_url }}">
+              {{- section.settings.button_label_2 | escape -}}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <ul class="hero__stats reveal" style="--reveal-delay: 240ms;">
+        {%- for block in section.blocks -%}
+          <li class="hero__stat" {{ block.shopify_attributes }}>
+            {%- if block.settings.value != blank -%}
+              <span class="hero__stat-value h4">{{ block.settings.value | escape }}</span>
+            {%- endif -%}
+            <span class="hero__stat-label caption">{{ block.settings.text | escape }}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.hero.name",
+  "tag": "section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-ink"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.hero.media.content"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image",
+      "info": "t:sections.hero.image.info"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "t:sections.hero.image_mobile.label",
+      "info": "t:sections.hero.image_mobile.info"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:sections.hero.video.label",
+      "info": "t:sections.hero.video.info"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "t:sections.hero.height.label",
+      "options": [
+        { "value": "small", "label": "t:options.size.small" },
+        { "value": "medium", "label": "t:options.size.medium" },
+        { "value": "large", "label": "t:options.size.large" },
+        { "value": "full", "label": "t:options.size.full" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "range",
+      "id": "scrim_opacity",
+      "label": "t:sections.hero.scrim_opacity.label",
+      "info": "t:sections.hero.scrim_opacity.info",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 35
+    },
+    {
+      "type": "header",
+      "content": "t:general.content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "New in — Autumn"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Built from things that grow."
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "t:labels.text",
+      "default": "Merino wool uppers, eucalyptus fibre knits, and soles pressed from sugarcane. Shoes that feel like nothing and leave close to it."
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "t:sections.hero.text_position.label",
+      "options": [
+        { "value": "start-start", "label": "t:options.position.top_left" },
+        { "value": "start-center", "label": "t:options.position.top_center" },
+        { "value": "start-end", "label": "t:options.position.top_right" },
+        { "value": "center-start", "label": "t:options.position.middle_left" },
+        { "value": "center-center", "label": "t:options.position.middle_center" },
+        { "value": "center-end", "label": "t:options.position.middle_right" },
+        { "value": "end-start", "label": "t:options.position.bottom_left" },
+        { "value": "end-center", "label": "t:options.position.bottom_center" },
+        { "value": "end-end", "label": "t:options.position.bottom_right" }
+      ],
+      "default": "end-start"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.hero.buttons.content"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.hero.button_label.label",
+      "default": "Shop men's"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.hero.button_link.label"
+    },
+    {
+      "type": "text",
+      "id": "button_label_2",
+      "label": "t:sections.hero.button_label_2.label",
+      "default": "Shop women's"
+    },
+    {
+      "type": "url",
+      "id": "button_link_2",
+      "label": "t:sections.hero.button_link_2.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "t:sections.hero.blocks.stat.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "value",
+          "label": "t:sections.hero.blocks.stat.value.label",
+          "info": "t:sections.hero.blocks.stat.value.info"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Free returns for 30 days"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.hero.name",
+      "blocks": [
+        { "type": "stat", "settings": { "value": "4.8", "text": "average from 12,400 reviews" } },
+        { "type": "stat", "settings": { "text": "Carbon footprint printed on every box" } },
+        { "type": "stat", "settings": { "text": "Free returns for 30 days" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

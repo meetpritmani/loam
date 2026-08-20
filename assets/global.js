@@ -796,3 +796,196 @@ document.addEventListener('change', (event) => {
   }
   target.form?.submit();
 });
+
+/* ==========================================================================
+   <hero-media>
+   Inserts the hero <video> only once the viewport is wide enough to warrant
+   it. Rendering the <video> in Liquid and hiding it with CSS would still
+   cost the request on a phone, which is exactly the cost the build spec
+   forbids above the fold on mobile.
+
+   Also never loads video under reduced motion — an autoplaying loop is
+   motion, whatever else it is.
+   ========================================================================== */
+
+class HeroMedia extends HTMLElement {
+  connectedCallback() {
+    this.src = this.dataset.videoSrc;
+    if (!this.src) return;
+
+    const minWidth = Number(this.dataset.videoWidth) || 750;
+    this.query = window.matchMedia(`(min-width: ${minWidth}px)`);
+    this.onChange = this.onChange.bind(this);
+    this.query.addEventListener('change', this.onChange);
+    this.onChange();
+  }
+
+  disconnectedCallback() {
+    this.query?.removeEventListener('change', this.onChange);
+    this.teardown();
+  }
+
+  onChange() {
+    if (this.query?.matches && !PREFERS_REDUCED_MOTION.matches) this.mount();
+    else this.teardown();
+  }
+
+  mount() {
+    if (this.video) return;
+
+    const video = document.createElement('video');
+    video.src = this.src;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.setAttribute('aria-hidden', 'true');
+    video.setAttribute('tabindex', '-1');
+    video.preload = 'metadata';
+    video.className = 'hero__video';
+
+    // Only reveal the video once it can actually paint, so the poster is
+    // never replaced by a black box.
+    video.addEventListener(
+      'loadeddata',
+      () => {
+        video.classList.add('is-ready');
+      },
+      { once: true }
+    );
+
+    this.appendChild(video);
+    this.video = video;
+
+    const attempt = video.play();
+    if (attempt?.catch) {
+      attempt.catch((error) => {
+        // Autoplay refusal is normal (low power mode, data saver). The
+        // poster stays; nothing to recover from.
+        console.warn('[Loam] Hero video autoplay declined:', error?.message || error);
+        this.teardown();
+      });
+    }
+  }
+
+  teardown() {
+    if (!this.video) return;
+    this.video.pause();
+    this.video.removeAttribute('src');
+    this.video.load();
+    this.video.remove();
+    this.video = null;
+  }
+}
+
+if (!customElements.get('hero-media')) {
+  customElements.define('hero-media', HeroMedia);
+}
+
+/* ==========================================================================
+   <marquee-strip>
+   Duplicates its track until it is at least twice the viewport width, then
+   animates by exactly -50%. Duplicating in JS rather than Liquid is what
+   makes the loop seamless at any content length: the number of copies
+   depends on rendered width, which Liquid cannot measure.
+
+   The duplicate is aria-hidden and inert, so the messages are announced once
+   and the copies never take a tab stop.
+   ========================================================================== */
+
+class MarqueeStrip extends HTMLElement {
+  connectedCallback() {
+    this.track = this.querySelector('[data-marquee-track]');
+    if (!this.track || this.track.children.length === 0) return;
+
+    // Clones are filtered out before capturing the originals. The real
+    // editor re-renders a section from Liquid, so its markup is clean — but
+    // anything that restores a previously-mutated DOM (an app, a snapshot,
+    // a test harness) would otherwise have its clones treated as source
+    // content and the track would double on every re-initialisation.
+    this.reset();
+    this.originals = Array.from(this.track.children).filter(
+      (el) => el.dataset.marqueeClone === undefined && el.dataset.marqueeMirror === undefined
+    );
+
+    this.build = this.build.bind(this);
+    this.onMotionChange = this.onMotionChange.bind(this);
+
+    this.build();
+
+    if (typeof ResizeObserver === 'function') {
+      this.resizeObserver = new ResizeObserver(this.build);
+      this.resizeObserver.observe(this);
+    }
+    PREFERS_REDUCED_MOTION.addEventListener('change', this.onMotionChange);
+
+    if (this.dataset.pauseOnHover === 'true') {
+      this.addEventListener('pointerenter', () => this.setAttribute('data-paused', 'true'));
+      this.addEventListener('pointerleave', () => this.removeAttribute('data-paused'));
+      // Keyboard users get the same courtesy: focusing a link inside the
+      // strip stops it moving under them.
+      this.addEventListener('focusin', () => this.setAttribute('data-paused', 'true'));
+      this.addEventListener('focusout', () => this.removeAttribute('data-paused'));
+    }
+  }
+
+  disconnectedCallback() {
+    this.resizeObserver?.disconnect();
+    PREFERS_REDUCED_MOTION.removeEventListener('change', this.onMotionChange);
+  }
+
+  onMotionChange() {
+    this.build();
+  }
+
+  build() {
+    if (!this.track) return;
+
+    if (PREFERS_REDUCED_MOTION.matches) {
+      this.reset();
+      this.removeAttribute('data-animate');
+      return;
+    }
+
+    this.reset();
+
+    const target = this.offsetWidth * 2;
+    let guard = 0;
+    // Cap the copies: a single very long message can already exceed the
+    // target, and an unbounded loop here would hang the page.
+    while (this.track.scrollWidth < target && guard < 20) {
+      this.originals.forEach((node) => {
+        const copy = node.cloneNode(true);
+        copy.setAttribute('aria-hidden', 'true');
+        copy.dataset.marqueeClone = '';
+        copy.querySelectorAll('a, button').forEach((el) => el.setAttribute('tabindex', '-1'));
+        this.track.appendChild(copy);
+      });
+      guard += 1;
+    }
+
+    // The -50% translate only lands seamlessly if the track is an exact
+    // doubling, so mirror whatever we ended up with once more.
+    Array.from(this.track.children).forEach((node) => {
+      if (node.dataset.marqueeMirror !== undefined) return;
+      const copy = node.cloneNode(true);
+      copy.setAttribute('aria-hidden', 'true');
+      copy.dataset.marqueeMirror = '';
+      copy.querySelectorAll('a, button').forEach((el) => el.setAttribute('tabindex', '-1'));
+      this.track.appendChild(copy);
+    });
+
+    this.setAttribute('data-animate', 'true');
+  }
+
+  reset() {
+    if (!this.track) return;
+    this.track
+      .querySelectorAll('[data-marquee-clone], [data-marquee-mirror]')
+      .forEach((node) => node.remove());
+  }
+}
+
+if (!customElements.get('marquee-strip')) {
+  customElements.define('marquee-strip', MarqueeStrip);
+}

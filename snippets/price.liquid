@@ -1,0 +1,95 @@
+{%- comment -%}
+  price.liquid — the single place money is rendered.
+
+  Every case a storefront actually hits: a plain price, a varying price
+  ("From $78"), a sale price with its compare-at struck through, and a unit
+  price for volume-priced goods.
+
+  --c-signal is applied to the sale price and nowhere else. That restraint is
+  what makes a sale read as a signal rather than as decoration, so do not
+  reach for it for badges, errors, or emphasis.
+
+  The compare-at price is only ever Shopify's own `compare_at_price`. A
+  merchant-typed "was" figure is not accepted anywhere in this theme: a
+  strikethrough the merchant can set by hand is a deceptive-pricing problem
+  for the buyer's store, not a feature.
+
+  Params:
+    product     (product, optional)  — for range and sale detection
+    variant     (variant, optional)  — overrides product's selected variant
+    price       (number, optional)   — render this amount directly
+    show_from   (boolean, optional)  — "From $X" instead of "$X – $Y"
+    class       (string, optional)
+{%- endcomment -%}
+
+{%- liquid
+  assign target = variant | default: product.selected_or_first_available_variant
+
+  if price != blank
+    assign current_price = price
+    assign compare_price = 0
+  elsif target != blank
+    assign current_price = target.price
+    assign compare_price = target.compare_at_price | default: 0
+  else
+    assign current_price = product.price
+    assign compare_price = product.compare_at_price | default: 0
+  endif
+
+  assign on_sale = false
+  if compare_price > current_price
+    assign on_sale = true
+  endif
+
+  assign varies = false
+  if variant == blank and price == blank and product.price_varies
+    assign varies = true
+  endif
+
+  if settings.show_currency_code
+    assign money_price = current_price | money_with_currency
+    assign money_compare = compare_price | money_with_currency
+    assign money_min = product.price_min | money_with_currency
+    assign money_max = product.price_max | money_with_currency
+  else
+    assign money_price = current_price | money
+    assign money_compare = compare_price | money
+    assign money_min = product.price_min | money
+    assign money_max = product.price_max | money
+  endif
+-%}
+
+<div class="price {{ class }}{% if on_sale %} price--on-sale{% endif %}">
+  {%- if varies and show_from -%}
+    <span>{{ 'products.product.price.from' | t: price: money_min }}</span>
+
+  {%- elsif varies -%}
+    <span>{{ money_min }}&ndash;{{ money_max }}</span>
+
+  {%- elsif on_sale -%}
+    <span class="visually-hidden">{{ 'products.product.price.sale_price' | t }}</span>
+    <span class="price__sale">{{ money_price }}</span>
+    <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+    <s class="price__compare">{{ money_compare }}</s>
+
+  {%- else -%}
+    <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+    <span>{{ money_price }}</span>
+  {%- endif -%}
+
+  {%- if target.unit_price_measurement -%}
+    <span class="price__unit">
+      <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
+      {%- if settings.show_currency_code -%}
+        {{- target.unit_price | money_with_currency -}}
+      {%- else -%}
+        {{- target.unit_price | money -}}
+      {%- endif -%}
+      /
+      {%- if target.unit_price_measurement.reference_value != 1 -%}
+        {{- target.unit_price_measurement.reference_value -}}
+      {%- endif -%}
+      {{ target.unit_price_measurement.reference_unit }}
+    </span>
+  {%- endif -%}
+</div>

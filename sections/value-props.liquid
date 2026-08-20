@@ -1,0 +1,190 @@
+{%- comment -%}
+  value-props.liquid — the icon row.
+
+  Each block picks either a built-in icon or supplies its own image. The
+  built-in set comes from icon.liquid so the stroke weight matches every
+  other icon in the theme; a custom image is rendered in a fixed-size box so
+  a merchant uploading a 2000px PNG cannot break the row's rhythm.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <div class="section__header section__header--center reveal">
+        <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+      </div>
+    {%- endif -%}
+
+    <ul class="grid value-props" style="--grid-cols: {{ section.blocks.size | at_most: 4 }}; --grid-cols-tablet: 2; --grid-cols-mobile: 1;">
+      {%- for block in section.blocks -%}
+        <li
+          class="value-prop reveal{% if section.settings.card_style %} value-prop--card{% endif %}"
+          style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;"
+          {{ block.shopify_attributes }}
+        >
+          {%- if block.settings.image != blank -%}
+            <span class="value-prop__image media media--square">
+              {%- render 'image-fallback',
+                image: block.settings.image,
+                alt: block.settings.heading,
+                widths: '80,160,240',
+                sizes: '48px'
+              -%}
+            </span>
+          {%- else -%}
+            {%- render 'icon', icon: block.settings.icon, class: 'value-prop__icon', size: 28 -%}
+          {%- endif -%}
+
+          {%- if block.settings.heading != blank -%}
+            <h3 class="h5">{{ block.settings.heading | escape }}</h3>
+          {%- endif -%}
+          {%- if block.settings.text != blank -%}
+            <p class="text-body-sm text-muted">{{ block.settings.text | escape }}</p>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.value_props.name",
+  "tag": "section",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_style",
+      "label": "t:sections.value_props.card_style.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "value",
+      "name": "t:sections.value_props.blocks.value.name",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "t:sections.value_props.blocks.value.icon.label",
+          "options": [
+            { "value": "leaf", "label": "t:options.icon.leaf" },
+            { "value": "truck", "label": "t:options.icon.truck" },
+            { "value": "recycle", "label": "t:options.icon.recycle" },
+            { "value": "droplet", "label": "t:options.icon.droplet" },
+            { "value": "shield", "label": "t:options.icon.shield" },
+            { "value": "heart", "label": "t:options.icon.heart" },
+            { "value": "star", "label": "t:options.icon.star" },
+            { "value": "globe", "label": "t:options.icon.globe" },
+            { "value": "sun", "label": "t:options.icon.sun" },
+            { "value": "check", "label": "t:options.icon.check" }
+          ],
+          "default": "leaf"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.image",
+          "info": "t:sections.value_props.blocks.value.image.info"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:labels.heading",
+          "default": "Free returns"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Thirty days to change your mind. We pay the postage."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.value_props.name",
+      "blocks": [
+        {
+          "type": "value",
+          "settings": {
+            "icon": "leaf",
+            "heading": "Renewable materials",
+            "text": "Wool, eucalyptus fibre, and sugarcane foam. Nothing petroleum-based in the upper."
+          }
+        },
+        {
+          "type": "value",
+          "settings": {
+            "icon": "truck",
+            "heading": "Carbon neutral shipping",
+            "text": "Every order, every country, included in the price."
+          }
+        },
+        {
+          "type": "value",
+          "settings": {
+            "icon": "droplet",
+            "heading": "Machine washable",
+            "text": "Cold, gentle, air dry. They come back looking new."
+          }
+        },
+        {
+          "type": "value",
+          "settings": {
+            "icon": "recycle",
+            "heading": "Send them back",
+            "text": "Worn out pairs come back to us and become playground surfacing."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,227 @@
+{%- comment -%}
+  image-with-text.liquid — the materials story.
+
+  The media side is a setting rather than two hardcoded layouts, and it is
+  applied with `order` on the flex children so the DOM order never changes:
+  the text always precedes the image in the source, which is the order a
+  screen reader should hear regardless of which side the picture is on.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    <div class="image-with-text image-with-text--media-{{ section.settings.media_position }}">
+      <div class="image-with-text__content reveal">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.text != blank -%}
+          <div class="rte text-muted">{{ section.settings.text }}</div>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <ul class="image-with-text__list">
+            {%- for block in section.blocks -%}
+              <li class="image-with-text__item" {{ block.shopify_attributes }}>
+                {%- if block.settings.tag != blank -%}
+                  <p class="material-tag">{{ block.settings.tag | escape }}</p>
+                {%- endif -%}
+                {%- if block.settings.heading != blank -%}
+                  <h3 class="h5">{{ block.settings.heading | escape }}</h3>
+                {%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <p class="text-body-sm text-muted">{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if section.settings.button_label != blank -%}
+          <p>
+            <a class="button button--secondary" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+              {{- section.settings.button_label | escape -}}
+            </a>
+          </p>
+        {%- endif -%}
+      </div>
+
+      <div class="image-with-text__media media media--{{ section.settings.image_ratio }} reveal" style="--reveal-delay: 80ms;">
+        {%- render 'image-fallback',
+          image: section.settings.image,
+          fallback: 'demo-material-wool.webp',
+          alt: section.settings.heading,
+          width: 1600,
+          height: 2000,
+          sizes: '(min-width: 750px) 50vw, 100vw',
+          placeholder: 'detailed-apparel-1'
+        -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.image_with_text.name",
+  "tag": "section",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:sections.image_with_text.media_position.label",
+      "options": [
+        { "value": "start", "label": "t:options.alignment.left" },
+        { "value": "end", "label": "t:options.alignment.right" }
+      ],
+      "default": "end"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.product_cards.card_image_ratio.label",
+      "options": [
+        { "value": "portrait", "label": "t:settings.product_cards.card_image_ratio.options.portrait" },
+        { "value": "square", "label": "t:settings.product_cards.card_image_ratio.options.square" },
+        { "value": "landscape", "label": "t:settings.product_cards.card_image_ratio.options.landscape" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "header",
+      "content": "t:general.content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "Materials"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Three materials. That's the whole shoe."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:labels.text",
+      "default": "<p>No mystery blends, no filler. Every Fernway is built from three things that grow back.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.hero.button_label.label",
+      "default": "Read the material notes"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.hero.button_link.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "t:sections.image_with_text.blocks.feature.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "t:sections.image_with_text.blocks.feature.tag.label",
+          "info": "t:sections.image_with_text.blocks.feature.tag.info",
+          "default": "Merino wool"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:labels.heading"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Regulates temperature, resists odour, and needs washing about a third as often as cotton."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.image_with_text.name",
+      "blocks": [
+        {
+          "type": "feature",
+          "settings": {
+            "tag": "Merino wool",
+            "text": "Regulates temperature, resists odour, and needs washing about a third as often as cotton."
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "tag": "Eucalyptus fibre",
+            "text": "Uses 95% less water than conventional cotton knit and breathes in humid heat."
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "tag": "Sugarcane foam",
+            "text": "A carbon-negative sole that stays springy past 500 miles."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

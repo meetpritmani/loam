@@ -45,7 +45,7 @@ scratch in phase 3 against Loam's price rules, not ported.
 |---|---|---|
 | 1 | Foundation | **Done** — theme-check clean, live compiler clean, zero theme console errors |
 | 2 | Chrome (announcement bar, header + mega menu, footer, cart drawer) | **Done** — cart verified end to end in a browser; one gap, see below |
-| 3 | Homepage sections (§9, 3–17) | Not started |
+| 3 | Homepage sections (§9, 3–17) | **In progress — 6 of 15 built and verified** |
 | 4 | Templates | Not started |
 | 5 | Demo store seeding (§11) | Not started |
 | 6 | Demo data in the repo | Not started |
@@ -345,6 +345,108 @@ would have read as theme bugs:
    tick as setting `.open` shows both panels open. The component is correct.
 2. The announcement bar autoplays, so a rotation test that assumes it starts
    at index 0 is racing the timer. Re-run with `bar.pause()` first.
+
+---
+
+## Full-theme audit (before phase 3)
+
+Everything built through phase 2, re-tested end to end.
+
+**Static, against the spec’s own §15 prohibitions:** exactly two assets
+(`base.css`, `global.js`); `!important` confined to `.visually-hidden` and
+`.visually-hidden--focusable` and nowhere else; no `{% include %}`; no bare
+`<img src>`; no external CDN; no per-section `{% stylesheet %}`; no
+`max-width` media queries; zero hardcoded English in any `{% schema %}`.
+All JSON valid. `theme check`: 0 offenses.
+
+**Live compiler:** 14 routes including pagination, sort, empty search, and
+four different products — all compile clean. JSON-LD parses on every page
+that emits it. No empty attributes, unrendered Liquid, missing translations,
+or duplicate ids anywhere.
+
+**Browser (Chrome over CDP):** no theme console errors or failed requests on
+9 templates × 3 viewports; no horizontal overflow; no broken images; every
+icon-only control labelled; every decorative SVG `aria-hidden`; every form
+control named; dialogs carry `aria-modal` and a name; **21/21 elements show a
+focus ring under real keyboard Tab**; section unload/reload leaves no error
+and no leaked scroll lock; removing an open drawer releases the lock; RTL adds
+no overflow.
+
+**Settings permutations:** `cart_type: page` correctly drops the drawer
+section entirely and turns the header cart into a link; demo images off,
+seam dividers off, uppercase headings, and extremes (heading scale 130,
+gutter 60px, radius 16px, page width 1800px) all render, with **no
+horizontal overflow at 320 / 375 / 768 / 1440px**.
+
+**Contrast, measured on rendered pixels** rather than computed from source:
+every text style the theme renders meets WCAG AA, tightest being
+`--c-ink-70` at 6.32:1. The one failure is Shopify’s own dynamic checkout
+button (3.59:1 white on its blue), whose colour comes from the merchant’s
+checkout branding, not from this theme.
+
+Two audit "failures" were the harness, not the theme, and are recorded so
+they are not "fixed" later: programmatic `.focus()` can never match
+`:focus-visible` (use real key events), and rapid `Page.navigate` aborts
+in-flight requests (the only aborted requests were Shopify analytics).
+
+---
+
+## Phase 3 — Homepage sections (in progress)
+
+### Built and verified (6 of 15)
+
+| Section | §9 | Notes |
+|---|---|---|
+| `hero.liquid` | 3 | image/video, mobile media, 9-way text position, scrim, 2 CTAs, stat blocks |
+| `marquee.liquid` | 4 | text or logo blocks, seamless JS-duplicated track |
+| `featured-collection.liquid` | 5 | grid or slider, view-all, demo fallback |
+| `image-with-text.liquid` | 6 | media side toggle, ratio, feature blocks with material tags |
+| `value-props.liquid` | 7 | icon picker or custom image, 2–4 up |
+| `collection-list.liquid` | 8 | overlay captions, 2/3/4 up |
+
+Supporting: `snippets/price.liquid` (rebuilt for Loam) and
+`snippets/card-product.liquid` with the demo-mode path §10 requires.
+`templates/index.json` populated with all six.
+
+### Bug found by rendering, invisible to every other check
+
+`image-fallback.liquid` layer 2 called `asset_url | image_url` on a demo file
+that does not exist yet. `asset_url` returns a URL for a missing asset quite
+happily, `image_url` then rejects it, and the resulting runtime Liquid error
+was **printed into the page**:
+
+> `Liquid error (snippets/image-fallback line 93): invalid url input`
+
+`theme check` passed it. The upload compiler passed it. Only looking at the
+rendered HTML caught it — and the failure mode is worse than a missing image,
+because the buyer sees error text.
+
+Layer 2 is now captured and only used if it actually produced an `<img>`;
+anything else falls through to layer 3. That is what makes the three-layer
+fallback safe rather than merely ordered. Since demo media does not land until
+phase 6, every image slot currently resolves to `placeholder_svg_tag` — which
+is correct behaviour, not a defect.
+
+### Verified in the browser
+
+Zero theme console errors; zero Liquid errors in the rendered body; 4 demo
+product cards with real Fernway names, prices and material tags; marquee
+duplicates its track (6 originals + 30 aria-hidden, non-tabbable copies) and
+pauses on hover; 21 reveal elements animate in on scroll; no horizontal
+overflow at 320 / 375 / 768 / 1440px; section unload/reload re-initialises
+cleanly.
+
+Hardened during testing: `<marquee-strip>` now filters clones out before
+capturing its originals, so a restored-DOM re-initialisation cannot double the
+track on every pass.
+
+Budgets: CSS **9.5KB**, JS **9.2KB** gzipped. `theme check`: 52 files, 0 offenses.
+
+### Remaining in phase 3 (9 sections)
+
+`lookbook-collage`, `impact-stats`, `testimonials`, `video-section`,
+`ugc-grid`, `faq` (with FAQPage JSON-LD), `newsletter`, `rich-text`,
+`multicolumn`.
 
 ---
 

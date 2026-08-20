@@ -83,41 +83,62 @@
       loading: image_loading,
       fetchpriority: image_priority
   }}
-{%- elsif use_fallback -%}
-  {%- comment -%}
-    Layer 2. A theme asset has no image object behind it, so the intrinsic
-    dimensions must come from the caller — they are in the media manifest
-    (build spec §6) for every demo file.
-  {%- endcomment -%}
-  {%- if width and height -%}
-    {{
-      fallback
-      | asset_url
-      | image_url: width: 2400
-      | image_tag:
-        widths: image_widths,
-        sizes: image_sizes,
-        alt: image_alt,
-        class: img_class,
-        loading: image_loading,
-        fetchpriority: image_priority,
-        width: width,
-        height: height
-    }}
-  {%- else -%}
-    {{
-      fallback
-      | asset_url
-      | image_url: width: 2400
-      | image_tag:
-        widths: image_widths,
-        sizes: image_sizes,
-        alt: image_alt,
-        class: img_class,
-        loading: image_loading,
-        fetchpriority: image_priority
-    }}
-  {%- endif -%}
+
 {%- else -%}
-  {{ placeholder_name | placeholder_svg_tag: img_class }}
+  {%- comment -%}
+    Layer 2, captured rather than printed.
+
+    `asset_url` happily returns a URL for a file that is not in the theme,
+    and `image_url` then rejects it with "invalid url input" — a runtime
+    Liquid error that neither theme-check nor the upload compiler catches,
+    and which renders the error text straight into the page. That is worse
+    than no image at all.
+
+    So the attempt is captured and only used if it actually produced an
+    <img>. Anything else — missing asset, unsupported file, a future filter
+    change — falls through to layer 3. This is what makes the three-layer
+    fallback in build spec §6 genuinely safe rather than merely ordered.
+  {%- endcomment -%}
+  {%- assign rendered_fallback = '' -%}
+
+  {%- if use_fallback -%}
+    {%- capture rendered_fallback -%}
+      {%- if width and height -%}
+        {{-
+          fallback
+          | asset_url
+          | image_url: width: 2400
+          | image_tag:
+            widths: image_widths,
+            sizes: image_sizes,
+            alt: image_alt,
+            class: img_class,
+            loading: image_loading,
+            fetchpriority: image_priority,
+            width: width,
+            height: height
+        -}}
+      {%- else -%}
+        {{-
+          fallback
+          | asset_url
+          | image_url: width: 2400
+          | image_tag:
+            widths: image_widths,
+            sizes: image_sizes,
+            alt: image_alt,
+            class: img_class,
+            loading: image_loading,
+            fetchpriority: image_priority
+        -}}
+      {%- endif -%}
+    {%- endcapture -%}
+  {%- endif -%}
+
+  {%- if rendered_fallback contains '<img' -%}
+    {{ rendered_fallback }}
+  {%- else -%}
+    {%- comment -%} Layer 3. {%- endcomment -%}
+    {{ placeholder_name | placeholder_svg_tag: img_class }}
+  {%- endif -%}
 {%- endif -%}

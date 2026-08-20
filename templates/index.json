@@ -8,6 +8,123 @@
  * ------------------------------------------------------------
  */
 {
-  "sections": {},
-  "order": []
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "blocks": {
+        "stat-1": { "type": "stat", "settings": { "value": "4.8", "text": "average from 12,400 reviews" } },
+        "stat-2": { "type": "stat", "settings": { "value": "", "text": "Carbon footprint printed on every box" } },
+        "stat-3": { "type": "stat", "settings": { "value": "", "text": "Free returns for 30 days" } }
+      },
+      "block_order": ["stat-1", "stat-2", "stat-3"],
+      "settings": {
+        "color_scheme": "scheme-ink",
+        "height": "large",
+        "scrim_opacity": 35,
+        "eyebrow": "New in — Autumn",
+        "heading": "Built from things that grow.",
+        "text": "Merino wool uppers, eucalyptus fibre knits, and soles pressed from sugarcane. Shoes that feel like nothing and leave close to it.",
+        "text_position": "end-start",
+        "button_label": "Shop men's",
+        "button_label_2": "Shop women's"
+      }
+    },
+    "marquee": {
+      "type": "marquee",
+      "blocks": {
+        "m1": { "type": "text", "settings": { "text": "Carbon neutral shipping" } },
+        "m2": { "type": "text", "settings": { "text": "B Corp certified" } },
+        "m3": { "type": "text", "settings": { "text": "Machine washable" } },
+        "m4": { "type": "text", "settings": { "text": "30-day trial" } },
+        "m5": { "type": "text", "settings": { "text": "Free returns" } },
+        "m6": { "type": "text", "settings": { "text": "Made in a Fair Trade factory" } }
+      },
+      "block_order": ["m1", "m2", "m3", "m4", "m5", "m6"],
+      "settings": {
+        "color_scheme": "scheme-sand",
+        "speed": 45,
+        "gap": 56,
+        "pause_on_hover": true,
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "featured-collection": {
+      "type": "featured-collection",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "eyebrow": "Best sellers",
+        "heading": "The ones people keep coming back for.",
+        "products_to_show": 4,
+        "columns": 4,
+        "layout": "grid",
+        "show_view_all": true,
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "image-with-text": {
+      "type": "image-with-text",
+      "blocks": {
+        "f1": { "type": "feature", "settings": { "tag": "Merino wool", "text": "Regulates temperature, resists odour, and needs washing about a third as often as cotton." } },
+        "f2": { "type": "feature", "settings": { "tag": "Eucalyptus fibre", "text": "Uses 95% less water than conventional cotton knit and breathes in humid heat." } },
+        "f3": { "type": "feature", "settings": { "tag": "Sugarcane foam", "text": "A carbon-negative sole that stays springy past 500 miles." } }
+      },
+      "block_order": ["f1", "f2", "f3"],
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "media_position": "end",
+        "image_ratio": "portrait",
+        "eyebrow": "Materials",
+        "heading": "Three materials. That's the whole shoe.",
+        "text": "<p>No mystery blends, no filler. Every Fernway is built from three things that grow back.</p>",
+        "button_label": "Read the material notes",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "collection-list": {
+      "type": "collection-list",
+      "blocks": {
+        "c1": { "type": "category", "settings": { "heading": "Men", "text": "Everyday and trail" } },
+        "c2": { "type": "category", "settings": { "heading": "Women", "text": "Everyday and trail" } },
+        "c3": { "type": "category", "settings": { "heading": "Active", "text": "Runners and mids" } },
+        "c4": { "type": "category", "settings": { "heading": "Lounge", "text": "Wool, indoors" } }
+      },
+      "block_order": ["c1", "c2", "c3", "c4"],
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "heading": "Find your pair.",
+        "columns": 4,
+        "columns_mobile": "2",
+        "image_ratio": "portrait",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "value-props": {
+      "type": "value-props",
+      "blocks": {
+        "v1": { "type": "value", "settings": { "icon": "leaf", "heading": "Renewable materials", "text": "Wool, eucalyptus fibre, and sugarcane foam. Nothing petroleum-based in the upper." } },
+        "v2": { "type": "value", "settings": { "icon": "truck", "heading": "Carbon neutral shipping", "text": "Every order, every country, included in the price." } },
+        "v3": { "type": "value", "settings": { "icon": "droplet", "heading": "Machine washable", "text": "Cold, gentle, air dry. They come back looking new." } },
+        "v4": { "type": "value", "settings": { "icon": "recycle", "heading": "Send them back", "text": "Worn out pairs come back to us and become playground surfacing." } }
+      },
+      "block_order": ["v1", "v2", "v3", "v4"],
+      "settings": {
+        "color_scheme": "scheme-sand",
+        "card_style": false,
+        "padding_top": 72,
+        "padding_bottom": 72
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "marquee",
+    "featured-collection",
+    "image-with-text",
+    "collection-list",
+    "value-props"
+  ]
 }

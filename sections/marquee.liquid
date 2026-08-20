@@ -1,0 +1,161 @@
+{%- comment -%}
+  marquee.liquid — the trust strip.
+
+  The track is duplicated by <marquee-strip> at runtime so the loop is
+  seamless: a single copy would snap back visibly at the wrap. Duplication
+  happens in JS rather than in Liquid because the number of copies needed
+  depends on the rendered width of the content, which Liquid cannot know.
+  The duplicate is aria-hidden so the messages are announced once, not twice.
+
+  Under reduced motion the animation is off and the strip becomes an ordinary
+  horizontal scroller — the content stays reachable, it just does not move on
+  its own.
+{%- endcomment -%}
+
+<div
+  class="section marquee color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.7 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.7 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+    --marquee-duration: {{ section.settings.speed }}s;
+    --marquee-gap: {{ section.settings.gap }}px;
+  "
+>
+  <marquee-strip class="marquee__viewport" data-pause-on-hover="{{ section.settings.pause_on_hover }}">
+    <ul class="marquee__track" data-marquee-track>
+      {%- for block in section.blocks -%}
+        <li class="marquee__item" {{ block.shopify_attributes }}>
+          {%- if block.type == 'logo' -%}
+            <span class="marquee__logo media media--contain">
+              {%- render 'image-fallback',
+                image: block.settings.image,
+                alt: block.settings.text,
+                widths: '120,240,360',
+                sizes: '120px',
+                placeholder: 'image'
+              -%}
+            </span>
+            {%- if block.settings.text != blank -%}
+              <span class="visually-hidden">{{ block.settings.text | escape }}</span>
+            {%- endif -%}
+          {%- else -%}
+            <span class="marquee__text">{{ block.settings.text | escape }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </marquee-strip>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.marquee.name",
+  "tag": "section",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-sand"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "t:sections.marquee.speed.label",
+      "info": "t:sections.marquee.speed.info",
+      "min": 10,
+      "max": 90,
+      "step": 5,
+      "unit": "t:sections.marquee.speed.unit",
+      "default": 45
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:sections.marquee.gap.label",
+      "min": 16,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 56
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "t:sections.marquee.pause_on_hover.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 28
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "t:labels.text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Carbon neutral shipping"
+        }
+      ]
+    },
+    {
+      "type": "logo",
+      "name": "t:sections.marquee.blocks.logo.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.image"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:sections.marquee.blocks.logo.text.label",
+          "info": "t:sections.marquee.blocks.logo.text.info"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.marquee.name",
+      "blocks": [
+        { "type": "text", "settings": { "text": "Carbon neutral shipping" } },
+        { "type": "text", "settings": { "text": "B Corp certified" } },
+        { "type": "text", "settings": { "text": "Machine washable" } },
+        { "type": "text", "settings": { "text": "30-day trial" } },
+        { "type": "text", "settings": { "text": "Free returns" } },
+        { "type": "text", "settings": { "text": "Made in a Fair Trade factory" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

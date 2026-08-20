@@ -1686,6 +1686,389 @@ cart-items[aria-busy] {
   }
 }
 
+/* --- Hero ---------------------------------------------------------------
+   Owns the LCP. The media box is a fixed aspect box at every breakpoint, so
+   swapping the desktop video in over the poster moves nothing. */
+
+.hero {
+  position: relative;
+  display: grid;
+  isolation: isolate;
+  min-height: var(--hero-height, 70vh);
+}
+
+.hero--small {
+  --hero-height: 48vh;
+}
+
+.hero--medium {
+  --hero-height: 62vh;
+}
+
+.hero--large {
+  --hero-height: 78vh;
+}
+
+.hero--full {
+  --hero-height: calc(100vh - var(--header-height, 0px));
+}
+
+.hero__media,
+.hero__scrim,
+.hero__inner {
+  grid-area: 1 / 1;
+}
+
+.hero__media {
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__media img,
+.hero__media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The video is inserted on top of the poster and only faded in once it can
+   paint, so the hero never flashes black. */
+.hero__video {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease);
+}
+
+.hero__video.is-ready {
+  opacity: 1;
+}
+
+.hero__media-desktop {
+  display: none;
+}
+
+.hero__media-mobile {
+  display: block;
+  height: 100%;
+}
+
+.hero__scrim {
+  background-color: rgb(var(--c-ink-rgb) / var(--scrim, 0.35));
+  pointer-events: none;
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: var(--hero-align-block, end);
+  justify-items: var(--hero-align-inline, start);
+  gap: var(--sp-6);
+  padding-block: var(--sp-8);
+  text-align: start;
+}
+
+.hero__content {
+  display: grid;
+  gap: var(--sp-4);
+  max-width: 46ch;
+  justify-items: inherit;
+}
+
+.hero__inner[style*='center'] .hero__content {
+  text-align: center;
+}
+
+.hero__heading {
+  text-wrap: balance;
+}
+
+.hero__text {
+  max-width: 46ch;
+}
+
+.hero__stats {
+  display: grid;
+  gap: var(--sp-4);
+  width: 100%;
+  padding-block-start: var(--sp-5);
+  border-block-start: 1px solid rgb(var(--c-paper-rgb) / 0.25);
+}
+
+.hero__stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.hero__stat-value {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 750px) {
+  .hero__media-desktop {
+    display: block;
+    height: 100%;
+  }
+
+  .hero__media-mobile {
+    display: none;
+  }
+
+  .hero__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-6);
+  }
+}
+
+/* --- Marquee ------------------------------------------------------------
+   The track is duplicated by JS; translating by exactly -50% of the doubled
+   track is what makes the loop seamless. */
+
+.marquee {
+  overflow: hidden;
+}
+
+.marquee__viewport {
+  display: block;
+  overflow: hidden;
+}
+
+.marquee__track {
+  display: flex;
+  align-items: center;
+  gap: var(--marquee-gap, 56px);
+  width: max-content;
+  padding-inline-end: var(--marquee-gap, 56px);
+}
+
+.marquee__viewport[data-animate='true'] .marquee__track {
+  animation: marquee-scroll var(--marquee-duration, 45s) linear infinite;
+}
+
+.marquee__viewport[data-animate='true'][data-paused='true'] .marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+[dir='rtl'] .marquee__viewport[data-animate='true'] .marquee__track {
+  animation-direction: reverse;
+}
+
+.marquee__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 0 0 auto;
+}
+
+.marquee__text {
+  font-size: var(--t-sm);
+  letter-spacing: var(--caption-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.marquee__logo {
+  width: 120px;
+  --media-ratio: 3 / 2;
+  background: none;
+}
+
+/* Without JS, or under reduced motion, it becomes an ordinary scroller so
+   every message is still reachable. */
+.marquee__viewport:not([data-animate='true']) {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.marquee__viewport:not([data-animate='true'])::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- Product card ------------------------------------------------------- */
+
+.card-product__media {
+  display: block;
+}
+
+.card-product__hover {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease);
+}
+
+.card-product__hover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) {
+  .card-product:hover .card-product__hover {
+    opacity: 1;
+  }
+}
+
+.card-product__title {
+  font-weight: var(--f-body-weight-bold);
+}
+
+.card-product__title a {
+  text-decoration: none;
+}
+
+.swatches {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.swatches__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--c-ink-12);
+  background: var(--swatch, var(--c-sand));
+}
+
+/* --- Featured collection ------------------------------------------------ */
+
+.featured-collection__items {
+  align-items: start;
+}
+
+/* --- Image with text ---------------------------------------------------- */
+
+.image-with-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.image-with-text__content {
+  display: grid;
+  align-content: center;
+  gap: var(--sp-4);
+}
+
+.image-with-text__list {
+  display: grid;
+  gap: var(--sp-5);
+  margin-block-start: var(--sp-2);
+}
+
+.image-with-text__item {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.image-with-text__media {
+  width: 100%;
+}
+
+@media (min-width: 750px) {
+  .image-with-text {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--sp-8);
+  }
+
+  .image-with-text__content,
+  .image-with-text__media {
+    flex: 1 1 50%;
+    min-width: 0;
+  }
+
+  /* Source order is always text-then-image, so a screen reader hears the
+     story before the picture. `order` moves the picture visually. */
+  .image-with-text--media-start .image-with-text__media {
+    order: -1;
+  }
+}
+
+/* --- Value props -------------------------------------------------------- */
+
+.value-props {
+  align-items: start;
+}
+
+.value-prop {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
+}
+
+.value-prop--card {
+  padding: var(--sp-5);
+  background-color: var(--c-surface);
+  border-radius: var(--radius);
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+  .value-prop--card:hover {
+    box-shadow: var(--shadow-soft);
+  }
+}
+
+.value-prop__icon {
+  color: var(--c-accent);
+}
+
+.value-prop__image {
+  width: 48px;
+  background: none;
+}
+
+/* --- Collection card ---------------------------------------------------- */
+
+.collection-card {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--c-paper);
+}
+
+.collection-card__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(var(--c-ink-rgb) / 0.55), rgb(var(--c-ink-rgb) / 0) 55%);
+  transition: opacity var(--dur) var(--ease);
+}
+
+.collection-card__caption {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-5);
+}
+
+.collection-card__text {
+  color: rgb(var(--c-paper-rgb) / 0.8);
+}
+
+.collection-card img {
+  transition: transform var(--dur-slow) var(--ease);
+}
+
+@media (hover: hover) {
+  .collection-card:hover img {
+    transform: scale(1.04);
+  }
+}
+
 /* ==========================================================================
    6. UTILITIES
    ========================================================================== */
