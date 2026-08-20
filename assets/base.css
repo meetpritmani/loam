@@ -2069,6 +2069,123 @@ cart-items[aria-busy] {
   }
 }
 
+/* --- Impact stats ------------------------------------------------------- */
+
+.impact-stats {
+  align-items: start;
+}
+
+.impact-stat {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.impact-stat__value {
+  font-variant-numeric: tabular-nums;
+  /* The value is reserved by the final string being in the DOM from the
+     first paint, so the count-up cannot change the row's height. */
+  line-height: 1;
+}
+
+.impact-stat__label {
+  max-width: 24ch;
+}
+
+/* --- FAQ ---------------------------------------------------------------- */
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.faq__intro {
+  display: grid;
+  gap: var(--sp-3);
+  align-content: start;
+}
+
+.faq__list {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-block-start: 1px solid var(--c-ink-12);
+}
+
+.faq__list .accordion__item:last-child {
+  border-block-end: 1px solid var(--c-ink-12);
+}
+
+.accordion__summary .h5 {
+  max-width: 60ch;
+}
+
+@media (min-width: 990px) {
+  .faq {
+    flex-direction: row;
+    gap: var(--sp-8);
+  }
+
+  .faq__intro {
+    flex: 0 0 32%;
+    max-width: 32%;
+  }
+}
+
+/* --- Testimonials ------------------------------------------------------- */
+
+.testimonials {
+  align-items: stretch;
+}
+
+.testimonial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  height: 100%;
+  padding: var(--sp-5);
+  background-color: var(--c-surface);
+  border-radius: var(--radius);
+}
+
+.testimonial__rating {
+  display: flex;
+  gap: 2px;
+  /* Reserved so a 4-star and a 5-star card stay the same height. */
+  min-height: 14px;
+  color: var(--c-accent);
+}
+
+.testimonial__quote {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--t-base);
+  line-height: var(--lh-body);
+}
+
+.testimonial__source {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.testimonial__avatar {
+  width: 44px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.testimonial__meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.testimonial__name {
+  font-size: var(--t-sm);
+  font-weight: var(--f-body-weight-bold);
+}
+
 /* ==========================================================================
    6. UTILITIES
    ========================================================================== */

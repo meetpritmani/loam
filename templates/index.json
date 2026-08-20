@@ -12,11 +12,33 @@
     "hero": {
       "type": "hero",
       "blocks": {
-        "stat-1": { "type": "stat", "settings": { "value": "4.8", "text": "average from 12,400 reviews" } },
-        "stat-2": { "type": "stat", "settings": { "value": "", "text": "Carbon footprint printed on every box" } },
-        "stat-3": { "type": "stat", "settings": { "value": "", "text": "Free returns for 30 days" } }
+        "stat-1": {
+          "type": "stat",
+          "settings": {
+            "value": "4.8",
+            "text": "average from 12,400 reviews"
+          }
+        },
+        "stat-2": {
+          "type": "stat",
+          "settings": {
+            "value": "",
+            "text": "Carbon footprint printed on every box"
+          }
+        },
+        "stat-3": {
+          "type": "stat",
+          "settings": {
+            "value": "",
+            "text": "Free returns for 30 days"
+          }
+        }
       },
-      "block_order": ["stat-1", "stat-2", "stat-3"],
+      "block_order": [
+        "stat-1",
+        "stat-2",
+        "stat-3"
+      ],
       "settings": {
         "color_scheme": "scheme-ink",
         "height": "large",
@@ -32,14 +54,51 @@
     "marquee": {
       "type": "marquee",
       "blocks": {
-        "m1": { "type": "text", "settings": { "text": "Carbon neutral shipping" } },
-        "m2": { "type": "text", "settings": { "text": "B Corp certified" } },
-        "m3": { "type": "text", "settings": { "text": "Machine washable" } },
-        "m4": { "type": "text", "settings": { "text": "30-day trial" } },
-        "m5": { "type": "text", "settings": { "text": "Free returns" } },
-        "m6": { "type": "text", "settings": { "text": "Made in a Fair Trade factory" } }
+        "m1": {
+          "type": "text",
+          "settings": {
+            "text": "Carbon neutral shipping"
+          }
+        },
+        "m2": {
+          "type": "text",
+          "settings": {
+            "text": "B Corp certified"
+          }
+        },
+        "m3": {
+          "type": "text",
+          "settings": {
+            "text": "Machine washable"
+          }
+        },
+        "m4": {
+          "type": "text",
+          "settings": {
+            "text": "30-day trial"
+          }
+        },
+        "m5": {
+          "type": "text",
+          "settings": {
+            "text": "Free returns"
+          }
+        },
+        "m6": {
+          "type": "text",
+          "settings": {
+            "text": "Made in a Fair Trade factory"
+          }
+        }
       },
-      "block_order": ["m1", "m2", "m3", "m4", "m5", "m6"],
+      "block_order": [
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "m5",
+        "m6"
+      ],
       "settings": {
         "color_scheme": "scheme-sand",
         "speed": 45,
@@ -66,11 +125,33 @@
     "image-with-text": {
       "type": "image-with-text",
       "blocks": {
-        "f1": { "type": "feature", "settings": { "tag": "Merino wool", "text": "Regulates temperature, resists odour, and needs washing about a third as often as cotton." } },
-        "f2": { "type": "feature", "settings": { "tag": "Eucalyptus fibre", "text": "Uses 95% less water than conventional cotton knit and breathes in humid heat." } },
-        "f3": { "type": "feature", "settings": { "tag": "Sugarcane foam", "text": "A carbon-negative sole that stays springy past 500 miles." } }
+        "f1": {
+          "type": "feature",
+          "settings": {
+            "tag": "Merino wool",
+            "text": "Regulates temperature, resists odour, and needs washing about a third as often as cotton."
+          }
+        },
+        "f2": {
+          "type": "feature",
+          "settings": {
+            "tag": "Eucalyptus fibre",
+            "text": "Uses 95% less water than conventional cotton knit and breathes in humid heat."
+          }
+        },
+        "f3": {
+          "type": "feature",
+          "settings": {
+            "tag": "Sugarcane foam",
+            "text": "A carbon-negative sole that stays springy past 500 miles."
+          }
+        }
       },
-      "block_order": ["f1", "f2", "f3"],
+      "block_order": [
+        "f1",
+        "f2",
+        "f3"
+      ],
       "settings": {
         "color_scheme": "scheme-paper",
         "media_position": "end",
@@ -86,12 +167,41 @@
     "collection-list": {
       "type": "collection-list",
       "blocks": {
-        "c1": { "type": "category", "settings": { "heading": "Men", "text": "Everyday and trail" } },
-        "c2": { "type": "category", "settings": { "heading": "Women", "text": "Everyday and trail" } },
-        "c3": { "type": "category", "settings": { "heading": "Active", "text": "Runners and mids" } },
-        "c4": { "type": "category", "settings": { "heading": "Lounge", "text": "Wool, indoors" } }
+        "c1": {
+          "type": "category",
+          "settings": {
+            "heading": "Men",
+            "text": "Everyday and trail"
+          }
+        },
+        "c2": {
+          "type": "category",
+          "settings": {
+            "heading": "Women",
+            "text": "Everyday and trail"
+          }
+        },
+        "c3": {
+          "type": "category",
+          "settings": {
+            "heading": "Active",
+            "text": "Runners and mids"
+          }
+        },
+        "c4": {
+          "type": "category",
+          "settings": {
+            "heading": "Lounge",
+            "text": "Wool, indoors"
+          }
+        }
       },
-      "block_order": ["c1", "c2", "c3", "c4"],
+      "block_order": [
+        "c1",
+        "c2",
+        "c3",
+        "c4"
+      ],
       "settings": {
         "color_scheme": "scheme-paper",
         "heading": "Find your pair.",
@@ -105,17 +215,215 @@
     "value-props": {
       "type": "value-props",
       "blocks": {
-        "v1": { "type": "value", "settings": { "icon": "leaf", "heading": "Renewable materials", "text": "Wool, eucalyptus fibre, and sugarcane foam. Nothing petroleum-based in the upper." } },
-        "v2": { "type": "value", "settings": { "icon": "truck", "heading": "Carbon neutral shipping", "text": "Every order, every country, included in the price." } },
-        "v3": { "type": "value", "settings": { "icon": "droplet", "heading": "Machine washable", "text": "Cold, gentle, air dry. They come back looking new." } },
-        "v4": { "type": "value", "settings": { "icon": "recycle", "heading": "Send them back", "text": "Worn out pairs come back to us and become playground surfacing." } }
+        "v1": {
+          "type": "value",
+          "settings": {
+            "icon": "leaf",
+            "heading": "Renewable materials",
+            "text": "Wool, eucalyptus fibre, and sugarcane foam. Nothing petroleum-based in the upper."
+          }
+        },
+        "v2": {
+          "type": "value",
+          "settings": {
+            "icon": "truck",
+            "heading": "Carbon neutral shipping",
+            "text": "Every order, every country, included in the price."
+          }
+        },
+        "v3": {
+          "type": "value",
+          "settings": {
+            "icon": "droplet",
+            "heading": "Machine washable",
+            "text": "Cold, gentle, air dry. They come back looking new."
+          }
+        },
+        "v4": {
+          "type": "value",
+          "settings": {
+            "icon": "recycle",
+            "heading": "Send them back",
+            "text": "Worn out pairs come back to us and become playground surfacing."
+          }
+        }
       },
-      "block_order": ["v1", "v2", "v3", "v4"],
+      "block_order": [
+        "v1",
+        "v2",
+        "v3",
+        "v4"
+      ],
       "settings": {
         "color_scheme": "scheme-sand",
         "card_style": false,
         "padding_top": 72,
         "padding_bottom": 72
+      }
+    },
+    "impact-stats": {
+      "type": "impact-stats",
+      "blocks": {
+        "s1": {
+          "type": "stat",
+          "settings": {
+            "value": "2.1",
+            "suffix": "M",
+            "text": "pairs made from renewable materials"
+          }
+        },
+        "s2": {
+          "type": "stat",
+          "settings": {
+            "value": "95",
+            "suffix": "%",
+            "text": "less water in every knit upper"
+          }
+        },
+        "s3": {
+          "type": "stat",
+          "settings": {
+            "value": "100",
+            "suffix": "%",
+            "text": "carbon neutral shipping, no offsets bought after the fact"
+          }
+        },
+        "s4": {
+          "type": "stat",
+          "settings": {
+            "value": "12400",
+            "text": "reviews averaging 4.8",
+            "suffix": ""
+          }
+        }
+      },
+      "block_order": [
+        "s1",
+        "s2",
+        "s3",
+        "s4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ink",
+        "eyebrow": "Impact",
+        "heading": "The numbers, printed on the box.",
+        "center": true,
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "blocks": {
+        "t1": {
+          "type": "testimonial",
+          "settings": {
+            "rating": 5,
+            "quote": "Wore them through a wet week in Lisbon and they dried overnight. Sizing runs a touch long, so I sized down and they are perfect.",
+            "name": "Priya, Bristol",
+            "detail": "Verified buyer — Coastline Runner",
+            "avatar_fallback": "demo-avatar-1.webp"
+          }
+        },
+        "t2": {
+          "type": "testimonial",
+          "settings": {
+            "rating": 5,
+            "quote": "Washed them three times now. They come out looking new, which I did not expect from wool. My only gripe is I want more colours.",
+            "name": "Tom, Leeds",
+            "detail": "Verified buyer — Ridge Lounger",
+            "avatar_fallback": "demo-avatar-2.webp"
+          }
+        },
+        "t3": {
+          "type": "testimonial",
+          "settings": {
+            "rating": 4,
+            "quote": "Took a week to soften up and I nearly sent them back. Glad I did not. Two months on they are the only thing I reach for.",
+            "name": "Ana, Porto",
+            "detail": "Verified buyer — Harbour Slip-On",
+            "avatar_fallback": "demo-avatar-3.webp"
+          }
+        },
+        "t4": {
+          "type": "testimonial",
+          "settings": {
+            "rating": 5,
+            "quote": "I stand twelve hours a shift. These are the first pair that did not leave my feet aching by hour eight.",
+            "name": "Marcus, Glasgow",
+            "detail": "Verified buyer — Meadow Low",
+            "avatar_fallback": "demo-avatar-4.webp"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t3",
+        "t4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-surface",
+        "eyebrow": "Reviews",
+        "heading": "12,400 reviews, averaging 4.8.",
+        "layout": "grid",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "What if I'm between sizes?",
+            "answer": "<p>Size down. The knit gives about half a size as it settles, and wool relaxes further again after the first wash.</p>"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Can I machine wash them?",
+            "answer": "<p>Yes. Pull the insoles out, cold gentle cycle, then air dry away from direct heat. Skip the dryer — it shrinks the wool and hardens the foam.</p>"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "How does the 30-day trial work?",
+            "answer": "<p>Wear them outside, properly. If they are not right within 30 days, start a return and we cover the postage. Worn pairs go to our refurbishment programme rather than landfill.</p>"
+          }
+        },
+        "q4": {
+          "type": "question",
+          "settings": {
+            "question": "When will my order arrive?",
+            "answer": "<p>Two to four working days domestically, five to ten internationally. Every shipment is carbon neutral, and you get tracking as soon as it leaves the warehouse.</p>"
+          }
+        },
+        "q5": {
+          "type": "question",
+          "settings": {
+            "question": "What do I do with an old pair?",
+            "answer": "<p>Send them back with the label in your account. We grind them down into playground surfacing, and you get credit towards your next pair.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5"
+      ],
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "eyebrow": "Questions",
+        "heading": "The things people ask most.",
+        "text": "<p>Still stuck? Write to us and a person answers.</p>",
+        "padding_top": 96,
+        "padding_bottom": 96
       }
     }
   },
@@ -125,6 +433,9 @@
     "featured-collection",
     "image-with-text",
     "collection-list",
-    "value-props"
+    "impact-stats",
+    "value-props",
+    "testimonials",
+    "faq"
   ]
 }

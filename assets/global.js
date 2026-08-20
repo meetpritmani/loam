@@ -989,3 +989,94 @@ class MarqueeStrip extends HTMLElement {
 if (!customElements.get('marquee-strip')) {
   customElements.define('marquee-strip', MarqueeStrip);
 }
+
+/* ==========================================================================
+   <count-up>
+   Animates an impact stat from zero to its value when it scrolls into view.
+
+   The finished value is already in the DOM when this runs — the element's
+   own text content — so the animation is purely decorative. Under reduced
+   motion, or with no IntersectionObserver, nothing happens at all and the
+   number simply stands there, which is the correct outcome rather than a
+   degraded one.
+
+   The numeric part is animated and any prefix or suffix the merchant typed
+   is reapplied each frame, so "2.1M" counts the 2.1 and keeps the M. The
+   element is aria-hidden during the count and restored afterwards, so a
+   screen reader is never read a stream of intermediate numbers.
+   ========================================================================== */
+
+class CountUp extends HTMLElement {
+  connectedCallback() {
+    this.finalText = this.textContent;
+    // NOT this.prefix / this.suffix: Element.prototype.prefix is a
+    // read-only getter (the XML namespace prefix), so assigning it throws
+    // in a module's strict mode and takes the whole element down with it.
+    // Custom elements inherit the entire Element surface — check before
+    // claiming a property name on `this`.
+    this.valuePrefix = this.dataset.prefix || '';
+    this.valueSuffix = this.dataset.suffix || '';
+
+    const raw = (this.dataset.countTo || '').replace(/[^0-9.]/g, '');
+    this.target = parseFloat(raw);
+
+    if (!Number.isFinite(this.target) || this.target === 0) return;
+    if (PREFERS_REDUCED_MOTION.matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    // Decimal places are taken from the merchant's own value, so 2.1 counts
+    // in tenths and 12400 counts in whole numbers.
+    const dot = raw.indexOf('.');
+    this.decimals = dot === -1 ? 0 : raw.length - dot - 1;
+
+    this.observer = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.unobserve(entry.target);
+          this.run();
+        });
+      },
+      { threshold: 0.4 }
+    );
+    this.observer.observe(this);
+  }
+
+  disconnectedCallback() {
+    this.observer?.disconnect();
+    if (this.frame) cancelAnimationFrame(this.frame);
+    // Never leave a half-counted number behind if the section is removed
+    // mid-animation.
+    if (this.finalText) this.textContent = this.finalText;
+    this.removeAttribute('aria-hidden');
+  }
+
+  run() {
+    const duration = 900;
+    const start = performance.now();
+    this.setAttribute('aria-hidden', 'true');
+
+    const step = (now) => {
+      const progress = Math.min(1, (now - start) / duration);
+      // Ease-out cubic: fast at first, settling into the final value.
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = (this.target * eased).toFixed(this.decimals);
+      this.textContent = `${this.valuePrefix}${value}${this.valueSuffix}`;
+
+      if (progress < 1) {
+        this.frame = requestAnimationFrame(step);
+      } else {
+        // Snap to the merchant's exact string — never to a rounded
+        // reconstruction of it, which would drop thousands separators.
+        this.textContent = this.finalText;
+        this.removeAttribute('aria-hidden');
+      }
+    };
+
+    this.frame = requestAnimationFrame(step);
+  }
+}
+
+if (!customElements.get('count-up')) {
+  customElements.define('count-up', CountUp);
+}

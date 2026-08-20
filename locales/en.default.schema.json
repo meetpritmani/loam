@@ -480,6 +480,62 @@
           }
         }
       }
+    },
+    "impact_stats": {
+      "name": "Impact stats",
+      "center": {
+        "label": "Center the heading"
+      },
+      "prefix": {
+        "label": "Prefix",
+        "info": "Sits before the number, for example a currency symbol."
+      },
+      "suffix": {
+        "label": "Suffix"
+      }
+    },
+    "faq": {
+      "name": "FAQ",
+      "paragraph": "These questions are also published as FAQ structured data, so Google can show them directly in search results.",
+      "blocks": {
+        "question": {
+          "name": "Question",
+          "question": {
+            "label": "Question"
+          },
+          "answer": {
+            "label": "Answer"
+          }
+        }
+      }
+    },
+    "testimonials": {
+      "name": "Testimonials",
+      "paragraph": "These quotes are shown to shoppers but are deliberately not published as review structured data — marking up unverified testimonials as reviews risks a Google manual action against your store.",
+      "blocks": {
+        "testimonial": {
+          "name": {
+            "label": "Name"
+          },
+          "rating": {
+            "label": "Stars"
+          },
+          "quote": {
+            "label": "Quote"
+          },
+          "detail": {
+            "label": "Detail",
+            "info": "City, product, or \"verified buyer\"."
+          },
+          "image": {
+            "label": "Photo"
+          },
+          "avatar_fallback": {
+            "label": "Demo photo filename",
+            "info": "Used only while Demo content is on and no photo is set."
+          }
+        }
+      }
     }
   },
   "labels": {

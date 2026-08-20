@@ -1,0 +1,155 @@
+{%- comment -%}
+  impact-stats.liquid — the numbers row.
+
+  Values count up when the row scrolls into view. The count-up is decorative
+  only: the final value is in the DOM from the first render, and the animation
+  is skipped entirely under reduced motion, so a screen reader and a visitor
+  who has asked for less movement both get the finished number immediately
+  rather than watching it tick.
+
+  `data-count-to` carries the numeric part; any prefix or suffix the merchant
+  typed (%, M, +) is preserved around it, so "2.1M" animates the 2.1 and keeps
+  the M.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <div class="section__header{% if section.settings.center %} section__header--center{% endif %} reveal">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+      </div>
+    {%- endif -%}
+
+    <ul class="grid impact-stats" style="--grid-cols: {{ section.blocks.size | at_most: 4 }}; --grid-cols-tablet: 2; --grid-cols-mobile: 2;">
+      {%- for block in section.blocks -%}
+        <li
+          class="impact-stat reveal"
+          style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;"
+          {{ block.shopify_attributes }}
+        >
+          <p class="impact-stat__value h1">
+            <count-up
+              data-count-to="{{ block.settings.value | escape }}"
+              data-prefix="{{ block.settings.prefix | escape }}"
+              data-suffix="{{ block.settings.suffix | escape }}"
+            >{{ block.settings.prefix }}{{ block.settings.value }}{{ block.settings.suffix }}</count-up>
+          </p>
+          {%- if block.settings.text != blank -%}
+            <p class="impact-stat__label text-body-sm text-muted">{{ block.settings.text | escape }}</p>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.impact_stats.name",
+  "tag": "section",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-ink"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "Impact"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "The numbers, printed on the box."
+    },
+    {
+      "type": "checkbox",
+      "id": "center",
+      "label": "t:sections.impact_stats.center.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "t:sections.hero.blocks.stat.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "prefix",
+          "label": "t:sections.impact_stats.prefix.label",
+          "info": "t:sections.impact_stats.prefix.info"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "t:sections.hero.blocks.stat.value.label",
+          "default": "2.1"
+        },
+        {
+          "type": "text",
+          "id": "suffix",
+          "label": "t:sections.impact_stats.suffix.label"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "pairs made from renewable materials"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.impact_stats.name",
+      "blocks": [
+        { "type": "stat", "settings": { "value": "2.1", "suffix": "M", "text": "pairs made from renewable materials" } },
+        { "type": "stat", "settings": { "value": "95", "suffix": "%", "text": "less water in every knit upper" } },
+        { "type": "stat", "settings": { "value": "100", "suffix": "%", "text": "carbon neutral shipping, no offsets bought after the fact" } },
+        { "type": "stat", "settings": { "value": "12400", "text": "reviews averaging 4.8" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

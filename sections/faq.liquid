@@ -1,0 +1,200 @@
+{%- comment -%}
+  faq.liquid — accordion, and the only place FAQPage structured data is
+  emitted (build spec §7).
+
+  Built on <details>/<summary>, so every answer is reachable and announced
+  before JavaScript runs — and, importantly, findable by the browser's own
+  find-in-page in browsers that expand closed details on match.
+
+  The JSON-LD is generated from the same blocks that render the accordion, so
+  the two can never disagree. Answers are `richtext`, so they go through
+  strip_html before entering JSON: schema.org wants text, and unescaped markup
+  in a JSON string is both invalid and an injection vector.
+{%- endcomment -%}
+
+{%- liquid
+  assign faq_blocks = section.blocks | where: 'type', 'question'
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    <div class="faq">
+      <div class="faq__intro reveal">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <div class="rte text-muted text-body-sm">{{ section.settings.text }}</div>
+        {%- endif -%}
+      </div>
+
+      <div class="faq__list accordion reveal" style="--reveal-delay: 80ms;">
+        {%- for block in faq_blocks -%}
+          <details class="accordion__item" {{ block.shopify_attributes }}>
+            <summary class="accordion__summary">
+              <span class="h5">{{ block.settings.question | escape }}</span>
+              {%- render 'icon', icon: 'chevron-down', class: 'accordion__icon', size: 18 -%}
+            </summary>
+            <div class="accordion__content rte">{{ block.settings.answer }}</div>
+          </details>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- if faq_blocks.size > 0 -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {%- for block in faq_blocks -%}
+          {
+            "@type": "Question",
+            "name": {{ block.settings.question | strip_html | json }},
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": {{ block.settings.answer | strip_html | json }}
+            }
+          }{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ]
+    }
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.faq.name",
+  "tag": "section",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "Questions"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "The things people ask most."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:labels.text",
+      "default": "<p>Still stuck? Write to us and a person answers.</p>"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.faq.paragraph"
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "t:sections.faq.blocks.question.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "t:sections.faq.blocks.question.question.label",
+          "default": "What if I'm between sizes?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "t:sections.faq.blocks.question.answer.label",
+          "default": "<p>Size down. The knit gives about half a size as it settles, and wool relaxes further again after the first wash.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.faq.name",
+      "blocks": [
+        {
+          "type": "question",
+          "settings": {
+            "question": "What if I'm between sizes?",
+            "answer": "<p>Size down. The knit gives about half a size as it settles, and wool relaxes further again after the first wash.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Can I machine wash them?",
+            "answer": "<p>Yes. Pull the insoles out, cold gentle cycle, then air dry away from direct heat. Skip the dryer — it shrinks the wool and hardens the foam.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "How does the 30-day trial work?",
+            "answer": "<p>Wear them outside, properly. If they are not right within 30 days, start a return and we cover the postage. Worn pairs go to our refurbishment programme rather than landfill.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "When will my order arrive?",
+            "answer": "<p>Two to four working days domestically, five to ten internationally. Every shipment is carbon neutral, and you get tracking as soon as it leaves the warehouse.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "What do I do with an old pair?",
+            "answer": "<p>Send them back with the label in your account. We grind them down into playground surfacing, and you get credit towards your next pair.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

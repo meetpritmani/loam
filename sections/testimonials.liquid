@@ -1,0 +1,244 @@
+{%- comment -%}
+  testimonials.liquid — social proof.
+
+  Star ratings are rendered as icons plus a visually-hidden sentence, so a
+  screen reader hears "4 out of 5 stars" rather than counting glyphs.
+
+  These are merchant-entered quotes, not review-app data, so they are
+  deliberately NOT emitted as Review structured data. Marking up unverified
+  testimonials as schema.org reviews is a Google manual-action risk that would
+  land on the buyer's store. Real review data gets there through the product
+  metafields path in structured-data.liquid instead.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <div class="section__header section__header--center reveal">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+      </div>
+    {%- endif -%}
+
+    <ul class="{% if section.settings.layout == 'slider' %}scroller{% else %}grid{% endif %} testimonials"
+        style="--grid-cols: {{ section.blocks.size | at_most: 4 }}; --grid-cols-tablet: 2; --grid-cols-mobile: 1;">
+      {%- for block in section.blocks -%}
+        <li
+          class="testimonial reveal"
+          style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;"
+          {{ block.shopify_attributes }}
+        >
+          {%- if block.settings.rating > 0 -%}
+            <p class="testimonial__rating">
+              <span class="visually-hidden">
+                {{- 'accessibility.star_rating' | t: rating: block.settings.rating, scale: 5 -}}
+              </span>
+              {%- for i in (1..5) -%}
+                {%- if i <= block.settings.rating -%}
+                  {%- render 'icon', icon: 'star', size: 14 -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </p>
+          {%- endif -%}
+
+          <blockquote class="testimonial__quote">{{ block.settings.quote | escape }}</blockquote>
+
+          <div class="testimonial__source">
+            {%- if block.settings.image != blank or settings.demo_images -%}
+              <span class="testimonial__avatar media media--square">
+                {%- render 'image-fallback',
+                  image: block.settings.image,
+                  fallback: block.settings.avatar_fallback,
+                  alt: block.settings.name,
+                  widths: '100,200,300',
+                  sizes: '44px',
+                  width: 200,
+                  height: 200,
+                  placeholder: 'image'
+                -%}
+              </span>
+            {%- endif -%}
+
+            <span class="testimonial__meta">
+              <span class="testimonial__name">{{ block.settings.name | escape }}</span>
+              {%- if block.settings.detail != blank -%}
+                <span class="caption">{{ block.settings.detail | escape }}</span>
+              {%- endif -%}
+            </span>
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.testimonials.name",
+  "tag": "section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-surface"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "Reviews"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "12,400 reviews, averaging 4.8."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:sections.featured_collection.layout.label",
+      "options": [
+        { "value": "grid", "label": "t:options.layout.grid" },
+        { "value": "slider", "label": "t:options.layout.slider" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.testimonials.paragraph"
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "t:sections.testimonials.blocks.testimonial.name",
+      "settings": [
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "t:sections.testimonials.blocks.testimonial.rating.label",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "t:sections.testimonials.blocks.testimonial.quote.label",
+          "default": "Wore them through a wet week in Lisbon and they dried overnight. Sizing runs a touch long, so I sized down and they are perfect."
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "t:sections.testimonials.blocks.testimonial.name.label",
+          "default": "Priya, Bristol"
+        },
+        {
+          "type": "text",
+          "id": "detail",
+          "label": "t:sections.testimonials.blocks.testimonial.detail.label",
+          "info": "t:sections.testimonials.blocks.testimonial.detail.info",
+          "default": "Verified buyer — Coastline Runner"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.testimonials.blocks.testimonial.image.label"
+        },
+        {
+          "type": "text",
+          "id": "avatar_fallback",
+          "label": "t:sections.testimonials.blocks.testimonial.avatar_fallback.label",
+          "info": "t:sections.testimonials.blocks.testimonial.avatar_fallback.info",
+          "default": "demo-avatar-1.webp"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.testimonials.name",
+      "blocks": [
+        {
+          "type": "testimonial",
+          "settings": {
+            "rating": 5,
+            "quote": "Wore them through a wet week in Lisbon and they dried overnight. Sizing runs a touch long, so I sized down and they are perfect.",
+            "name": "Priya, Bristol",
+            "detail": "Verified buyer — Coastline Runner",
+            "avatar_fallback": "demo-avatar-1.webp"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "rating": 5,
+            "quote": "Washed them three times now. They come out looking new, which I did not expect from wool. My only gripe is I want more colours.",
+            "name": "Tom, Leeds",
+            "detail": "Verified buyer — Ridge Lounger",
+            "avatar_fallback": "demo-avatar-2.webp"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "rating": 4,
+            "quote": "Took a week to soften up and I nearly sent them back. Glad I did not. Two months on they are the only thing I reach for.",
+            "name": "Ana, Porto",
+            "detail": "Verified buyer — Harbour Slip-On",
+            "avatar_fallback": "demo-avatar-3.webp"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "rating": 5,
+            "quote": "I stand twelve hours a shift. These are the first pair that did not leave my feet aching by hour eight.",
+            "name": "Marcus, Glasgow",
+            "detail": "Verified buyer — Meadow Low",
+            "avatar_fallback": "demo-avatar-4.webp"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

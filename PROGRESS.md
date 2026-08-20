@@ -45,7 +45,7 @@ scratch in phase 3 against Loam's price rules, not ported.
 |---|---|---|
 | 1 | Foundation | **Done** — theme-check clean, live compiler clean, zero theme console errors |
 | 2 | Chrome (announcement bar, header + mega menu, footer, cart drawer) | **Done** — cart verified end to end in a browser; one gap, see below |
-| 3 | Homepage sections (§9, 3–17) | **In progress — 6 of 15 built and verified** |
+| 3 | Homepage sections (§9, 3–17) | **In progress — 9 of 15 built and verified** |
 | 4 | Templates | Not started |
 | 5 | Demo store seeding (§11) | Not started |
 | 6 | Demo data in the repo | Not started |
@@ -442,10 +442,51 @@ track on every pass.
 
 Budgets: CSS **9.5KB**, JS **9.2KB** gzipped. `theme check`: 52 files, 0 offenses.
 
-### Remaining in phase 3 (9 sections)
+### Second batch (3 more, 9 of 15 total)
 
-`lookbook-collage`, `impact-stats`, `testimonials`, `video-section`,
-`ugc-grid`, `faq` (with FAQPage JSON-LD), `newsletter`, `rich-text`,
+| Section | §9 | Notes |
+|---|---|---|
+| `impact-stats.liquid` | 10 | `<count-up>` on reveal, reduced-motion aware |
+| `testimonials.liquid` | 11 | star rating, avatar, source label, grid or slider |
+| `faq.liquid` | 14 | accordion + FAQPage JSON-LD generated from the same blocks |
+
+`templates/index.json` now carries 9 sections in order.
+
+**Two more bugs, both found by running the code:**
+
+1. `<count-up>` assigned `this.prefix`. `Element.prototype.prefix` is a
+   read-only getter (the XML namespace prefix), so in a module's strict mode
+   the assignment threw and took the whole element down — every stat was
+   dead, with a `TypeError` in the console. Renamed to `valuePrefix` /
+   `valueSuffix`. **Custom elements inherit the entire `Element` surface;
+   check before claiming a property name on `this`.**
+2. The `suffix` setting had a schema default of `"M"`, which any block
+   omitting a suffix silently inherited — the 12,400 reviews stat rendered as
+   "12400M". Defaults belong in the preset, not on the setting, whenever the
+   value is not a sensible universal.
+
+Verified in the browser: values animate from near-zero, carry `aria-hidden`
+while counting so a screen reader is never read intermediate numbers, and land
+on the authored string exactly (`2.1M`, `95%`, `100%`, `12400`). FAQPage
+JSON-LD parses with 5 questions and HTML correctly stripped from the answers.
+Accordion opens and closes; every star rating has a spoken equivalent and the
+glyphs are `aria-hidden`. No horizontal overflow at 320 / 375 / 768 / 1440px.
+
+### Mega menu — now fully verified against real Liquid
+
+With a three-level menu on the dev store, the previously unexercised branch
+renders: 2 columns from `link.links`, 4 third-level `mega__link` items, the
+feature card matched to "Shop" by title, and the mobile drawer mirroring the
+same depth (3 sublists, 2 of them deep). Click-to-open, Escape-closes-and-
+restores-focus, and close-on-focus-leave all pass on real markup.
+
+Still only verified against injected markup: "opening a second panel closes
+the first", because the store's menu has one dropdown. The behaviour is
+implemented and tested; it just has not been seen with two real dropdowns.
+
+### Remaining in phase 3 (6 sections)
+
+`lookbook-collage`, `video-section`, `ugc-grid`, `newsletter`, `rich-text`,
 `multicolumn`.
 
 ---
