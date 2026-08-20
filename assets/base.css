@@ -2187,26 +2187,52 @@ cart-items[aria-busy] {
 }
 
 /* --- Lookbook collage ---------------------------------------------------
-   Asymmetry comes from spans on a fixed 2-column mobile / 4-column desktop
-   grid. Spans are dropped below 750px, where an asymmetric grid reads as a
-   jumble rather than as editorial. */
+   Built on fixed unit rows rather than per-image aspect ratios. Spanned
+   items can only share a baseline if the row height is known, so every span
+   is a multiple of one unit and the media fills its area with object-fit
+   instead of dictating the row height.
+
+   `dense` backfills gaps left by whatever span combination a merchant
+   chooses. It reorders visually against source order, which is acceptable
+   here and nowhere else in the theme: a lookbook has no meaningful
+   sequence. */
 
 .lookbook {
+  --lookbook-row: clamp(76px, 11vw, 118px);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: var(--lookbook-row);
+  grid-auto-flow: row dense;
   gap: var(--grid-gap);
 }
 
 .lookbook__item {
   display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: var(--sp-3);
   min-width: 0;
-  align-content: start;
+  /* Every item is two units tall by default; wide and large take four. */
+  grid-row: span 2;
 }
 
+.lookbook__item--tall,
+.lookbook__item--large {
+  grid-row: span 4;
+}
+
+.lookbook__item--wide,
+.lookbook__item--large {
+  grid-column: span 2;
+}
+
+/* The media fills whatever cell the span produced, so the grid stays on its
+   baseline no matter what shape the photograph is. */
 .lookbook__media {
   position: relative;
   width: 100%;
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: auto;
 }
 
 .lookbook__caption {
@@ -2220,19 +2246,6 @@ cart-items[aria-busy] {
 @media (min-width: 750px) {
   .lookbook {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .lookbook__item--normal {
-    grid-column: span 1;
-  }
-
-  .lookbook__item--wide {
-    grid-column: span 2;
-  }
-
-  .lookbook__item--tall {
-    grid-column: span 1;
-    grid-row: span 2;
   }
 }
 

@@ -533,6 +533,46 @@ now read `1,2,3,3…` with exactly one `h1`.
 Note the test that caught it had computed the `h1` count but never asserted
 it — the assertion is now in the harness.
 
+### Lookbook grid — rebuilt after a visual bug report
+
+The shipped lookbook left an **entire empty column** on the right. Three
+compounding causes, none of which any automated check had been looking for:
+
+1. The preset spans did not tile — `tall + normal + normal + wide` is six
+   cells of content in an eight-cell grid.
+2. No `grid-auto-flow: dense`, so nothing backfilled.
+3. Row heights came from each block's own image ratio, so spanned items could
+   never share a baseline.
+
+Rebuilt on **fixed unit rows**: every span is a multiple of one unit (normal
+1x2, wide 2x2, tall 1x4, large 2x4) and the media fills its cell with
+object-fit rather than dictating the row height. Added `dense`, added a
+`large` size, removed the now-redundant per-block ratio setting, and changed
+the preset to `large + normal + normal + wide`.
+
+Verified by measuring rendered geometry — sampling the grid area and counting
+points covered by no item — rather than by reading the CSS back:
+
+| Combination | Result |
+|---|---|
+| `large + normal + normal + wide` (shipped) | **0% unfilled, tiles exactly** |
+| `normal x4` | tiles exactly |
+| `large + tall + normal + normal` | tiles exactly |
+| `wide + wide + normal + normal` | short final row (20.8%) — ordinary wrapping |
+| `tall + normal + normal + wide` | **unused column** |
+
+**The last case is not fixable in CSS and is not claimed to be.** `dense` can
+only backfill with later, smaller items; a double-height shot with nothing
+small after it strands the column beside it. That is a property of span-based
+grids. It is handled where it can be: the shipped preset tiles exactly, and
+the size setting states the rule to the merchant.
+
+An early version of this measurement reported a false 3.5% gap. The `.reveal`
+transform offsets every item 20px until it animates in, and the section is
+below the fold, so the probe was measuring the animation rather than the
+layout. The probe now neutralises the transform before measuring — worth
+remembering for any future geometry test in this theme.
+
 ### Verified in the browser (12-section homepage)
 
 Zero theme console errors; zero Liquid errors; all 12 sections render;

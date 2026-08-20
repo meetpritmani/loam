@@ -219,8 +219,7 @@
         "l1": {
           "type": "shot",
           "settings": {
-            "span": "tall",
-            "ratio": "portrait",
+            "span": "large",
             "caption": "Coastline Runner in Fog"
           }
         },
@@ -228,7 +227,6 @@
           "type": "shot",
           "settings": {
             "span": "normal",
-            "ratio": "square",
             "caption": "Ridge Lounger in Oat"
           }
         },
@@ -236,7 +234,6 @@
           "type": "shot",
           "settings": {
             "span": "normal",
-            "ratio": "square",
             "caption": "Harbour Slip-On in Slate"
           }
         },
@@ -244,7 +241,6 @@
           "type": "shot",
           "settings": {
             "span": "wide",
-            "ratio": "landscape",
             "caption": "Trail Mid, Snowdonia"
           }
         }

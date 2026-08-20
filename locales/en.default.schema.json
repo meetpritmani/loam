@@ -560,7 +560,7 @@
           "name": "Shot",
           "span": {
             "label": "Size",
-            "info": "Wide and tall shots are what make the grid look editorial rather than uniform. All sizes collapse to one column on mobile."
+            "info": "Sizes tile on a shared grid: normal is one column, wide and large are two, tall and large are double height. A double-height shot needs enough single shots after it to fill the column beside it — otherwise the row it starts leaves a gap on the right."
           },
           "caption": {
             "label": "Caption"
@@ -711,7 +711,8 @@
     "span": {
       "normal": "Normal",
       "wide": "Wide",
-      "tall": "Tall"
+      "tall": "Tall",
+      "large": "Large"
     }
   }
 }

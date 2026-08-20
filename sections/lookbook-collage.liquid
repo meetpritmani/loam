@@ -1,9 +1,26 @@
 {%- comment -%}
   lookbook-collage.liquid — the editorial grid.
 
-  Blocks span one or two columns and one or two rows, which is what makes the
-  grid read as asymmetric rather than as a uniform gallery. Spans collapse to
-  a single column on mobile, where an asymmetric layout is just a jumble.
+  The grid is built on fixed unit rows, not on each image's own aspect ratio.
+  That is the whole trick: spanned items can only line up on a shared baseline
+  if the rows are a known height, so every span is a multiple of one unit
+  (normal 1x2, wide 2x2, tall 1x4, large 2x4) and the media fills its area
+  with object-fit instead of dictating it.
+
+  `grid-auto-flow: dense` backfills gaps where it can. It cannot fix
+  everything: dense only reuses LATER, SMALLER items, so a double-height shot
+  with nothing small after it still strands the column beside it. Measured:
+  large+normal+normal+wide and large+tall+normal+normal tile exactly;
+  wide+wide+normal+normal ends in a short final row, which is ordinary
+  wrapping; tall+normal+normal+wide leaves an unused column.
+
+  That last case is a property of span-based grids, not something CSS can
+  resolve, so it is handled where it belongs — the shipped preset tiles
+  exactly, and the size setting tells the merchant the rule.
+
+  Dense reorders visually relative to source order. That is acceptable here
+  and nowhere else in the theme: a lookbook is a set of photographs with no
+  meaningful sequence, so WCAG 1.3.2 is not engaged.
 
   Each image can carry one hotspot: a dot pinned by percentage over the photo
   that links to a product. It is a real link with a real accessible name, not
@@ -50,7 +67,7 @@
           style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;"
           {{ block.shopify_attributes }}
         >
-          <div class="lookbook__media media media--{{ block.settings.ratio }}">
+          <div class="lookbook__media media">
             {%- render 'image-fallback',
               image: block.settings.image,
               fallback: demo_file,
@@ -163,20 +180,10 @@
           "options": [
             { "value": "normal", "label": "t:options.span.normal" },
             { "value": "wide", "label": "t:options.span.wide" },
-            { "value": "tall", "label": "t:options.span.tall" }
+            { "value": "tall", "label": "t:options.span.tall" },
+            { "value": "large", "label": "t:options.span.large" }
           ],
           "default": "normal"
-        },
-        {
-          "type": "select",
-          "id": "ratio",
-          "label": "t:settings.product_cards.card_image_ratio.label",
-          "options": [
-            { "value": "portrait", "label": "t:settings.product_cards.card_image_ratio.options.portrait" },
-            { "value": "square", "label": "t:settings.product_cards.card_image_ratio.options.square" },
-            { "value": "landscape", "label": "t:settings.product_cards.card_image_ratio.options.landscape" }
-          ],
-          "default": "portrait"
         },
         {
           "type": "text",
@@ -226,10 +233,10 @@
     {
       "name": "t:sections.lookbook.name",
       "blocks": [
-        { "type": "shot", "settings": { "span": "tall", "ratio": "portrait", "caption": "Coastline Runner in Fog" } },
-        { "type": "shot", "settings": { "span": "normal", "ratio": "square", "caption": "Ridge Lounger in Oat" } },
-        { "type": "shot", "settings": { "span": "normal", "ratio": "square", "caption": "Harbour Slip-On in Slate" } },
-        { "type": "shot", "settings": { "span": "wide", "ratio": "landscape", "caption": "Trail Mid, Snowdonia" } }
+        { "type": "shot", "settings": { "span": "large", "caption": "Coastline Runner in Fog" } },
+        { "type": "shot", "settings": { "span": "normal", "caption": "Ridge Lounger in Oat" } },
+        { "type": "shot", "settings": { "span": "normal", "caption": "Harbour Slip-On in Slate" } },
+        { "type": "shot", "settings": { "span": "wide", "caption": "Trail Mid, Snowdonia" } }
       ]
     }
   ]
