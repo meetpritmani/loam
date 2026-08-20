@@ -1,0 +1,205 @@
+{%- comment -%}
+  ugc-grid.liquid — the social wall.
+
+  Images are square by definition here; a social grid with mixed ratios reads
+  as broken rather than as editorial. Each tile optionally links to a product
+  or an external post.
+
+  No Instagram API. A feed integration would need an app, an access token that
+  expires, and a third-party script — none of which belong in a theme the
+  buyer has to keep working two years from now. Merchants add the images they
+  want, which is also the only version that keeps working when a platform
+  changes its terms.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="{% if section.settings.full_width %}page-width page-width--full{% else %}page-width{% endif %}">
+    {%- if section.settings.heading != blank -%}
+      <div class="section__header section__header--center reveal">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.handle != blank -%}
+          <p class="caption">{{ section.settings.handle | escape }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <ul
+      class="grid ugc-grid"
+      style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 3; --grid-cols-mobile: 2;"
+    >
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign demo_index = forloop.index | modulo: 6
+          if demo_index == 0
+            assign demo_index = 6
+          endif
+          assign demo_file = 'demo-ugc-' | append: demo_index | append: '.webp'
+
+          assign linked_product = all_products[block.settings.product]
+          assign target = block.settings.link
+          if target == blank and linked_product != blank and linked_product.id
+            assign target = linked_product.url
+          endif
+        -%}
+        <li class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 50 }}ms;" {{ block.shopify_attributes }}>
+          {%- if target != blank -%}
+            <a class="ugc-tile media media--square" href="{{ target }}">
+          {%- else -%}
+            <span class="ugc-tile media media--square">
+          {%- endif -%}
+
+          {%- render 'image-fallback',
+            image: block.settings.image,
+            fallback: demo_file,
+            alt: block.settings.alt,
+            width: 1080,
+            height: 1080,
+            sizes: '(min-width: 990px) 16vw, 50vw',
+            placeholder: 'lifestyle-1'
+          -%}
+
+          {%- if target != blank -%}
+              <span class="ugc-tile__badge" aria-hidden="true">
+                {%- render 'icon', icon: 'cart', size: 16 -%}
+              </span>
+              {%- if block.settings.alt != blank -%}
+                <span class="visually-hidden">{{ block.settings.alt | escape }}</span>
+              {%- endif -%}
+            </a>
+          {%- else -%}
+            </span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.ugc.name",
+  "tag": "section",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "Out there"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Tag us and we will find you."
+    },
+    {
+      "type": "text",
+      "id": "handle",
+      "label": "t:sections.ugc.handle.label",
+      "default": "@fernway"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.featured_collection.columns.label",
+      "min": 3,
+      "max": 6,
+      "step": 1,
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:sections.lookbook.full_width.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "post",
+      "name": "t:sections.ugc.blocks.post.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.image"
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "t:sections.ugc.blocks.post.alt.label",
+          "info": "t:sections.ugc.blocks.post.alt.info",
+          "default": "Coastline Runner on a coastal path"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "t:general.product",
+          "info": "t:sections.ugc.blocks.post.product.info"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:labels.link",
+          "info": "t:sections.ugc.blocks.post.link.info"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.ugc.name",
+      "blocks": [
+        { "type": "post", "settings": { "alt": "Coastline Runner on a coastal path" } },
+        { "type": "post", "settings": { "alt": "Ridge Lounger by a wood stove" } },
+        { "type": "post", "settings": { "alt": "Harbour Slip-On on a ferry deck" } },
+        { "type": "post", "settings": { "alt": "Meadow Low in long grass" } },
+        { "type": "post", "settings": { "alt": "Trail Mid on wet rock" } },
+        { "type": "post", "settings": { "alt": "Drift Knit at a kitchen table" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

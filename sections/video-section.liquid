@@ -1,0 +1,177 @@
+{%- comment -%}
+  video-section.liquid — the brand film.
+
+  Click to play, never autoplay. The poster is the only thing that loads on
+  arrival; `<video-player>` swaps in the real player on the first click. That
+  matters twice over: a several-megabyte film never touches the connection of
+  someone who did not ask for it, and an unbidden moving image is exactly what
+  reduced-motion users are asking not to be given.
+
+  Supports a Shopify-hosted video or an external URL (YouTube/Vimeo). The
+  external case builds an iframe only on click, so no third-party frame — and
+  none of its cookies — exists until the visitor opts in.
+
+  A poster is required by the build spec; if the merchant leaves it empty the
+  section falls back through image-fallback.liquid rather than showing a black
+  rectangle.
+{%- endcomment -%}
+
+{%- liquid
+  assign shopify_video = section.settings.video
+  assign external_url = section.settings.video_url
+
+  assign has_video = false
+  if shopify_video != blank or external_url != blank
+    assign has_video = true
+  endif
+
+  assign external_src = ''
+  if external_url != blank
+    if external_url.type == 'youtube'
+      assign external_src = 'https://www.youtube.com/embed/' | append: external_url.id | append: '?autoplay=1&rel=0'
+    elsif external_url.type == 'vimeo'
+      assign external_src = 'https://player.vimeo.com/video/' | append: external_url.id | append: '?autoplay=1'
+    endif
+  endif
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="{% if section.settings.full_width %}page-width page-width--full{% else %}page-width{% endif %}">
+    {%- if section.settings.heading != blank -%}
+      <div class="section__header section__header--center reveal">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.text != blank -%}
+          <p class="text-muted">{{ section.settings.text | escape }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <video-player
+      class="video-section reveal"
+      data-external-src="{{ external_src }}"
+      {% if shopify_video != blank %}
+        data-video-src="{{ shopify_video.sources[1].url | default: shopify_video.sources[0].url }}"
+      {% endif %}
+    >
+      <div class="video-section__frame media media--wide">
+        {%- render 'image-fallback',
+          image: section.settings.poster,
+          fallback: 'demo-hero-poster.webp',
+          alt: section.settings.heading,
+          width: 1920,
+          height: 1080,
+          sizes: '(min-width: 990px) 1100px, 100vw',
+          placeholder: 'lifestyle-2'
+        -%}
+
+        {%- if has_video -%}
+          <button class="video-section__play" type="button" data-video-play>
+            <span class="video-section__play-icon" aria-hidden="true">
+              {%- render 'icon', icon: 'play', size: 26 -%}
+            </span>
+            <span class="visually-hidden">
+              {{- 'accessibility.play_video' | t -}}
+            </span>
+          </button>
+        {%- endif -%}
+      </div>
+    </video-player>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.video.name",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "Field notes"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "How a shoe gets made."
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:labels.text",
+      "default": "Four minutes inside the workshop, from raw fleece to finished pair."
+    },
+    {
+      "type": "header",
+      "content": "t:sections.hero.media.content"
+    },
+    {
+      "type": "image_picker",
+      "id": "poster",
+      "label": "t:sections.video.poster.label",
+      "info": "t:sections.video.poster.info"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:sections.hero.video.label"
+    },
+    {
+      "type": "video_url",
+      "id": "video_url",
+      "label": "t:sections.video.video_url.label",
+      "info": "t:sections.video.video_url.info",
+      "accept": ["youtube", "vimeo"]
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:sections.lookbook.full_width.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ],
+  "presets": [{ "name": "t:sections.video.name" }]
+}
+{% endschema %}

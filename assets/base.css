@@ -2186,6 +2186,283 @@ cart-items[aria-busy] {
   font-weight: var(--f-body-weight-bold);
 }
 
+/* --- Lookbook collage ---------------------------------------------------
+   Asymmetry comes from spans on a fixed 2-column mobile / 4-column desktop
+   grid. Spans are dropped below 750px, where an asymmetric grid reads as a
+   jumble rather than as editorial. */
+
+.lookbook {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+
+.lookbook__item {
+  display: grid;
+  gap: var(--sp-3);
+  min-width: 0;
+  align-content: start;
+}
+
+.lookbook__media {
+  position: relative;
+  width: 100%;
+}
+
+.lookbook__caption {
+  color: var(--c-ink-70);
+}
+
+.lookbook__caption a {
+  text-decoration: none;
+}
+
+@media (min-width: 750px) {
+  .lookbook {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .lookbook__item--normal {
+    grid-column: span 1;
+  }
+
+  .lookbook__item--wide {
+    grid-column: span 2;
+  }
+
+  .lookbook__item--tall {
+    grid-column: span 1;
+    grid-row: span 2;
+  }
+}
+
+/* Hotspot — a real link, so it is keyboard reachable and announced. The
+   label is revealed on hover AND on focus, never on hover alone. */
+.lookbook__hotspot {
+  position: absolute;
+  inset-block-start: var(--y, 50%);
+  inset-inline-start: var(--x, 50%);
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1);
+  border-radius: 999px;
+  background-color: rgb(var(--c-paper-rgb) / 0.92);
+  color: var(--c-ink);
+  text-decoration: none;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.lookbook__hotspot-dot {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background-color: var(--c-accent);
+  box-shadow: 0 0 0 4px rgb(var(--c-paper-rgb) / 0.55);
+}
+
+.lookbook__hotspot-label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: var(--t-xs);
+  opacity: 0;
+  transition: max-width var(--dur-slow) var(--ease), opacity var(--dur) var(--ease);
+}
+
+.lookbook__hotspot:hover .lookbook__hotspot-label,
+.lookbook__hotspot:focus-visible .lookbook__hotspot-label {
+  max-width: 22ch;
+  opacity: 1;
+  padding-inline-end: var(--sp-2);
+}
+
+/* --- Video section ------------------------------------------------------ */
+
+.video-section {
+  display: block;
+}
+
+.video-section__frame {
+  position: relative;
+  width: 100%;
+}
+
+.video-section__frame iframe,
+.video-section__frame video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+.video-section__play {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: rgb(var(--c-paper-rgb) / 0.92);
+  color: var(--c-ink);
+  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.video-section__play-icon {
+  /* The play triangle is optically off-centre in its own box. */
+  margin-inline-start: 3px;
+}
+
+@media (hover: hover) {
+  .video-section__play:hover {
+    transform: translate(-50%, -50%) scale(1.06);
+    background-color: var(--c-paper);
+  }
+}
+
+/* --- UGC grid ----------------------------------------------------------- */
+
+.ugc-grid {
+  gap: var(--sp-2);
+}
+
+.ugc-tile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.ugc-tile img {
+  transition: transform var(--dur-slow) var(--ease);
+}
+
+.ugc-tile__badge {
+  position: absolute;
+  inset-block-end: var(--sp-2);
+  inset-inline-end: var(--sp-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: rgb(var(--c-paper-rgb) / 0.9);
+  color: var(--c-ink);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+  .ugc-tile:hover img {
+    transform: scale(1.05);
+  }
+
+  .ugc-tile:hover .ugc-tile__badge {
+    opacity: 1;
+  }
+}
+
+/* Keyboard users get the affordance too, not just pointer users. */
+.ugc-tile:focus-visible .ugc-tile__badge {
+  opacity: 1;
+}
+
+/* --- Newsletter section ------------------------------------------------- */
+
+.newsletter-section {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: 52ch;
+}
+
+.newsletter-section--center {
+  margin-inline: auto;
+  text-align: center;
+  justify-items: center;
+}
+
+.newsletter-section__form {
+  width: 100%;
+  max-width: 420px;
+}
+
+.newsletter-section--center .newsletter-section__form {
+  margin-inline: auto;
+}
+
+/* Always present, so a result message cannot shift the page. */
+.newsletter-section__message {
+  min-height: 1.4em;
+  margin-block-start: var(--sp-2);
+}
+
+.newsletter-section__message .field__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--c-accent);
+}
+
+/* --- Rich text ---------------------------------------------------------- */
+
+.rich-text {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.rich-text--narrow {
+  max-width: 44ch;
+}
+
+.rich-text--medium {
+  max-width: 64ch;
+}
+
+.rich-text--wide {
+  max-width: 88ch;
+}
+
+.rich-text--center {
+  margin-inline: auto;
+  text-align: center;
+  justify-items: center;
+}
+
+.rich-text__buttons {
+  margin-block-start: var(--sp-2);
+}
+
+/* --- Multicolumn -------------------------------------------------------- */
+
+.multicolumn {
+  align-items: start;
+}
+
+.multicolumn__item {
+  display: grid;
+  gap: var(--sp-3);
+  align-content: start;
+  justify-items: start;
+}
+
+.multicolumn--center .multicolumn__item {
+  justify-items: center;
+  text-align: center;
+}
+
+.multicolumn__media {
+  width: 100%;
+  margin-block-end: var(--sp-1);
+}
+
 /* ==========================================================================
    6. UTILITIES
    ========================================================================== */

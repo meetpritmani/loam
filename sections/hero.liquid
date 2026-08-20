@@ -79,9 +79,14 @@
       {%- endif -%}
 
       {%- if section.settings.heading != blank -%}
-        <h2 class="hero__heading h0 reveal" style="--reveal-delay: 60ms;">
+        {%- comment -%}
+          The tag and the visual size are separate on purpose: this is the
+          page's main heading and should be an <h1> for the document outline,
+          while still being rendered at the h0 display size.
+        {%- endcomment -%}
+        <{{ section.settings.heading_tag }} class="hero__heading h0 reveal" style="--reveal-delay: 60ms;">
           {{- section.settings.heading | escape -}}
-        </h2>
+        </{{ section.settings.heading_tag }}>
       {%- endif -%}
 
       {%- if section.settings.text != blank -%}
@@ -199,6 +204,17 @@
       "id": "text",
       "label": "t:labels.text",
       "default": "Merino wool uppers, eucalyptus fibre knits, and soles pressed from sugarcane. Shoes that feel like nothing and leave close to it."
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "t:sections.rich_text.blocks.heading.level.label",
+      "info": "t:sections.hero.heading_tag.info",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" }
+      ],
+      "default": "h1"
     },
     {
       "type": "select",

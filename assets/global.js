@@ -1080,3 +1080,97 @@ class CountUp extends HTMLElement {
 if (!customElements.get('count-up')) {
   customElements.define('count-up', CountUp);
 }
+
+/* ==========================================================================
+   <video-player>
+   Click to play. Nothing but the poster loads until the visitor asks for the
+   film — which keeps a multi-megabyte video off the connection of everyone
+   who scrolled past, and keeps a YouTube or Vimeo iframe (and its cookies)
+   from existing at all unless someone opts in.
+
+   Focus moves to the player once it is mounted, so a keyboard user who
+   pressed the button is not left with focus on a control that no longer
+   exists.
+   ========================================================================== */
+
+class VideoPlayer extends HTMLElement {
+  connectedCallback() {
+    this.onClick = this.onClick.bind(this);
+    this.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.onClick);
+    this.teardown();
+  }
+
+  onClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (!target.closest('[data-video-play]')) return;
+    event.preventDefault();
+    this.mount();
+  }
+
+  mount() {
+    if (this.mounted) return;
+
+    const frame = this.querySelector('.video-section__frame');
+    if (!frame) return;
+
+    const externalSrc = this.dataset.externalSrc;
+    const videoSrc = this.dataset.videoSrc;
+
+    let player;
+
+    if (videoSrc) {
+      player = document.createElement('video');
+      player.src = videoSrc;
+      player.controls = true;
+      player.autoplay = true;
+      player.playsInline = true;
+      player.preload = 'metadata';
+    } else if (externalSrc) {
+      player = document.createElement('iframe');
+      player.src = externalSrc;
+      player.title = this.getAttribute('data-title') || 'Video';
+      player.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      player.allowFullscreen = true;
+      // No referrer leaks to the embed host beyond the origin.
+      player.referrerPolicy = 'strict-origin-when-cross-origin';
+    } else {
+      return;
+    }
+
+    this.querySelector('[data-video-play]')?.remove();
+    frame.appendChild(player);
+    this.mounted = player;
+
+    // The button that had focus is gone; put focus somewhere real.
+    player.setAttribute('tabindex', '-1');
+    player.focus?.({ preventScroll: true });
+
+    if (player instanceof HTMLVideoElement) {
+      const attempt = player.play();
+      attempt?.catch?.((error) => {
+        // Controls are visible either way, so the visitor can still start it.
+        console.warn('[Loam] Video autoplay declined:', error?.message || error);
+      });
+    }
+  }
+
+  teardown() {
+    if (!this.mounted) return;
+    if (this.mounted instanceof HTMLVideoElement) {
+      this.mounted.pause();
+      this.mounted.removeAttribute('src');
+      this.mounted.load();
+    }
+    this.mounted.remove();
+    this.mounted = null;
+  }
+}
+
+if (!customElements.get('video-player')) {
+  customElements.define('video-player', VideoPlayer);
+}

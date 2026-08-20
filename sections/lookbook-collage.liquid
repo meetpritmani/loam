@@ -1,0 +1,237 @@
+{%- comment -%}
+  lookbook-collage.liquid — the editorial grid.
+
+  Blocks span one or two columns and one or two rows, which is what makes the
+  grid read as asymmetric rather than as a uniform gallery. Spans collapse to
+  a single column on mobile, where an asymmetric layout is just a jumble.
+
+  Each image can carry one hotspot: a dot pinned by percentage over the photo
+  that links to a product. It is a real link with a real accessible name, not
+  a tooltip — so it is reachable by keyboard and announced properly, and it
+  simply does not render when no product is picked.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="{% if section.settings.full_width %}page-width page-width--full{% else %}page-width{% endif %}">
+    {%- if section.settings.heading != blank -%}
+      <div class="section__header{% if section.settings.full_width %} lookbook__header{% endif %} reveal">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+      </div>
+    {%- endif -%}
+
+    <div class="lookbook">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign hotspot_product = all_products[block.settings.hotspot_product]
+          assign has_hotspot = false
+          if hotspot_product != blank and hotspot_product.id
+            assign has_hotspot = true
+          endif
+
+          assign demo_index = forloop.index | modulo: 5
+          if demo_index == 0
+            assign demo_index = 5
+          endif
+          assign demo_file = 'demo-lookbook-' | append: demo_index | append: '.webp'
+        -%}
+        <figure
+          class="lookbook__item lookbook__item--{{ block.settings.span }} reveal"
+          style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;"
+          {{ block.shopify_attributes }}
+        >
+          <div class="lookbook__media media media--{{ block.settings.ratio }}">
+            {%- render 'image-fallback',
+              image: block.settings.image,
+              fallback: demo_file,
+              alt: block.settings.caption,
+              width: 1400,
+              height: 1750,
+              sizes: '(min-width: 990px) 50vw, 100vw',
+              placeholder: 'lifestyle-1'
+            -%}
+
+            {%- if has_hotspot -%}
+              <a
+                class="lookbook__hotspot"
+                href="{{ hotspot_product.url }}"
+                style="--x: {{ block.settings.hotspot_x }}%; --y: {{ block.settings.hotspot_y }}%;"
+              >
+                <span class="lookbook__hotspot-dot" aria-hidden="true"></span>
+                <span class="lookbook__hotspot-label">
+                  {{- hotspot_product.title | escape }} — {{ hotspot_product.price | money -}}
+                </span>
+              </a>
+            {%- endif -%}
+          </div>
+
+          {%- if block.settings.caption != blank -%}
+            <figcaption class="lookbook__caption caption">
+              {%- if block.settings.link != blank -%}
+                <a class="link" href="{{ block.settings.link }}">{{ block.settings.caption | escape }}</a>
+              {%- else -%}
+                {{ block.settings.caption | escape }}
+              {%- endif -%}
+            </figcaption>
+          {%- endif -%}
+        </figure>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.lookbook.name",
+  "tag": "section",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label",
+      "default": "Lookbook"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Autumn, out of doors."
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:sections.lookbook.full_width.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "shot",
+      "name": "t:sections.lookbook.blocks.shot.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.image"
+        },
+        {
+          "type": "select",
+          "id": "span",
+          "label": "t:sections.lookbook.blocks.shot.span.label",
+          "info": "t:sections.lookbook.blocks.shot.span.info",
+          "options": [
+            { "value": "normal", "label": "t:options.span.normal" },
+            { "value": "wide", "label": "t:options.span.wide" },
+            { "value": "tall", "label": "t:options.span.tall" }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "select",
+          "id": "ratio",
+          "label": "t:settings.product_cards.card_image_ratio.label",
+          "options": [
+            { "value": "portrait", "label": "t:settings.product_cards.card_image_ratio.options.portrait" },
+            { "value": "square", "label": "t:settings.product_cards.card_image_ratio.options.square" },
+            { "value": "landscape", "label": "t:settings.product_cards.card_image_ratio.options.landscape" }
+          ],
+          "default": "portrait"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "t:sections.lookbook.blocks.shot.caption.label",
+          "default": "Coastline Runner in Fog"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:labels.link"
+        },
+        {
+          "type": "header",
+          "content": "t:sections.lookbook.hotspot.content"
+        },
+        {
+          "type": "product",
+          "id": "hotspot_product",
+          "label": "t:general.product",
+          "info": "t:sections.lookbook.hotspot.info"
+        },
+        {
+          "type": "range",
+          "id": "hotspot_x",
+          "label": "t:sections.lookbook.hotspot.x.label",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "hotspot_y",
+          "label": "t:sections.lookbook.hotspot.y.label",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 70
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.lookbook.name",
+      "blocks": [
+        { "type": "shot", "settings": { "span": "tall", "ratio": "portrait", "caption": "Coastline Runner in Fog" } },
+        { "type": "shot", "settings": { "span": "normal", "ratio": "square", "caption": "Ridge Lounger in Oat" } },
+        { "type": "shot", "settings": { "span": "normal", "ratio": "square", "caption": "Harbour Slip-On in Slate" } },
+        { "type": "shot", "settings": { "span": "wide", "ratio": "landscape", "caption": "Trail Mid, Snowdonia" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

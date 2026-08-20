@@ -1,0 +1,222 @@
+{%- comment -%}
+  rich-text.liquid — flexible copy.
+
+  The generic "say something" section every theme needs. Blocks rather than
+  fixed settings, so a merchant can order heading, paragraph and button
+  however they like, or use two paragraphs and no heading at all.
+
+  Heading level is a setting: this section can be the page's main heading or a
+  subordinate one, and getting that wrong breaks the document outline for
+  screen-reader users who navigate by heading.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="
+    --section-padding-block-start: {{ section.settings.padding_top | times: 0.6 | round }}px;
+    --section-padding-block-end: {{ section.settings.padding_bottom | times: 0.6 | round }}px;
+    --section-padding-block-start-desktop: {{ section.settings.padding_top }}px;
+    --section-padding-block-end-desktop: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    <div
+      class="rich-text rich-text--{{ section.settings.width }} rich-text--{{ section.settings.alignment }} reveal"
+    >
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'heading' -%}
+            {%- if block.settings.text != blank -%}
+              <{{ block.settings.level }} class="{{ block.settings.size }}" {{ block.shopify_attributes }}>
+                {{- block.settings.text | escape -}}
+              </{{ block.settings.level }}>
+            {%- endif -%}
+
+          {%- when 'caption' -%}
+            {%- if block.settings.text != blank -%}
+              <p class="caption" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</p>
+            {%- endif -%}
+
+          {%- when 'text' -%}
+            {%- if block.settings.text != blank -%}
+              <div class="rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+            {%- endif -%}
+
+          {%- when 'button' -%}
+            {%- if block.settings.label != blank -%}
+              <div class="rich-text__buttons cluster" {{ block.shopify_attributes }}>
+                <a
+                  class="button button--{{ block.settings.style }}"
+                  href="{{ block.settings.link | default: routes.all_products_collection_url }}"
+                >
+                  {{- block.settings.label | escape -}}
+                </a>
+              </div>
+            {%- endif -%}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.rich_text.name",
+  "tag": "section",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:sections.rich_text.width.label",
+      "options": [
+        { "value": "narrow", "label": "t:options.size.small" },
+        { "value": "medium", "label": "t:options.size.medium" },
+        { "value": "wide", "label": "t:options.size.large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:labels.alignment",
+      "options": [
+        { "value": "start", "label": "t:options.alignment.left" },
+        { "value": "center", "label": "t:options.alignment.center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ],
+  "blocks": [
+    {
+      "type": "caption",
+      "name": "t:sections.rich_text.blocks.caption.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Our promise"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "t:labels.heading",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Wear them out. Then send them back."
+        },
+        {
+          "type": "select",
+          "id": "level",
+          "label": "t:sections.rich_text.blocks.heading.level.label",
+          "info": "t:sections.rich_text.blocks.heading.level.info",
+          "options": [
+            { "value": "h1", "label": "H1" },
+            { "value": "h2", "label": "H2" },
+            { "value": "h3", "label": "H3" }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "select",
+          "id": "size",
+          "label": "t:sections.rich_text.blocks.heading.size.label",
+          "options": [
+            { "value": "h1", "label": "t:options.size.large" },
+            { "value": "h2", "label": "t:options.size.medium" },
+            { "value": "h3", "label": "t:options.size.small" }
+          ],
+          "default": "h2"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "t:labels.text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "<p>Every pair comes back to us at the end of its life. We grind them down into playground surfacing, and you get credit towards the next pair. No pair we have ever made needs to end up in landfill.</p>"
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "t:sections.rich_text.blocks.button.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:sections.hero.button_label.label",
+          "default": "How the programme works"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:labels.link"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "t:sections.rich_text.blocks.button.style.label",
+          "options": [
+            { "value": "primary", "label": "t:general.primary" },
+            { "value": "secondary", "label": "t:general.secondary" },
+            { "value": "tertiary", "label": "t:general.tertiary" }
+          ],
+          "default": "secondary"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.rich_text.name",
+      "blocks": [
+        { "type": "caption" },
+        { "type": "heading" },
+        { "type": "text" },
+        { "type": "button" }
+      ]
+    }
+  ]
+}
+{% endschema %}

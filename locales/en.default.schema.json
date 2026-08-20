@@ -389,6 +389,9 @@
             "info": "A short figure such as 4.8 or 95%. Leave empty for a plain line of text."
           }
         }
+      },
+      "heading_tag": {
+        "info": "Every page should have exactly one H1. Use H2 if this hero is not the main heading of the page, or if you have more than one hero."
       }
     },
     "marquee": {
@@ -536,6 +539,108 @@
           }
         }
       }
+    },
+    "lookbook": {
+      "name": "Lookbook collage",
+      "full_width": {
+        "label": "Full width"
+      },
+      "hotspot": {
+        "content": "Hotspot",
+        "info": "Pins a shoppable dot to this image. Leave empty for no hotspot.",
+        "x": {
+          "label": "Horizontal position"
+        },
+        "y": {
+          "label": "Vertical position"
+        }
+      },
+      "blocks": {
+        "shot": {
+          "name": "Shot",
+          "span": {
+            "label": "Size",
+            "info": "Wide and tall shots are what make the grid look editorial rather than uniform. All sizes collapse to one column on mobile."
+          },
+          "caption": {
+            "label": "Caption"
+          }
+        }
+      }
+    },
+    "video": {
+      "name": "Video",
+      "poster": {
+        "label": "Poster image",
+        "info": "Required. Shown until the visitor presses play — the video itself is never downloaded before then."
+      },
+      "video_url": {
+        "label": "External video URL",
+        "info": "YouTube or Vimeo. The embed is only created once someone presses play, so no third-party frame or cookie loads on arrival."
+      }
+    },
+    "newsletter": {
+      "name": "Newsletter"
+    },
+    "ugc": {
+      "name": "Social grid",
+      "handle": {
+        "label": "Handle"
+      },
+      "blocks": {
+        "post": {
+          "name": "Post",
+          "alt": {
+            "label": "Description",
+            "info": "Describes the photo for screen readers and search engines."
+          },
+          "product": {
+            "info": "Makes the tile shoppable."
+          },
+          "link": {
+            "info": "Overrides the product link, for example to the original post."
+          }
+        }
+      }
+    },
+    "rich_text": {
+      "name": "Rich text",
+      "width": {
+        "label": "Width"
+      },
+      "blocks": {
+        "caption": {
+          "name": "Caption"
+        },
+        "heading": {
+          "level": {
+            "label": "Heading level",
+            "info": "Controls the document outline for screen readers. Use H1 only if this is the main heading of the page."
+          },
+          "size": {
+            "label": "Heading size"
+          }
+        },
+        "button": {
+          "name": "Button",
+          "style": {
+            "label": "Style"
+          }
+        }
+      }
+    },
+    "multicolumn": {
+      "name": "Multicolumn",
+      "blocks": {
+        "column": {
+          "image": {
+            "info": "Optional. Columns without an image collapse to text rather than leaving a gap."
+          },
+          "link_label": {
+            "label": "Link label"
+          }
+        }
+      }
     }
   },
   "labels": {
@@ -549,14 +654,20 @@
     "heading": "Heading",
     "link": "Link",
     "text": "Text",
-    "padding": "Padding"
+    "padding": "Padding",
+    "alignment": "Alignment"
   },
   "general": {
     "padding": "Padding",
     "content": "Content",
     "collection": "Collection",
     "layout": "Layout",
-    "section": "Section"
+    "section": "Section",
+    "primary": "Primary",
+    "secondary": "Secondary",
+    "tertiary": "Text link",
+    "product": "Product",
+    "column": "Column"
   },
   "options": {
     "size": {
@@ -596,6 +707,11 @@
       "globe": "Globe",
       "sun": "Sun",
       "check": "Check"
+    },
+    "span": {
+      "normal": "Normal",
+      "wide": "Wide",
+      "tall": "Tall"
     }
   }
 }

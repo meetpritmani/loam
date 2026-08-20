@@ -48,7 +48,8 @@
         "text": "Merino wool uppers, eucalyptus fibre knits, and soles pressed from sugarcane. Shoes that feel like nothing and leave close to it.",
         "text_position": "end-start",
         "button_label": "Shop men's",
-        "button_label_2": "Shop women's"
+        "button_label_2": "Shop women's",
+        "heading_tag": "h1"
       }
     },
     "marquee": {
@@ -212,53 +213,55 @@
         "padding_bottom": 96
       }
     },
-    "value-props": {
-      "type": "value-props",
+    "lookbook-collage": {
+      "type": "lookbook-collage",
       "blocks": {
-        "v1": {
-          "type": "value",
+        "l1": {
+          "type": "shot",
           "settings": {
-            "icon": "leaf",
-            "heading": "Renewable materials",
-            "text": "Wool, eucalyptus fibre, and sugarcane foam. Nothing petroleum-based in the upper."
+            "span": "tall",
+            "ratio": "portrait",
+            "caption": "Coastline Runner in Fog"
           }
         },
-        "v2": {
-          "type": "value",
+        "l2": {
+          "type": "shot",
           "settings": {
-            "icon": "truck",
-            "heading": "Carbon neutral shipping",
-            "text": "Every order, every country, included in the price."
+            "span": "normal",
+            "ratio": "square",
+            "caption": "Ridge Lounger in Oat"
           }
         },
-        "v3": {
-          "type": "value",
+        "l3": {
+          "type": "shot",
           "settings": {
-            "icon": "droplet",
-            "heading": "Machine washable",
-            "text": "Cold, gentle, air dry. They come back looking new."
+            "span": "normal",
+            "ratio": "square",
+            "caption": "Harbour Slip-On in Slate"
           }
         },
-        "v4": {
-          "type": "value",
+        "l4": {
+          "type": "shot",
           "settings": {
-            "icon": "recycle",
-            "heading": "Send them back",
-            "text": "Worn out pairs come back to us and become playground surfacing."
+            "span": "wide",
+            "ratio": "landscape",
+            "caption": "Trail Mid, Snowdonia"
           }
         }
       },
       "block_order": [
-        "v1",
-        "v2",
-        "v3",
-        "v4"
+        "l1",
+        "l2",
+        "l3",
+        "l4"
       ],
       "settings": {
-        "color_scheme": "scheme-sand",
-        "card_style": false,
-        "padding_top": 72,
-        "padding_bottom": 72
+        "color_scheme": "scheme-paper",
+        "eyebrow": "Lookbook",
+        "heading": "Autumn, out of doors.",
+        "full_width": false,
+        "padding_top": 96,
+        "padding_bottom": 96
       }
     },
     "impact-stats": {
@@ -308,6 +311,67 @@
         "eyebrow": "Impact",
         "heading": "The numbers, printed on the box.",
         "center": true,
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "value-props": {
+      "type": "value-props",
+      "blocks": {
+        "v1": {
+          "type": "value",
+          "settings": {
+            "icon": "leaf",
+            "heading": "Renewable materials",
+            "text": "Wool, eucalyptus fibre, and sugarcane foam. Nothing petroleum-based in the upper."
+          }
+        },
+        "v2": {
+          "type": "value",
+          "settings": {
+            "icon": "truck",
+            "heading": "Carbon neutral shipping",
+            "text": "Every order, every country, included in the price."
+          }
+        },
+        "v3": {
+          "type": "value",
+          "settings": {
+            "icon": "droplet",
+            "heading": "Machine washable",
+            "text": "Cold, gentle, air dry. They come back looking new."
+          }
+        },
+        "v4": {
+          "type": "value",
+          "settings": {
+            "icon": "recycle",
+            "heading": "Send them back",
+            "text": "Worn out pairs come back to us and become playground surfacing."
+          }
+        }
+      },
+      "block_order": [
+        "v1",
+        "v2",
+        "v3",
+        "v4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-sand",
+        "card_style": false,
+        "padding_top": 72,
+        "padding_bottom": 72
+      }
+    },
+    "video-section": {
+      "type": "video-section",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "eyebrow": "Field notes",
+        "heading": "How a shoe gets made.",
+        "text": "Four minutes inside the workshop, from raw fleece to finished pair.",
+        "full_width": false,
         "padding_top": 96,
         "padding_bottom": 96
       }
@@ -425,6 +489,18 @@
         "padding_top": 96,
         "padding_bottom": 96
       }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "color_scheme": "scheme-sand",
+        "heading": "Get first access.",
+        "text": "New colourways, restocks, and the occasional field note. Two emails a month, no more.",
+        "fine_print": "Unsubscribe any time.",
+        "center": true,
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
     }
   },
   "order": [
@@ -433,9 +509,12 @@
     "featured-collection",
     "image-with-text",
     "collection-list",
+    "lookbook-collage",
     "impact-stats",
     "value-props",
+    "video-section",
     "testimonials",
-    "faq"
+    "faq",
+    "newsletter"
   ]
 }

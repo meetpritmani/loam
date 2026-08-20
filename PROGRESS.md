@@ -45,7 +45,7 @@ scratch in phase 3 against Loam's price rules, not ported.
 |---|---|---|
 | 1 | Foundation | **Done** — theme-check clean, live compiler clean, zero theme console errors |
 | 2 | Chrome (announcement bar, header + mega menu, footer, cart drawer) | **Done** — cart verified end to end in a browser; one gap, see below |
-| 3 | Homepage sections (§9, 3–17) | **In progress — 9 of 15 built and verified** |
+| 3 | Homepage sections (§9, 3–17) | **Done — all 15 built and verified** |
 | 4 | Templates | Not started |
 | 5 | Demo store seeding (§11) | Not started |
 | 6 | Demo data in the repo | Not started |
@@ -484,10 +484,71 @@ Still only verified against injected markup: "opening a second panel closes
 the first", because the store's menu has one dropdown. The behaviour is
 implemented and tested; it just has not been seen with two real dropdowns.
 
-### Remaining in phase 3 (6 sections)
+### Third batch — phase 3 complete (15 of 15)
 
-`lookbook-collage`, `video-section`, `ugc-grid`, `newsletter`, `rich-text`,
-`multicolumn`.
+| Section | §9 | Notes |
+|---|---|---|
+| `lookbook-collage.liquid` | 9 | asymmetric spans, captions, one shoppable hotspot per shot |
+| `video-section.liquid` | 12 | click-to-play, poster required, nothing loads on arrival |
+| `ugc-grid.liquid` | 13 | square tiles, optional product link |
+| `newsletter.liquid` | 15 | Shopify `customer` form, announced success/error |
+| `rich-text.liquid` | 16 | heading/caption/text/button blocks, width + alignment |
+| `multicolumn.liquid` | 17 | generic 2–4 column row |
+
+**Homepage preset ships 12 sections**, the §5 ceiling: hero, marquee,
+featured-collection, image-with-text, collection-list, lookbook-collage,
+impact-stats, value-props, video-section, testimonials, faq, newsletter.
+`ugc-grid`, `rich-text` and `multicolumn` ship with presets so a merchant can
+add them from the editor, but are kept off the default homepage — more than
+twelve and mobile LCP suffers, which is the whole point of that rule.
+
+### Decisions worth recording
+
+**The video never loads until asked.** `<video-player>` mounts the media
+element on the first click. For an external URL that means no YouTube or
+Vimeo iframe — and none of its cookies — exists on the page unless the
+visitor opts in. Focus moves to the mounted player, so a keyboard user who
+pressed the button is not left with focus on a control that no longer exists.
+
+**No Instagram API in `ugc-grid`.** A live feed needs an app, a token that
+expires, and a third-party script. Merchant-supplied images are the only
+version still working two years after release, when a platform has changed
+its terms again.
+
+**Lookbook hotspots are real links,** not tooltips, so they are keyboard
+reachable and announced. The label reveals on `:hover` *and* `:focus-visible`.
+
+**`rich-text` separates heading level from heading size,** because the tag
+drives the document outline for screen readers and the class drives the
+visual scale — conflating them forces a merchant to choose between the two.
+
+### Found by the completion check
+
+The homepage had **no `<h1>`**. Heading levels ran `2,2,3,3…`: the hero
+heading was an `h2`, and the logo’s conditional `h1` was dropped when the
+header was rewritten in phase 2. The hero now takes a `heading_tag` setting
+defaulting to `h1`, with the tag and the display size kept separate. Levels
+now read `1,2,3,3…` with exactly one `h1`.
+
+Note the test that caught it had computed the `h1` count but never asserted
+it — the assertion is now in the harness.
+
+### Verified in the browser (12-section homepage)
+
+Zero theme console errors; zero Liquid errors; all 12 sections render;
+lookbook spans measurably differ (677px wide vs 326px normal on a 4-column
+grid); video mounts on click with native controls and focus moves to it;
+newsletter is a real Shopify form with a space-reserved `role="status"`
+region; no horizontal overflow at 320 / 375 / 768 / 1440px; every icon-only
+button labelled; 43 decorative icons all `aria-hidden`; exactly one `h1` and
+no skipped heading levels.
+
+Budgets: CSS **10.8KB**, JS **11.0KB** gzipped. `theme check`: 61 files, 0 offenses.
+
+**Caveat on the image checks:** "every image has an alt attribute" currently
+reports 0 images, because with no demo media in `assets/` every slot resolves
+to `placeholder_svg_tag`. That assertion is vacuous until phase 6 and must be
+re-run once the media lands.
 
 ---
 
