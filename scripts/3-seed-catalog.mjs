@@ -13,7 +13,12 @@
  * and the buyer's store then looks nothing like the screenshots that sold them
  * the theme.
  *
- * Run: node scripts/3-seed-catalog.mjs
+ * Run: node scripts/3-seed-catalog.mjs [--offline]
+ *
+ *   --offline  write the buyer's export files and touch no store at all.
+ *              The export is generated entirely from demo-data.mjs, so it has
+ *              never needed a store — keeping it behind the credential check
+ *              made half of §12.7 look blocked when it was not.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -193,265 +198,272 @@ if (existsSync(mapPath)) {
    Run
    -------------------------------------------------------------------------- */
 
-log.banner('3 / 5  Seed catalog');
+const offline = process.argv.includes('--offline');
 
-requireCredentials();
+log.banner(offline ? '3 / 5  Buyer export (offline)' : '3 / 5  Seed catalog');
 
-const shop = await verifyShop();
-log.info(`Store: ${shop.name} (${shop.myshopifyDomain})`);
+if (!offline) {
+  requireCredentials();
+  const shop = await verifyShop();
+  log.info(`Store: ${shop.name} (${shop.myshopifyDomain})`);
+} else {
+  log.info('Offline: writing the export package only, no store is contacted.');
+}
 
-/* --- Metafield definitions ------------------------------------------------ */
+if (!offline) {
+  /* --- Metafield definitions ------------------------------------------------ */
 
-// Definitions before values (§12.4). A metafield set without a definition
-// still stores, but it is invisible in admin and — the part that actually
-// breaks the theme — has no storefront access grant, so Liquid reads nil.
-await log.group('Metafield definitions', async () => {
-  for (const definition of METAFIELD_DEFINITIONS) {
-    const payload = await mutate(
-      METAFIELD_DEFINITION_CREATE,
-      {
-        definition: {
-          namespace: definition.namespace,
-          key: definition.key,
-          name: definition.name,
-          description: definition.description,
-          type: definition.type,
-          ownerType: definition.ownerType,
-          pin: true,
-          access: { storefront: 'PUBLIC_READ' },
+  // Definitions before values (§12.4). A metafield set without a definition
+  // still stores, but it is invisible in admin and — the part that actually
+  // breaks the theme — has no storefront access grant, so Liquid reads nil.
+  await log.group('Metafield definitions', async () => {
+    for (const definition of METAFIELD_DEFINITIONS) {
+      const payload = await mutate(
+        METAFIELD_DEFINITION_CREATE,
+        {
+          definition: {
+            namespace: definition.namespace,
+            key: definition.key,
+            name: definition.name,
+            description: definition.description,
+            type: definition.type,
+            ownerType: definition.ownerType,
+            pin: true,
+            access: { storefront: 'PUBLIC_READ' },
+          },
         },
-      },
-      'metafieldDefinitionCreate',
-      // Second run: the definition is already there, which is success.
-      { tolerate: ['TAKEN'] }
-    );
+        'metafieldDefinitionCreate',
+        // Second run: the definition is already there, which is success.
+        { tolerate: ['TAKEN'] }
+      );
 
-    const created = payload.createdDefinition;
-    if (created) {
-      log.created(`${definition.namespace}.${definition.key}`);
-      appendLog('metafieldDefinition', `${definition.namespace}.${definition.key}`, created.id);
-    } else {
-      log.skipped(`${definition.namespace}.${definition.key} already defined`);
-    }
-  }
-});
-
-/* --- Online Store publication -------------------------------------------- */
-
-const onlineStore = await log.group('Publication', async () => {
-  const data = await graphql(PUBLICATIONS, {}, 'publications');
-  const found = (data.publications?.nodes || []).find((node) => node.name === 'Online Store');
-  if (!found) {
-    log.warn('No Online Store publication found. Products will be created but');
-    log.warn('may not be visible on the storefront.');
-    return null;
-  }
-  log.info(`Online Store: ${found.id}`);
-  return found;
-});
-
-/* --- Location ------------------------------------------------------------- */
-
-// Needed before any variant can carry a quantity. Without a location id there
-// is nowhere to stock, and every variant lands at zero — which would make the
-// whole catalogue read as sold out rather than the five variants that are
-// meant to.
-const location = await log.group('Location', async () => {
-  const data = await graphql(LOCATIONS, {}, 'locations');
-  const found = (data.locations?.nodes || [])[0];
-  if (!found) {
-    fail('The store has no active location.', [
-      'Settings -> Locations -> add one. Inventory cannot be set without it.',
-    ]);
-  }
-  log.info(`${found.name}`);
-  return found;
-});
-
-/* --- Products ------------------------------------------------------------- */
-
-/** handle -> product gid, for the manual collections below. */
-const productIds = new Map();
-
-await log.group('Products', async () => {
-  for (const [index, product] of PRODUCTS.entries()) {
-    const existing = await graphql(PRODUCT_BY_HANDLE, { handle: product.handle }, 'productByIdentifier');
-    const found = existing.productByIdentifier;
-
-    // The full variant matrix: every colour against every size.
-    const variants = [];
-    for (const colour of product.colours) {
-      for (const size of product.sizes) {
-        const soldOut = product.soldOutVariants.some(
-          (v) => v.colour === colour && v.size === size
-        );
-
-        variants.push({
-          optionValues: [
-            { optionName: 'Colour', name: colour },
-            { optionName: 'Size', name: size },
-          ],
-          price: product.price,
-          ...(product.compareAtPrice ? { compareAtPrice: product.compareAtPrice } : {}),
-          sku: skuFor(product, colour, size),
-          taxable: true,
-          // Tracked, and DENY, on every variant. §9.2 rule 4 lets the theme
-          // show a low-stock message only where inventory is actually tracked,
-          // so an untracked demo catalogue would hide the feature the demo
-          // exists to show.
-          inventoryItem: { tracked: true },
-          inventoryPolicy: 'DENY',
-          inventoryQuantities: [
-            {
-              locationId: location.id,
-              name: 'available',
-              // Zero on the handful of variants chosen in demo-data, so the
-              // picker's unavailable state is visible. Eight on one variant
-              // per product, so the low-stock message has something to fire
-              // on under the default threshold of ten.
-              quantity: soldOut ? 0 : lowStock(product, colour, size) ? 8 : 25,
-            },
-          ],
-        });
+      const created = payload.createdDefinition;
+      if (created) {
+        log.created(`${definition.namespace}.${definition.key}`);
+        appendLog('metafieldDefinition', `${definition.namespace}.${definition.key}`, created.id);
+      } else {
+        log.skipped(`${definition.namespace}.${definition.key} already defined`);
       }
     }
+  });
 
-    const input = {
-      handle: product.handle,
-      title: product.title,
-      descriptionHtml: product.description,
-      vendor: 'Fernway',
-      productType: product.type,
-      status: 'ACTIVE',
-      tags: product.tags,
-      productOptions: [
-        { name: 'Colour', values: product.colours.map((name) => ({ name })) },
-        { name: 'Size', values: product.sizes.map((name) => ({ name })) },
-      ],
-      variants,
-      ...(found ? { id: found.id } : {}),
-    };
+  /* --- Online Store publication -------------------------------------------- */
 
-    const payload = await mutate(PRODUCT_SET, { input }, 'productSet');
-    const saved = payload.product;
-    productIds.set(product.handle, saved.id);
-
-    if (found) log.skipped(`${product.title} updated (${saved.variants.nodes.length} variants)`);
-    else log.created(`${product.title} (${saved.variants.nodes.length} variants)`);
-
-    appendLog('product', product.handle, saved.id);
-
-    /* Media. Attached separately from productSet, which does not take media
-       for an existing product without replacing the whole set. Skipped when
-       the product already has media, so a re-run does not stack duplicates. */
-    const alreadyHasMedia = (found?.media?.nodes?.length || 0) > 0;
-    const images = productImages(index).filter((file) => mediaMap[file]?.url);
-
-    if (images.length === 0) {
-      log.warn(`  ${product.title}: no media in the map, skipping images`);
-    } else if (alreadyHasMedia) {
-      log.skipped(`  ${product.title}: media already attached`);
-    } else {
-      await mutate(
-        PRODUCT_CREATE_MEDIA,
-        {
-          productId: saved.id,
-          media: images.map((file) => ({
-            originalSource: mediaMap[file].url,
-            mediaContentType: 'IMAGE',
-            alt: `${product.title} — ${product.material}`,
-          })),
-        },
-        'productCreateMedia'
-      );
-      // media[1] is what card-product's hover swap reads. A product with one
-      // image loses that behaviour silently, so it is worth saying out loud.
-      log.created(`  ${product.title}: ${images.length} images${images.length < 2 ? ' (no hover image)' : ''}`);
+  const onlineStore = await log.group('Publication', async () => {
+    const data = await graphql(PUBLICATIONS, {}, 'publications');
+    const found = (data.publications?.nodes || []).find((node) => node.name === 'Online Store');
+    if (!found) {
+      log.warn('No Online Store publication found. Products will be created but');
+      log.warn('may not be visible on the storefront.');
+      return null;
     }
+    log.info(`Online Store: ${found.id}`);
+    return found;
+  });
 
-    /* Metafields. */
-    const metafields = [
-      { key: 'material', type: 'single_line_text_field', value: product.material },
-      { key: 'care', type: 'multi_line_text_field', value: product.care },
-      { key: 'carbon_footprint', type: 'number_decimal', value: product.carbonFootprint },
-    ].map((field) => ({
-      ownerId: saved.id,
-      namespace: 'custom',
-      key: field.key,
-      type: field.type,
-      value: field.value,
-    }));
+  /* --- Location ------------------------------------------------------------- */
 
-    await mutate(METAFIELDS_SET, { metafields }, 'metafieldsSet');
-
-    /* Publish to the Online Store, or the storefront shows nothing. */
-    if (onlineStore) {
-      await mutate(
-        PUBLISH,
-        { id: saved.id, input: [{ publicationId: onlineStore.id }] },
-        'publishablePublish'
-      );
+  // Needed before any variant can carry a quantity. Without a location id there
+  // is nowhere to stock, and every variant lands at zero — which would make the
+  // whole catalogue read as sold out rather than the five variants that are
+  // meant to.
+  const location = await log.group('Location', async () => {
+    const data = await graphql(LOCATIONS, {}, 'locations');
+    const found = (data.locations?.nodes || [])[0];
+    if (!found) {
+      fail('The store has no active location.', [
+        'Settings -> Locations -> add one. Inventory cannot be set without it.',
+      ]);
     }
-  }
-});
+    log.info(`${found.name}`);
+    return found;
+  });
 
-/* --- Collections ---------------------------------------------------------- */
+  /* --- Products ------------------------------------------------------------- */
 
-await log.group('Collections', async () => {
-  for (const collection of COLLECTIONS) {
-    const existing = await graphql(
-      COLLECTION_BY_HANDLE,
-      { handle: collection.handle },
-      'collectionByIdentifier'
-    );
+  /** handle -> product gid, for the manual collections below. */
+  const productIds = new Map();
 
-    let id = existing.collectionByIdentifier?.id;
+  await log.group('Products', async () => {
+    for (const [index, product] of PRODUCTS.entries()) {
+      const existing = await graphql(PRODUCT_BY_HANDLE, { handle: product.handle }, 'productByIdentifier');
+      const found = existing.productByIdentifier;
 
-    if (id) {
-      log.skipped(`${collection.title} already exists`);
-    } else {
-      const image = collection.image && mediaMap[collection.image]?.url;
+      // The full variant matrix: every colour against every size.
+      const variants = [];
+      for (const colour of product.colours) {
+        for (const size of product.sizes) {
+          const soldOut = product.soldOutVariants.some(
+            (v) => v.colour === colour && v.size === size
+          );
+
+          variants.push({
+            optionValues: [
+              { optionName: 'Colour', name: colour },
+              { optionName: 'Size', name: size },
+            ],
+            price: product.price,
+            ...(product.compareAtPrice ? { compareAtPrice: product.compareAtPrice } : {}),
+            sku: skuFor(product, colour, size),
+            taxable: true,
+            // Tracked, and DENY, on every variant. §9.2 rule 4 lets the theme
+            // show a low-stock message only where inventory is actually tracked,
+            // so an untracked demo catalogue would hide the feature the demo
+            // exists to show.
+            inventoryItem: { tracked: true },
+            inventoryPolicy: 'DENY',
+            inventoryQuantities: [
+              {
+                locationId: location.id,
+                name: 'available',
+                // Zero on the handful of variants chosen in demo-data, so the
+                // picker's unavailable state is visible. Eight on one variant
+                // per product, so the low-stock message has something to fire
+                // on under the default threshold of ten.
+                quantity: soldOut ? 0 : lowStock(product, colour, size) ? 8 : 25,
+              },
+            ],
+          });
+        }
+      }
 
       const input = {
-        handle: collection.handle,
-        title: collection.title,
-        descriptionHtml: `<p>${collection.description}</p>`,
-        ...(image ? { image: { src: image, altText: collection.title } } : {}),
-        ...(collection.type === 'smart'
-          ? {
-              ruleSet: {
-                appliedDisjunctively: false,
-                rules: [{ column: 'TAG', relation: 'EQUALS', condition: collection.tag }],
-              },
-            }
-          : {}),
+        handle: product.handle,
+        title: product.title,
+        descriptionHtml: product.description,
+        vendor: 'Fernway',
+        productType: product.type,
+        status: 'ACTIVE',
+        tags: product.tags,
+        productOptions: [
+          { name: 'Colour', values: product.colours.map((name) => ({ name })) },
+          { name: 'Size', values: product.sizes.map((name) => ({ name })) },
+        ],
+        variants,
+        ...(found ? { id: found.id } : {}),
       };
 
-      const payload = await mutate(COLLECTION_CREATE, { input }, 'collectionCreate');
-      id = payload.collection.id;
-      log.created(`${collection.title} (${collection.type})`);
-      appendLog('collection', collection.handle, id);
+      const payload = await mutate(PRODUCT_SET, { input }, 'productSet');
+      const saved = payload.product;
+      productIds.set(product.handle, saved.id);
 
+      if (found) log.skipped(`${product.title} updated (${saved.variants.nodes.length} variants)`);
+      else log.created(`${product.title} (${saved.variants.nodes.length} variants)`);
+
+      appendLog('product', product.handle, saved.id);
+
+      /* Media. Attached separately from productSet, which does not take media
+         for an existing product without replacing the whole set. Skipped when
+         the product already has media, so a re-run does not stack duplicates. */
+      const alreadyHasMedia = (found?.media?.nodes?.length || 0) > 0;
+      const images = productImages(index).filter((file) => mediaMap[file]?.url);
+
+      if (images.length === 0) {
+        log.warn(`  ${product.title}: no media in the map, skipping images`);
+      } else if (alreadyHasMedia) {
+        log.skipped(`  ${product.title}: media already attached`);
+      } else {
+        await mutate(
+          PRODUCT_CREATE_MEDIA,
+          {
+            productId: saved.id,
+            media: images.map((file) => ({
+              originalSource: mediaMap[file].url,
+              mediaContentType: 'IMAGE',
+              alt: `${product.title} — ${product.material}`,
+            })),
+          },
+          'productCreateMedia'
+        );
+        // media[1] is what card-product's hover swap reads. A product with one
+        // image loses that behaviour silently, so it is worth saying out loud.
+        log.created(`  ${product.title}: ${images.length} images${images.length < 2 ? ' (no hover image)' : ''}`);
+      }
+
+      /* Metafields. */
+      const metafields = [
+        { key: 'material', type: 'single_line_text_field', value: product.material },
+        { key: 'care', type: 'multi_line_text_field', value: product.care },
+        { key: 'carbon_footprint', type: 'number_decimal', value: product.carbonFootprint },
+      ].map((field) => ({
+        ownerId: saved.id,
+        namespace: 'custom',
+        key: field.key,
+        type: field.type,
+        value: field.value,
+      }));
+
+      await mutate(METAFIELDS_SET, { metafields }, 'metafieldsSet');
+
+      /* Publish to the Online Store, or the storefront shows nothing. */
       if (onlineStore) {
-        await mutate(PUBLISH, { id, input: [{ publicationId: onlineStore.id }] }, 'publishablePublish');
+        await mutate(
+          PUBLISH,
+          { id: saved.id, input: [{ publicationId: onlineStore.id }] },
+          'publishablePublish'
+        );
       }
     }
+  });
 
-    // Manual collections get their members every run. collectionAddProducts is
-    // additive and ignores products already in the collection, so this is safe
-    // to repeat and it repairs a collection someone emptied by hand.
-    if (collection.type === 'manual') {
-      const ids = collection.productHandles
-        .map((handle) => productIds.get(handle))
-        .filter(Boolean);
+  /* --- Collections ---------------------------------------------------------- */
 
-      if (ids.length > 0) {
-        await mutate(COLLECTION_ADD_PRODUCTS, { id, productIds: ids }, 'collectionAddProducts');
-        log.info(`  ${ids.length} products`);
+  await log.group('Collections', async () => {
+    for (const collection of COLLECTIONS) {
+      const existing = await graphql(
+        COLLECTION_BY_HANDLE,
+        { handle: collection.handle },
+        'collectionByIdentifier'
+      );
+
+      let id = existing.collectionByIdentifier?.id;
+
+      if (id) {
+        log.skipped(`${collection.title} already exists`);
+      } else {
+        const image = collection.image && mediaMap[collection.image]?.url;
+
+        const input = {
+          handle: collection.handle,
+          title: collection.title,
+          descriptionHtml: `<p>${collection.description}</p>`,
+          ...(image ? { image: { src: image, altText: collection.title } } : {}),
+          ...(collection.type === 'smart'
+            ? {
+                ruleSet: {
+                  appliedDisjunctively: false,
+                  rules: [{ column: 'TAG', relation: 'EQUALS', condition: collection.tag }],
+                },
+              }
+            : {}),
+        };
+
+        const payload = await mutate(COLLECTION_CREATE, { input }, 'collectionCreate');
+        id = payload.collection.id;
+        log.created(`${collection.title} (${collection.type})`);
+        appendLog('collection', collection.handle, id);
+
+        if (onlineStore) {
+          await mutate(PUBLISH, { id, input: [{ publicationId: onlineStore.id }] }, 'publishablePublish');
+        }
+      }
+
+      // Manual collections get their members every run. collectionAddProducts is
+      // additive and ignores products already in the collection, so this is safe
+      // to repeat and it repairs a collection someone emptied by hand.
+      if (collection.type === 'manual') {
+        const ids = collection.productHandles
+          .map((handle) => productIds.get(handle))
+          .filter(Boolean);
+
+        if (ids.length > 0) {
+          await mutate(COLLECTION_ADD_PRODUCTS, { id, productIds: ids }, 'collectionAddProducts');
+          log.info(`  ${ids.length} products`);
+        }
       }
     }
-  }
-});
+  });
+}
 
 /* --------------------------------------------------------------------------
    Buyer export (§12.7)
@@ -613,4 +625,8 @@ Generated by \`scripts/3-seed-catalog.mjs\`. Do not edit by hand.
   log.created('metafield-definitions.md');
 });
 
-log.success(`${PRODUCTS.length} products, ${COLLECTIONS.length} collections.`);
+log.success(
+  offline
+    ? `Export written for ${PRODUCTS.length} products and ${COLLECTIONS.length} collections. No store contacted.`
+    : `${PRODUCTS.length} products, ${COLLECTIONS.length} collections.`
+);

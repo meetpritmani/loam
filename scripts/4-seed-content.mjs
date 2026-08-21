@@ -10,7 +10,10 @@
  * Also writes two of the buyer's export files (§12.7): pages-and-articles.md
  * and menus.md, both from the same data that seeded the store.
  *
- * Run: node scripts/4-seed-content.mjs
+ * Run: node scripts/4-seed-content.mjs [--offline]
+ *
+ *   --offline  write the buyer's export files and touch no store. The copy in
+ *              them comes from demo-data.mjs, so it has never needed one.
  */
 
 import { writeFileSync, existsSync, readFileSync } from 'node:fs';
@@ -168,164 +171,171 @@ function daysAgoIso(daysAgo) {
    Run
    -------------------------------------------------------------------------- */
 
-log.banner('4 / 5  Seed content');
+const offline = process.argv.includes('--offline');
 
-requireCredentials();
+log.banner(offline ? '4 / 5  Buyer export (offline)' : '4 / 5  Seed content');
 
-const shop = await verifyShop();
-log.info(`Store: ${shop.name} (${shop.myshopifyDomain})`);
+if (!offline) {
+  requireCredentials();
+  const shop = await verifyShop();
+  log.info(`Store: ${shop.name} (${shop.myshopifyDomain})`);
+} else {
+  log.info('Offline: writing the export package only, no store is contacted.');
+}
 
 const mapPath = path.join(PATHS.export, 'media-map.json');
 const mediaMap = existsSync(mapPath) ? JSON.parse(readFileSync(mapPath, 'utf8')) : {};
 
-/* --- Pages ---------------------------------------------------------------- */
+if (!offline) {
+  /* --- Pages ---------------------------------------------------------------- */
 
-await log.group('Pages', async () => {
-  const query = PAGES.map((page) => `handle:${page.handle}`).join(' OR ');
-  const data = await graphql(PAGES_BY_HANDLE, { query }, 'pages');
-  const existing = new Set((data.pages?.nodes || []).map((node) => node.handle));
+  await log.group('Pages', async () => {
+    const query = PAGES.map((page) => `handle:${page.handle}`).join(' OR ');
+    const data = await graphql(PAGES_BY_HANDLE, { query }, 'pages');
+    const existing = new Set((data.pages?.nodes || []).map((node) => node.handle));
 
-  for (const page of PAGES) {
-    if (existing.has(page.handle)) {
-      log.skipped(`${page.title} already exists`);
-      continue;
-    }
+    for (const page of PAGES) {
+      if (existing.has(page.handle)) {
+        log.skipped(`${page.title} already exists`);
+        continue;
+      }
 
-    const payload = await mutate(
-      PAGE_CREATE,
-      {
-        page: {
-          handle: page.handle,
-          title: page.title,
-          body: page.body,
-          isPublished: true,
-          ...(page.templateSuffix ? { templateSuffix: page.templateSuffix } : {}),
+      const payload = await mutate(
+        PAGE_CREATE,
+        {
+          page: {
+            handle: page.handle,
+            title: page.title,
+            body: page.body,
+            isPublished: true,
+            ...(page.templateSuffix ? { templateSuffix: page.templateSuffix } : {}),
+          },
         },
-      },
-      'pageCreate'
-    );
+        'pageCreate'
+      );
 
-    log.created(page.title);
-    appendLog('page', page.handle, payload.page.id);
-  }
-});
-
-/* --- Blog ----------------------------------------------------------------- */
-
-const blogId = await log.group('Blog', async () => {
-  const data = await graphql(BLOGS, {}, 'blogs');
-  const found = (data.blogs?.nodes || []).find((node) => node.handle === BLOG.handle);
-
-  if (found) {
-    log.skipped(`${BLOG.title} already exists`);
-    return found.id;
-  }
-
-  const payload = await mutate(
-    BLOG_CREATE,
-    { blog: { handle: BLOG.handle, title: BLOG.title } },
-    'blogCreate'
-  );
-
-  log.created(BLOG.title);
-  appendLog('blog', BLOG.handle, payload.blog.id);
-  return payload.blog.id;
-});
-
-/* --- Articles ------------------------------------------------------------- */
-
-await log.group('Articles', async () => {
-  const data = await graphql(ARTICLES_IN_BLOG, { blogId }, 'articles');
-  const existing = new Set((data.blog?.articles?.nodes || []).map((node) => node.handle));
-
-  for (const article of ARTICLES) {
-    if (existing.has(article.handle)) {
-      log.skipped(`${article.title} already exists`);
-      continue;
+      log.created(page.title);
+      appendLog('page', page.handle, payload.page.id);
     }
+  });
 
-    const image = article.image && mediaMap[article.image]?.url;
+  /* --- Blog ----------------------------------------------------------------- */
 
-    const payload = await mutate(
-      ARTICLE_CREATE,
-      {
-        article: {
-          blogId,
-          handle: article.handle,
-          title: article.title,
-          body: article.body,
-          summary: article.excerpt,
-          author: { name: article.author },
-          isPublished: true,
-          // Dates are computed at seed time from a relative offset. Absolute
-          // dates in the data file would make the demo store look abandoned
-          // within a month of that file being written.
-          publishDate: daysAgoIso(article.daysAgo),
-          ...(image ? { image: { url: image, altText: article.title } } : {}),
-        },
-      },
-      'articleCreate'
-    );
-
-    log.created(`${article.title} (${article.daysAgo}d ago)`);
-    if (!image) log.warn(`  no image in the media map for ${article.image}`);
-    appendLog('article', article.handle, payload.article.id);
-  }
-});
-
-/* --- Menus ---------------------------------------------------------------- */
-
-await log.group('Menus', async () => {
-  const data = await graphql(MENUS_QUERY, {}, 'menus');
-  const existing = new Map((data.menus?.nodes || []).map((node) => [node.handle, node.id]));
-
-  for (const menu of MENUS) {
-    const items = menu.items.map(menuItemInput);
-    const found = existing.get(menu.handle);
-
-    let id;
+  const blogId = await log.group('Blog', async () => {
+    const data = await graphql(BLOGS, {}, 'blogs');
+    const found = (data.blogs?.nodes || []).find((node) => node.handle === BLOG.handle);
 
     if (found) {
-      // Updated rather than skipped. A menu is the one thing here most likely
-      // to have been edited by hand between runs, and the nesting is exactly
-      // what breaks when it has been.
-      const payload = await mutate(
-        MENU_UPDATE,
-        { id: found, title: menu.title, handle: menu.handle, items },
-        'menuUpdate'
-      );
-      id = payload.menu.id;
-      log.skipped(`${menu.title} updated`);
-    } else {
-      const payload = await mutate(
-        MENU_CREATE,
-        { title: menu.title, handle: menu.handle, items },
-        'menuCreate'
-      );
-      id = payload.menu.id;
-      log.created(menu.title);
-      appendLog('menu', menu.handle, id);
+      log.skipped(`${BLOG.title} already exists`);
+      return found.id;
     }
 
-    /* Verify the nesting actually took (§12.5). */
-    const detail = await graphql(MENU_DETAIL, { id }, 'menu');
-    const actual = depthOf(detail.menu?.items || []);
-    const expected = depthOf(menu.items.map((item) => ({ ...item, items: item.children })));
+    const payload = await mutate(
+      BLOG_CREATE,
+      { blog: { handle: BLOG.handle, title: BLOG.title } },
+      'blogCreate'
+    );
 
-    if (menu.handle === 'main-menu') {
-      if (actual < 3) {
-        log.error(`  main-menu nests ${actual} deep, not 3.`);
-        log.error('  The mega menu reads link.links two levels below the top');
-        log.error('  item. At this depth it collapses to one column and the');
-        log.error('  feature card never renders.');
-      } else {
-        log.info(`  nesting verified: ${actual} levels`);
+    log.created(BLOG.title);
+    appendLog('blog', BLOG.handle, payload.blog.id);
+    return payload.blog.id;
+  });
+
+  /* --- Articles ------------------------------------------------------------- */
+
+  await log.group('Articles', async () => {
+    const data = await graphql(ARTICLES_IN_BLOG, { blogId }, 'articles');
+    const existing = new Set((data.blog?.articles?.nodes || []).map((node) => node.handle));
+
+    for (const article of ARTICLES) {
+      if (existing.has(article.handle)) {
+        log.skipped(`${article.title} already exists`);
+        continue;
       }
-    } else if (actual < expected) {
-      log.warn(`  ${menu.handle} nests ${actual} deep, expected ${expected}`);
+
+      const image = article.image && mediaMap[article.image]?.url;
+
+      const payload = await mutate(
+        ARTICLE_CREATE,
+        {
+          article: {
+            blogId,
+            handle: article.handle,
+            title: article.title,
+            body: article.body,
+            summary: article.excerpt,
+            author: { name: article.author },
+            isPublished: true,
+            // Dates are computed at seed time from a relative offset. Absolute
+            // dates in the data file would make the demo store look abandoned
+            // within a month of that file being written.
+            publishDate: daysAgoIso(article.daysAgo),
+            ...(image ? { image: { url: image, altText: article.title } } : {}),
+          },
+        },
+        'articleCreate'
+      );
+
+      log.created(`${article.title} (${article.daysAgo}d ago)`);
+      if (!image) log.warn(`  no image in the media map for ${article.image}`);
+      appendLog('article', article.handle, payload.article.id);
     }
-  }
-});
+  });
+
+  /* --- Menus ---------------------------------------------------------------- */
+
+  await log.group('Menus', async () => {
+    const data = await graphql(MENUS_QUERY, {}, 'menus');
+    const existing = new Map((data.menus?.nodes || []).map((node) => [node.handle, node.id]));
+
+    for (const menu of MENUS) {
+      const items = menu.items.map(menuItemInput);
+      const found = existing.get(menu.handle);
+
+      let id;
+
+      if (found) {
+        // Updated rather than skipped. A menu is the one thing here most likely
+        // to have been edited by hand between runs, and the nesting is exactly
+        // what breaks when it has been.
+        const payload = await mutate(
+          MENU_UPDATE,
+          { id: found, title: menu.title, handle: menu.handle, items },
+          'menuUpdate'
+        );
+        id = payload.menu.id;
+        log.skipped(`${menu.title} updated`);
+      } else {
+        const payload = await mutate(
+          MENU_CREATE,
+          { title: menu.title, handle: menu.handle, items },
+          'menuCreate'
+        );
+        id = payload.menu.id;
+        log.created(menu.title);
+        appendLog('menu', menu.handle, id);
+      }
+
+      /* Verify the nesting actually took (§12.5). */
+      const detail = await graphql(MENU_DETAIL, { id }, 'menu');
+      const actual = depthOf(detail.menu?.items || []);
+      const expected = depthOf(menu.items.map((item) => ({ ...item, items: item.children })));
+
+      if (menu.handle === 'main-menu') {
+        if (actual < 3) {
+          log.error(`  main-menu nests ${actual} deep, not 3.`);
+          log.error('  The mega menu reads link.links two levels below the top');
+          log.error('  item. At this depth it collapses to one column and the');
+          log.error('  feature card never renders.');
+        } else {
+          log.info(`  nesting verified: ${actual} levels`);
+        }
+      } else if (actual < expected) {
+        log.warn(`  ${menu.handle} nests ${actual} deep, expected ${expected}`);
+      }
+    }
+  });
+}
 
 /* --------------------------------------------------------------------------
    Buyer export (§12.7)
@@ -439,4 +449,8 @@ Generated by \`scripts/4-seed-content.mjs\`. Do not edit by hand.
   log.created('menus.md');
 });
 
-log.success(`${PAGES.length} pages, ${ARTICLES.length} articles, ${MENUS.length} menus.`);
+log.success(
+  offline
+    ? `Export written for ${PAGES.length} pages, ${ARTICLES.length} articles and ${MENUS.length} menus. No store contacted.`
+    : `${PAGES.length} pages, ${ARTICLES.length} articles, ${MENUS.length} menus.`
+);

@@ -19,7 +19,7 @@ external CDN. Everything a shopper downloads is in this repository.
 | 2 | Chrome — announcement bar, header, mega menu, footer, cart drawer | Complete |
 | 3 | Homepage — 15 sections | Complete |
 | 4 | Templates — product, collection, search, cart, blog, customers | Complete |
-| 5 | Demo store seeding | **Scripts built** — awaiting media and a demo store to run against |
+| 5 | Demo store seeding | **Scripts built, buyer export generated** — the store-facing half awaits media and a demo store |
 | 6 | Demo content shipped in the repo | Not started |
 | 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | Not started |
 
@@ -345,9 +345,11 @@ exclude it. It builds the developer's own demo store and generates the buyer's
 `demo-store-export/` package.
 
 ```bash
-cp .env.example .env         # store domain, Admin API token, API version
 npm install
-npm run seed                 # runs all five steps
+npm run seed -- --offline    # buyer export only, contacts no store
+
+cp .env.example .env         # store domain, Admin API token, API version
+npm run seed                 # all five steps
 node scripts/seed.mjs --from=3   # resume from a step
 ```
 

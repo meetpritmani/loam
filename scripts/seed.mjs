@@ -7,9 +7,12 @@
  * one process would make a failure in step 4 look like a failure of the whole
  * run.
  *
- * Run: node scripts/seed.mjs [--from=N] [--dry-run] [--reset]
+ * Run: node scripts/seed.mjs [--from=N] [--offline] [--dry-run] [--reset]
  *
  *   --from=N   start at step N (1-5)
+ *   --offline  do everything that does not need a store: process whatever
+ *              media is on disk and write the buyer's export package. Steps 2
+ *              and 5 are skipped, since both genuinely require one.
  *   --dry-run  pass through to step 5, which then writes nothing
  *   --reset    delete the seeded resources first. Refuses to run against a
  *              store whose domain does not look disposable (§12.8).
@@ -24,12 +27,20 @@ import { STORE, isDisposableStore, verifyShop, requireCredentials } from './lib/
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * `offlineCapable` is not the same as `needsStore`.
+ *
+ * Steps 3 and 4 need a store to seed one, but the export files they write come
+ * entirely from demo-data.mjs — so they have an --offline mode that produces
+ * the buyer's package and contacts nothing. Step 5 needs media-map.json, which
+ * only exists once step 2 has run, so it has no offline equivalent.
+ */
 const STEPS = [
-  { number: 1, file: '1-process-media.mjs', name: 'Process media', needsStore: false },
-  { number: 2, file: '2-upload-media.mjs', name: 'Upload media', needsStore: true },
-  { number: 3, file: '3-seed-catalog.mjs', name: 'Seed catalog', needsStore: true },
-  { number: 4, file: '4-seed-content.mjs', name: 'Seed content', needsStore: true },
-  { number: 5, file: '5-write-theme-json.mjs', name: 'Write theme JSON', needsStore: false },
+  { number: 1, file: '1-process-media.mjs', name: 'Process media', offlineCapable: true },
+  { number: 2, file: '2-upload-media.mjs', name: 'Upload media', offlineCapable: false },
+  { number: 3, file: '3-seed-catalog.mjs', name: 'Seed catalog', offlineCapable: true },
+  { number: 4, file: '4-seed-content.mjs', name: 'Seed content', offlineCapable: true },
+  { number: 5, file: '5-write-theme-json.mjs', name: 'Write theme JSON', offlineCapable: false },
 ];
 
 /* --------------------------------------------------------------------------
@@ -39,6 +50,7 @@ const STEPS = [
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const reset = args.includes('--reset');
+const offline = args.includes('--offline');
 
 const fromArg = args.find((arg) => arg.startsWith('--from='));
 const from = fromArg ? Number(fromArg.split('=')[1]) : 1;
@@ -94,24 +106,35 @@ if (reset) {
  * @returns {Promise<number>} exit code
  */
 function runStep(step) {
+  const flags = [];
+  if (dryRun) flags.push('--dry-run');
+  if (offline) flags.push('--offline');
+
   return new Promise((resolve) => {
-    const child = spawn(
-      process.execPath,
-      [path.join(here, step.file), ...(dryRun ? ['--dry-run'] : [])],
-      { stdio: 'inherit' }
-    );
+    const child = spawn(process.execPath, [path.join(here, step.file), ...flags], {
+      stdio: 'inherit',
+    });
     child.on('close', (code) => resolve(code ?? 1));
   });
 }
 
-log.banner(`Seeding ${STORE || '(no store configured)'}`);
+log.banner(offline ? 'Building the buyer export (offline)' : `Seeding ${STORE || '(no store configured)'}`);
 log.info(`Steps ${from} to ${STEPS.length}${dryRun ? ', dry run' : ''}`);
+
+if (offline) {
+  log.info('Offline: no store is contacted. Steps 2 and 5 are skipped.');
+}
 
 const results = [];
 
 for (const step of STEPS) {
   if (step.number < from) {
     results.push({ step, code: null });
+    continue;
+  }
+
+  if (offline && !step.offlineCapable) {
+    results.push({ step, code: null, reason: 'needs a store' });
     continue;
   }
 
@@ -132,8 +155,8 @@ for (const step of STEPS) {
 
 log.banner('Summary');
 
-results.forEach(({ step, code }) => {
-  if (code === null) log.skipped(`${step.number}. ${step.name} — skipped (--from=${from})`);
+results.forEach(({ step, code, reason }) => {
+  if (code === null) log.skipped(`${step.number}. ${step.name} — skipped, ${reason || `--from=${from}`}`);
   else if (code === 0) log.created(`${step.number}. ${step.name}`);
   else log.warn(`${step.number}. ${step.name} — incomplete, see above`);
 });
@@ -157,6 +180,10 @@ const incomplete = results.some(({ code }) => code === 2);
 if (incomplete) {
   log.warn('Finished, with work outstanding. See the warnings above.');
   process.exitCode = 2;
+} else if (offline) {
+  log.success('Buyer export written. Nothing was sent to a store.');
+  log.info('Remaining, both of which need a store: uploading the media (step 2)');
+  log.info('and injecting shopify:// references into the theme JSON (step 5).');
 } else {
   log.success('Seeding complete.');
   log.info('Next: shopify theme push --unpublished, then open the preview.');
