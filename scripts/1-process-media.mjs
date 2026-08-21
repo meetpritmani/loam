@@ -20,7 +20,16 @@
 import { existsSync, readFileSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { log, fail } from './lib/log.mjs';
-import { MEDIA_MANIFEST, PATHS, ensureDir, findRaw, processImage, copyVideo } from './lib/media.mjs';
+import {
+  MEDIA_MANIFEST,
+  PATHS,
+  TIER_ONE,
+  burstSearchUrl,
+  ensureDir,
+  findRaw,
+  processImage,
+  copyVideo,
+} from './lib/media.mjs';
 
 const force = process.argv.includes('--force');
 
@@ -243,14 +252,114 @@ writeFileSync(path.join(PATHS.export, 'LICENSES.md'), licensesMd, 'utf8');
 /* --- Report -------------------------------------------------------------- */
 
 if (missing.length > 0) {
-  log.warn(`${missing.length} manifest files are not in demo-media-raw/ yet:`);
-  missing.forEach((entry) => {
-    const size = entry.kind === 'video' ? 'video' : `${entry.width}x${entry.height}`;
-    log.info(`  ${entry.file.padEnd(30)} ${size.padEnd(12)} ${entry.subject}`);
-  });
+  const tierOne = missing.filter((entry) => TIER_ONE.has(entry.file));
+  // Videos are listed apart because Burst cannot supply them at all — see the
+  // note written into the checklist below.
+  const videos = missing.filter((entry) => entry.kind === 'video');
+  const rest = missing.filter(
+    (entry) => !TIER_ONE.has(entry.file) && entry.kind !== 'video'
+  );
+
+  log.warn(`${missing.length} manifest files are not in demo-media-raw/ yet.`);
+
+  if (tierOne.length > 0) {
+    log.info('');
+    log.info(`Start with these ${tierOne.length} — enough for a finished homepage:`);
+    tierOne.forEach((entry) => {
+      const size = entry.kind === 'video' ? 'video' : `${entry.width}x${entry.height}`;
+      log.info(`  ${entry.file.padEnd(28)} ${size.padEnd(11)} ${entry.subject}`);
+    });
+  }
+
+  if (rest.length > 0) {
+    log.info('');
+    log.info(`Then the remaining ${rest.length}.`);
+  }
+
+  /* A written checklist, because sourcing 47 photographs by hand is a job done
+     over several sittings and a terminal scrollback is not somewhere to keep
+     track of one. Regenerated from the manifest on every run, so it cannot
+     drift from what the pipeline actually expects. */
+  const checklistSection = (title, entries) => {
+    if (entries.length === 0) return '';
+
+    const rows = entries.map((entry) => {
+      const size = entry.kind === 'video' ? 'video, 4MB max' : `${entry.width}x${entry.height}`;
+      const done = existsSync(path.join(PATHS.out, entry.file)) ? 'x' : ' ';
+      const lines = [
+        `- [${done}] \`${entry.file}\``,
+        `      ${size} — ${entry.subject}`,
+      ];
+
+      // No Burst link on a video. Burst is a photo library, so offering a
+      // search link for something it cannot supply sends the operator round a
+      // loop — the note under that section says where to go instead.
+      if (entry.kind !== 'video') {
+        lines.push(`      [search Burst](${burstSearchUrl(entry)})`);
+      }
+
+      return lines.join('\n');
+    });
+
+    return `## ${title}\n\n${rows.join('\n\n')}\n\n`;
+  };
+
+  const checklist = [
+    '# Media checklist',
+    '',
+    `${MEDIA_MANIFEST.length} files. ${results.length} done, ${missing.length} to go.`,
+    '',
+    'Downloaded by hand from [Burst](https://burst.shopify.com). It has no public',
+    'API and the build spec forbids scraping it, so this is the one manual step in',
+    'the pipeline — nothing here generates photographs.',
+    '',
+    'Save each file into `demo-media-raw/` named for its manifest entry, keeping',
+    'whatever extension it arrived with: `demo-hero.jpg` is fine for',
+    '`demo-hero.webp`. Then run',
+    '',
+    '    node scripts/1-process-media.mjs',
+    '',
+    'which resizes, crops and encodes them, and rewrites this file with the boxes',
+    'ticked.',
+    '',
+    '**Record the licence as you go**, in `demo-media-raw/licenses.json`. Burst',
+    "shows it on each photo's page. CC0 carries no redistribution restriction; the",
+    'Burst Licence does not permit selling the photo "as digital photo files or in',
+    'any other form", which matters because `demo-store-export/` ships with the',
+    'paid download. Anything undeclared is treated as Burst Licence.',
+    '',
+    'Photos with an identifiable face are demo-store-only whatever the licence',
+    'says — Burst grants no model release. That covers all four avatars.',
+    '',
+    '---',
+    '',
+    checklistSection(`Start here — ${tierOne.length} files for a finished homepage`, tierOne),
+    checklistSection(`Everything else — ${rest.length} files`, rest),
+    checklistSection(`Video — ${videos.length} files, and NOT from Burst`, videos),
+    videos.length > 0
+      ? [
+          '> **Burst is photographs only.** It has no video library, so the two',
+          '> clips above have to come from somewhere else — Pexels, Coverr and',
+          '> Mixkit all offer free commercial-use video. Check each licence',
+          "> yourself; they are not Burst's and they are not all the same.",
+          '>',
+          '> Both are optional. The hero shows its poster image when no video is',
+          '> set, and video-section is click-to-play from a poster that carries',
+          '> the message on its own. A demo store with no video looks finished;',
+          '> it just has one less thing moving.',
+          '',
+        ].join('\n')
+      : '',
+    '---',
+    '',
+    'Regenerated by `scripts/1-process-media.mjs` on every run. Do not edit by hand.',
+    '',
+  ].join('\n');
+
+  writeFileSync(path.join(PATHS.raw, 'CHECKLIST.md'), checklist, 'utf8');
+
   log.info('');
-  log.info('Search burst.shopify.com for the subject, download, and drop the');
-  log.info('file into demo-media-raw/ named for its manifest entry.');
+  log.info('Wrote demo-media-raw/CHECKLIST.md — every file, with a Burst search link.');
 }
 
 const undeclared = results.filter(({ entry }) => !ledger[entry.file]);

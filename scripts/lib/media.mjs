@@ -46,6 +46,9 @@ import { log } from './log.mjs';
  * @property {number} [height]  target height, images only
  * @property {'image'|'video'} kind
  * @property {string} subject   what to look for on Burst
+ * @property {string} [search]  Burst search terms, when the subject describes a
+ *                              relationship ("the same scene") rather than a
+ *                              thing anyone could search for
  */
 
 const product = (n) => [
@@ -55,6 +58,7 @@ const product = (n) => [
     height: 1500,
     kind: 'image',
     subject: `Studio shoe shot ${n}, neutral ground`,
+    search: 'sneakers plain background',
   },
   {
     file: `demo-product-${n}-alt.webp`,
@@ -62,6 +66,7 @@ const product = (n) => [
     height: 1500,
     kind: 'image',
     subject: `On-foot or lifestyle angle of shoe ${n}`,
+    search: 'wearing sneakers outdoors',
   },
 ];
 
@@ -81,6 +86,7 @@ export const MEDIA_MANIFEST = [
     height: 1600,
     kind: 'image',
     subject: 'Portrait crop of the same scene',
+    search: 'coastal trail walking shoes',
   },
   {
     file: 'demo-hero-poster.webp',
@@ -88,11 +94,13 @@ export const MEDIA_MANIFEST = [
     height: 1080,
     kind: 'image',
     subject: 'Poster frame matching the hero video',
+    search: 'coastal trail walking shoes',
   },
   {
     file: 'demo-hero.mp4',
     kind: 'video',
     subject: 'Same coastal scene, 8s loop, no audio, 4MB ceiling',
+    search: 'coastal trail walking',
   },
 
   ...product(1),
@@ -117,6 +125,7 @@ export const MEDIA_MANIFEST = [
     height: 2000,
     kind: 'image',
     subject: 'Eucalyptus fibre macro',
+    search: 'eucalyptus leaves texture',
   },
   {
     file: 'demo-material-foam.webp',
@@ -124,6 +133,7 @@ export const MEDIA_MANIFEST = [
     height: 2000,
     kind: 'image',
     subject: 'Sugarcane foam sole macro',
+    search: 'shoe sole close up',
   },
 
   {
@@ -192,8 +202,79 @@ export const MEDIA_MANIFEST = [
   { file: 'demo-article-2.webp', width: 1600, height: 1000, kind: 'image', subject: 'Blog header' },
   { file: 'demo-article-3.webp', width: 1600, height: 1000, kind: 'image', subject: 'Blog header' },
 
-  { file: 'demo-brand-film.mp4', kind: 'video', subject: 'Workshop or craft footage, 4MB ceiling' },
+  {
+    file: 'demo-brand-film.mp4',
+    kind: 'video',
+    subject: 'Workshop or craft footage, 4MB ceiling',
+    search: 'workshop craft making',
+  },
 ];
+
+/* --------------------------------------------------------------------------
+   Sourcing order
+   -------------------------------------------------------------------------- */
+
+/**
+ * The subset that makes the homepage and the first product row look finished.
+ *
+ * Seventeen files rather than forty-seven. Sourcing photography is the slowest
+ * part of this whole build and it is entirely manual, so it is worth being
+ * able to run the pipeline end to end — and see a real seeded store — before
+ * committing to the lookbook, the social grid and the blog headers.
+ *
+ * Products 1 to 4 with their hover pairs, because `card-product` reads
+ * `media[1]` for the hover swap and a product with one image loses it
+ * silently. All four collection tiles, because a collection-list row with one
+ * missing tile looks broken in a way a row of placeholders does not.
+ */
+export const TIER_ONE = new Set([
+  'demo-hero.webp',
+  'demo-hero-mobile.webp',
+  'demo-product-1.webp',
+  'demo-product-1-alt.webp',
+  'demo-product-2.webp',
+  'demo-product-2-alt.webp',
+  'demo-product-3.webp',
+  'demo-product-3-alt.webp',
+  'demo-product-4.webp',
+  'demo-product-4-alt.webp',
+  'demo-material-wool.webp',
+  'demo-material-tree.webp',
+  'demo-material-foam.webp',
+  'demo-collection-mens.webp',
+  'demo-collection-womens.webp',
+  'demo-collection-active.webp',
+  'demo-collection-lounge.webp',
+]);
+
+/**
+ * A Burst search URL for a manifest entry's subject.
+ *
+ * Deep-links the search rather than the site root. Burst has no API to query,
+ * but its search page takes a `q`, so this is the closest thing to automating
+ * a step that cannot be automated.
+ *
+ * @param {MediaEntry} entry
+ * @returns {string}
+ */
+export function burstSearchUrl(entry) {
+  // An explicit override wins. Several subjects describe a relationship to
+  // another file — "portrait crop of the same scene" — which is meaningful in
+  // the manifest and useless as a search.
+  if (entry.search) {
+    return `https://burst.shopify.com/photos/search?q=${encodeURIComponent(entry.search)}`;
+  }
+
+  const terms = entry.subject
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .split(/\s+/)
+    .filter((word) => word.length > 2 && !['the', 'and', 'for', 'same', 'with'].includes(word))
+    .slice(0, 4)
+    .join(' ');
+
+  return `https://burst.shopify.com/photos/search?q=${encodeURIComponent(terms)}`;
+}
 
 /* --------------------------------------------------------------------------
    Paths
