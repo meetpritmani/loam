@@ -167,10 +167,12 @@ await log.group('Encoding', async () => {
 
 /* --- Copy into the buyer's export ---------------------------------------- */
 
-// Everything goes into the export package regardless of licence: the buyer
-// uploads these to their own store's Files, which is use, not resale. Only
-// assets/ is restricted, and that copy happens in phase 6 against the CC0
-// subset alone.
+// The export package travels with the paid download, so this copy is the
+// theme's only redistribution surface — assets/ ships no photography at all.
+// Everything is copied and the licence split is reported below rather than
+// enforced here: whether a Burst-Licence photo in a buyer's download counts as
+// selling it "in any other form" is a judgement call, and it belongs to whoever
+// is shipping the product, not to a build script.
 await log.group('Copying to demo-store-export/media/', async () => {
   results.forEach(({ entry }) => {
     copyFileSync(path.join(PATHS.out, entry.file), path.join(PATHS.exportMedia, entry.file));
@@ -255,10 +257,22 @@ const undeclared = results.filter(({ entry }) => !ledger[entry.file]);
 if (undeclared.length > 0) {
   log.warn(
     `${undeclared.length} files have no licence declared and are being treated ` +
-      `as Burst Licence (demo store only).`
+      `as Burst Licence.`
   );
-  log.info('Set them in demo-media-raw/licenses.json before phase 6 copies the');
-  log.info('CC0 subset into assets/.');
+  log.info('Declare them in demo-media-raw/licenses.json.');
+}
+
+if (burst.length > 0) {
+  log.warn(`${burst.length} Burst-Licence files were copied into demo-store-export/media/.`);
+  log.info('That folder ships with the paid download. The Burst Licence allows');
+  log.info('free commercial use but not selling the photos "as digital photo');
+  log.info('files or in any other form", and a buyer download is arguably that.');
+  log.info('');
+  log.info('Options, in order of least work: source CC0 replacements for these;');
+  log.info('or ship the export package without them and note the gap in its');
+  log.info('README; or take the view that supplying them for the buyer to use on');
+  log.info('their own store is use rather than resale. Whichever you pick, it is');
+  log.info('a decision to make deliberately rather than by default.');
 }
 
 log.success(

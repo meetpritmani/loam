@@ -270,10 +270,10 @@
     },
     "demo": {
       "name": "Demo content",
-      "paragraph": "The theme ships with demo photography so a new store looks finished before you upload anything. Turn this off once you have added your own images.",
+      "paragraph": "No photography ships inside this theme. Product sections fall back to demo cards with real names and prices so a new store never shows an empty grid, and image slots show Shopify’s placeholder until you add your own. To reproduce the store from the screenshots, upload the demo-store-export media folder to Content → Files.",
       "demo_images": {
-        "label": "Use demo images as placeholders",
-        "info": "Only applies where you have not set an image yourself."
+        "label": "Show demo cards on empty product sections",
+        "info": "Only applies where you have not set an image or chosen a collection yourself. Turn it off to show genuinely empty sections instead."
       }
     }
   },

@@ -32,3 +32,6 @@ demo-store-export/*
 
 # Internal build docs — not part of the distributable theme
 PROGRESS.md
+
+# Build output of `shopify theme package`.
+*.zip

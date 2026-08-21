@@ -15,14 +15,19 @@
  *
  * On licensing (§6): Burst ships photos under two licences.
  *
- *   CC0            — safe to bundle in assets/ and in the buyer's download.
+ *   CC0            — no redistribution restriction.
  *   Burst Licence  — free commercial use, but the photos may not be sold "as
- *                    digital photo files or in any other form". A paid theme
- *                    zip is arguably exactly that. Demo store only. Never
- *                    copied into assets/.
+ *                    digital photo files or in any other form".
  *
- * Neither grants a model release, so anything with an identifiable face stays
- * demo-store-only whatever its licence says.
+ * Neither grants a model release, so anything with an identifiable face is
+ * demo-store-only whatever its licence says. That covers all four avatars.
+ *
+ * **No photography ships inside the theme.** That is a product decision, not
+ * an oversight: assets/ stays free of stock imagery, so the ZIP carries no
+ * third-party licence and there is nothing for a buyer to strip out. It also
+ * makes the CC0 distinction moot for the theme itself — it now matters only
+ * for demo-store-export/, which does travel with the download, and which
+ * 1-process-media.mjs warns about per file.
  */
 
 import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
@@ -41,7 +46,6 @@ import { log } from './log.mjs';
  * @property {number} [height]  target height, images only
  * @property {'image'|'video'} kind
  * @property {string} subject   what to look for on Burst
- * @property {boolean} [assetsSafe] may be copied into assets/ if CC0
  */
 
 const product = (n) => [
@@ -51,7 +55,6 @@ const product = (n) => [
     height: 1500,
     kind: 'image',
     subject: `Studio shoe shot ${n}, neutral ground`,
-    assetsSafe: n === 1,
   },
   {
     file: `demo-product-${n}-alt.webp`,
@@ -71,7 +74,6 @@ export const MEDIA_MANIFEST = [
     height: 1350,
     kind: 'image',
     subject: 'Person walking a coastal trail in sneakers, wide',
-    assetsSafe: true,
   },
   {
     file: 'demo-hero-mobile.webp',
@@ -79,7 +81,6 @@ export const MEDIA_MANIFEST = [
     height: 1600,
     kind: 'image',
     subject: 'Portrait crop of the same scene',
-    assetsSafe: true,
   },
   {
     file: 'demo-hero-poster.webp',
@@ -87,7 +88,6 @@ export const MEDIA_MANIFEST = [
     height: 1080,
     kind: 'image',
     subject: 'Poster frame matching the hero video',
-    assetsSafe: true,
   },
   {
     file: 'demo-hero.mp4',
@@ -110,7 +110,6 @@ export const MEDIA_MANIFEST = [
     height: 2000,
     kind: 'image',
     subject: 'Merino wool macro',
-    assetsSafe: true,
   },
   {
     file: 'demo-material-tree.webp',
@@ -133,7 +132,6 @@ export const MEDIA_MANIFEST = [
     height: 1500,
     kind: 'image',
     subject: "Men's category lifestyle",
-    assetsSafe: true,
   },
   {
     file: 'demo-collection-womens.webp',
@@ -168,8 +166,8 @@ export const MEDIA_MANIFEST = [
   { file: 'demo-lookbook-4.webp', width: 1200, height: 1600, kind: 'image', subject: 'Editorial, portrait' },
   { file: 'demo-lookbook-5.webp', width: 1600, height: 1067, kind: 'image', subject: 'Editorial, landscape' },
 
-  // Faces. Never assets-safe whatever the licence — Burst grants no model
-  // release, so an identifiable person cannot ship inside a product we sell.
+  // Faces. Burst grants no model release, so these are the files with the
+  // sharpest restriction: demo store and screenshots only.
   { file: 'demo-avatar-1.webp', width: 200, height: 200, kind: 'image', subject: 'Review portrait' },
   { file: 'demo-avatar-2.webp', width: 200, height: 200, kind: 'image', subject: 'Review portrait' },
   { file: 'demo-avatar-3.webp', width: 200, height: 200, kind: 'image', subject: 'Review portrait' },
@@ -181,7 +179,6 @@ export const MEDIA_MANIFEST = [
     height: 1000,
     kind: 'image',
     subject: 'Nav feature card',
-    assetsSafe: true,
   },
 
   { file: 'demo-ugc-1.webp', width: 1080, height: 1080, kind: 'image', subject: 'Social grid' },

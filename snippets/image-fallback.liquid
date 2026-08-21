@@ -1,19 +1,28 @@
 {%- comment -%}
   image-fallback.liquid — the three-layer image path (build spec §6).
 
-  No section in this theme may render a bare <img src>. Every media slot
-  goes through here and passes a `fallback:` filename, so a freshly
-  installed store with no products and no uploads still renders a finished
-  looking page instead of a grid of grey boxes.
+  No section in this theme may render a bare <img src>. Every media slot goes
+  through here, so a store with no products and no uploads still renders a
+  laid-out page rather than a broken one.
 
   Resolution order:
     1. `image` is set                          → the merchant's own image
-    2. `fallback` set and settings.demo_images → the bundled demo asset
+    2. `fallback` set and settings.demo_images → a demo asset, if present
     3. neither                                 → placeholder_svg_tag
 
-  Layer 2 is switched off by the buyer in one click (Theme settings → Demo
-  content) once they have their own imagery, which is why it must never be
-  the only thing holding a layout together.
+  **The theme ships no photography**, so layer 2 is inert on a stock install
+  and every unset slot resolves to layer 3. That is deliberate: no stock
+  imagery in the ZIP means no third-party licence travelling with the buyer's
+  store and nothing for them to strip out. The layer stays because it costs
+  nothing and it activates for anyone who does put matching files in assets/.
+
+  The demo store reproduces the screenshots through layer 1 instead — the
+  buyer uploads demo-store-export/media/ to their own Files and the shipped
+  JSON resolves it by filename.
+
+  Because layer 2 is normally absent, layer 3 is the common path rather than
+  the emergency one, which is why the capture below matters: it must never
+  leave a Liquid error where an image should be.
 
   Params:
     image         (image, optional)   — merchant image object

@@ -54,8 +54,10 @@ shopify theme dev                    # local preview with hot reload
 ```
 
 The theme installs and renders correctly on a store with **zero products**.
-Product-driven sections fall back to demo cards so a new store never shows an
-empty grid.
+Product-driven sections fall back to demo cards — real names, prices and
+material tags — so a new store never shows an empty grid. Their image slots
+show Shopify's placeholder until you add your own photography; no stock
+imagery ships inside the theme.
 
 ---
 
@@ -76,7 +78,7 @@ Twelve groups under **Online Store → Themes → Customize → Theme settings**
 | **Brand** | Logo, logo width, favicon, social share image |
 | **Social media** | Profile URLs — also feeds `sameAs` in the Organization schema |
 | **Conversion** | See [Conversion settings](#conversion-settings) |
-| **Demo content** | Turn the bundled demo imagery off once you have your own |
+| **Demo content** | Controls the demo card fallback on product sections |
 
 ### Colour schemes
 
@@ -267,13 +269,20 @@ access to **read** or the theme cannot see them.
 ## Images
 
 Every image passes through a three-layer fallback: your image if you have set
-one, the bundled demo image if you have not and demo content is on, and
-Shopify's placeholder if neither applies. No section can render a broken or
-missing image, and every media box reserves its aspect ratio so nothing shifts
-under a button as the page loads.
+one, a demo asset if the theme has one and demo content is on, and Shopify's
+placeholder if neither applies. No section can render a broken or missing
+image, and every media box reserves its aspect ratio so nothing shifts under a
+button as the page loads.
 
-Demo imagery is bundled for evaluation. Turn it off in **Theme settings → Demo
-content** once you have uploaded your own.
+**No photography ships inside the theme.** The download contains no stock
+images, so there is nothing to strip out, no third-party licence riding along
+with your store, and no unused megabytes in the ZIP. Layer two of the fallback
+is inert unless you add matching files to the theme's own `assets/` yourself.
+
+To reproduce the store shown in the screenshots, use the `demo-store-export/`
+package in your download: upload its `media/` folder to **Content → Files** and
+the theme's shipped layout finds those images by filename. That is layer one —
+your own store's images, on your own CDN.
 
 ---
 
