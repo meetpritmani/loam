@@ -19,9 +19,15 @@
   assign media_count = product.media.size
 -%}
 
+{%- comment -%}
+  The id the recently-viewed row reads. It lives on this section rather than
+  on that one so the list still records a visit when a merchant has removed
+  the recently-viewed section from the template.
+{%- endcomment -%}
 <div
   class="section color-{{ section.settings.color_scheme }}"
   style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+  data-recently-viewed-id="{{ product.id }}"
 >
   <div class="page-width">
     {%- if section.settings.show_breadcrumbs -%}

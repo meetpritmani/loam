@@ -1589,6 +1589,136 @@ cart-items[aria-busy] {
   transition: width var(--dur-slow) var(--ease);
 }
 
+/* --- 404 ----------------------------------------------------------------
+   Everything that recovers the session is in the first column and above the
+   fold at 375px: heading, search, and the two text routes. Collections sit
+   below, because they are the slower choice. */
+
+.error-page {
+  display: grid;
+  gap: var(--sp-8);
+}
+
+.error-page__intro {
+  display: grid;
+  gap: var(--sp-4);
+  max-width: 56ch;
+}
+
+.error-page__search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-block-start: var(--sp-2);
+}
+
+.error-page__field {
+  flex: 1 1 200px;
+}
+
+.error-page__links {
+  align-items: center;
+}
+
+.error-page__collections {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+
+/* --- Password page ------------------------------------------------------
+   Its own layout, with no header or footer, so the page centres in the
+   viewport rather than sitting under empty chrome. */
+
+.password-page {
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.password-page__inner {
+  display: grid;
+  gap: var(--sp-5);
+  justify-items: center;
+  text-align: center;
+  padding-block: var(--sp-8);
+}
+
+.password-page__header {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: center;
+}
+
+.password-page__logo {
+  width: var(--logo-width, 120px);
+}
+
+.password-page__message {
+  max-width: 48ch;
+}
+
+.password-page__date {
+  color: var(--c-accent);
+}
+
+.password-page__signup {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: center;
+  width: 100%;
+  margin-block-start: var(--sp-3);
+}
+
+.password-page__form {
+  width: 100%;
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.password-page__login {
+  width: 100%;
+  max-width: 420px;
+  margin-block-start: var(--sp-5);
+}
+
+.password-page__login summary {
+  cursor: pointer;
+  font-size: var(--t-sm);
+}
+
+.password-page__login-body {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
+  margin-block-start: var(--sp-4);
+  padding: var(--sp-4);
+  text-align: start;
+  background-color: var(--c-surface);
+  border-radius: var(--radius);
+}
+
+.password-page__login-body .field {
+  width: 100%;
+}
+
+.password-page__credit {
+  margin-block-start: var(--sp-5);
+}
+
+
+/* --- Lazily loaded rows --------------------------------------------------
+   Block, so a row that has nothing to show occupies no space at all. The
+   section padding lives on the .section inside, which is only rendered when
+   there is something to pad. */
+
+lazy-section,
+recently-viewed {
+  display: block;
+}
+
+
 /* --- Blog list ----------------------------------------------------------- */
 
 .blog-list__header {

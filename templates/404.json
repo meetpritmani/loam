@@ -7,14 +7,21 @@
  * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
- {
+{
   "sections": {
-    "main": {
-      "type": "404",
-      "settings": {}
+    "main-404": {
+      "type": "main-404",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "heading": "That page has moved on.",
+        "text": "The link you followed does not lead anywhere any more. Search for what you were after, or pick up from one of these.",
+        "collections_heading": "Start here",
+        "padding_top": 64,
+        "padding_bottom": 80
+      }
     }
   },
   "order": [
-    "main"
+    "main-404"
   ]
 }

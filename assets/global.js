@@ -1820,3 +1820,153 @@ class FacetFilters extends HTMLElement {
 if (!customElements.get('facet-filters')) {
   customElements.define('facet-filters', FacetFilters);
 }
+
+
+/* ==========================================================================
+   Product discovery
+   Two rows that live below the fold on the product page and cost nothing
+   until the shopper approaches them.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   <lazy-section>
+   Fetches its own section back from Shopify and swaps the result in, once the
+   element nears the viewport. Used where the server cannot render the content
+   on the first pass — the recommendations API needs a product_id and a limit
+   in the request, which a normal page load does not carry.
+
+   Deferring to IntersectionObserver rather than fetching on connect is the
+   point: these rows sit well below the fold and have no business competing
+   with the product image for bandwidth while the LCP is still resolving.
+
+   A failure leaves the element exactly as it was — empty — so a row that
+   cannot load is a row that is not there, never a heading over blank space.
+   -------------------------------------------------------------------------- */
+
+class LazySection extends HTMLElement {
+  connectedCallback() {
+    const url = this.dataset.url;
+    if (!url || this.dataset.loaded === 'true') return;
+
+    // No IntersectionObserver (or the element is already on screen in a
+    // browser that lacks it): load straight away rather than never.
+    if (!('IntersectionObserver' in window)) {
+      this.load(url);
+      return;
+    }
+
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        this.observer?.disconnect();
+        this.load(url);
+      },
+      { rootMargin: '400px 0px' }
+    );
+
+    this.observer.observe(this);
+  }
+
+  disconnectedCallback() {
+    this.observer?.disconnect();
+  }
+
+  /** @param {string} url */
+  async load(url) {
+    this.dataset.loaded = 'true';
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const next = parsed.querySelector(this.tagName.toLowerCase());
+      if (next) this.innerHTML = next.innerHTML;
+    } catch (error) {
+      // Nothing is announced. This row was never promised to the shopper, so
+      // its absence is not a failure they need to hear about.
+      console.warn(`[Loam] ${this.dataset.name || 'section'} could not load:`, error);
+    }
+  }
+}
+
+if (!customElements.get('lazy-section')) {
+  customElements.define('lazy-section', LazySection);
+}
+
+/* --------------------------------------------------------------------------
+   Recently viewed
+   The ids live in this browser and nowhere else. Every read and write is
+   wrapped: localStorage throws outright in some private-browsing modes and
+   under a blocked-cookies setting, and a shopper with storage disabled must
+   still get a working product page.
+   -------------------------------------------------------------------------- */
+
+const RECENTLY_VIEWED_KEY = 'loam:recently-viewed';
+const RECENTLY_VIEWED_MAX = 12;
+
+/** @returns {string[]} */
+function readRecentlyViewed() {
+  try {
+    const raw = window.localStorage.getItem(RECENTLY_VIEWED_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** @param {string} id */
+function recordRecentlyViewed(id) {
+  if (!id) return;
+  try {
+    // Newest first, no duplicates, capped — otherwise the list grows without
+    // bound and the id: query eventually outgrows the search route.
+    const next = [id, ...readRecentlyViewed().filter((seen) => seen !== id)];
+    window.localStorage.setItem(
+      RECENTLY_VIEWED_KEY,
+      JSON.stringify(next.slice(0, RECENTLY_VIEWED_MAX))
+    );
+  } catch {
+    // Storage unavailable. The row simply never populates.
+  }
+}
+
+const viewedProduct = document.querySelector('[data-recently-viewed-id]');
+if (viewedProduct instanceof HTMLElement) {
+  recordRecentlyViewed(viewedProduct.dataset.recentlyViewedId || '');
+}
+
+/* --------------------------------------------------------------------------
+   <recently-viewed>
+   A <lazy-section> that builds its own URL first. The current product is
+   dropped before the query is built rather than after it is rendered: asking
+   for it and then hiding it wastes a result slot, so a shopper who has seen
+   four products would only ever be shown three.
+   -------------------------------------------------------------------------- */
+
+class RecentlyViewed extends LazySection {
+  connectedCallback() {
+    const base = this.dataset.url;
+    if (!base) return;
+
+    const currentId = this.dataset.currentId || '';
+    const limit = Number(this.dataset.limit) || 4;
+
+    const ids = readRecentlyViewed()
+      .filter((id) => id !== currentId)
+      .slice(0, limit);
+
+    // Nothing seen yet: the section stays empty and renders nothing (§9.4).
+    if (ids.length === 0) return;
+
+    const query = ids.map((id) => `id:${id}`).join(' OR ');
+    this.dataset.url = `${base}&q=${encodeURIComponent(query)}`;
+
+    super.connectedCallback();
+  }
+}
+
+if (!customElements.get('recently-viewed')) {
+  customElements.define('recently-viewed', RecentlyViewed);
+}

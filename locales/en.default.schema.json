@@ -323,7 +323,10 @@
       }
     },
     "main_404": {
-      "name": "404 page"
+      "name": "404 page",
+      "collections_heading": {
+        "label": "Collections heading"
+      }
     },
     "main_article": {
       "name": "Article",
@@ -417,7 +420,14 @@
       }
     },
     "main_password": {
-      "name": "Password"
+      "name": "Password",
+      "text": {
+        "info": "Used when you have not written a password message in Settings → General. Say what the store sells."
+      },
+      "opening_date": {
+        "label": "When it opens",
+        "info": "Free text, so write what you actually know. Leave it empty rather than guessing — a date that slips is worse than no date."
+      }
     },
     "main_product": {
       "name": "Product information",
@@ -855,6 +865,19 @@
         "label": "Show collection image",
         "info": "Off by default so the first row of products stays above the fold on mobile."
       }
+    },
+    "related_products": {
+      "name": "Related products",
+      "products_to_show": {
+        "label": "Products to show"
+      },
+      "minimum_products": {
+        "label": "Hide the row below",
+        "info": "A row of one or two products reads as a thin catalogue. Below this count nothing renders at all."
+      }
+    },
+    "recently_viewed": {
+      "name": "Recently viewed"
     }
   },
   "labels": {

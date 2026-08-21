@@ -1,0 +1,130 @@
+{%- comment -%}
+  recently-viewed.liquid — the products this visitor has already opened.
+
+  The list of ids lives in this browser's localStorage and nowhere else. It
+  is never sent to the merchant, never joined to a customer record, and never
+  used for anything but re-rendering the products the visitor has already
+  chosen to look at. §16 forbids localStorage for anything the cart depends
+  on; this depends on nothing — an empty or unreadable store simply renders
+  no section.
+
+  The products are fetched back through Shopify's search route with an
+  `id:` query, so the markup still comes from Liquid and this file stays the
+  only place the row is described. That is why the section renders results
+  from `search` rather than from a list built in JavaScript.
+
+  §9.4: hidden when empty, and never shows the product currently being
+  viewed — <recently-viewed> drops the current id before it builds the query.
+  A "recently viewed" row whose first tile is the page you are on reads as a
+  bug.
+{%- endcomment -%}
+
+{%- liquid
+  assign fetch_url = routes.search_url
+  assign fetch_url = fetch_url | append: '?section_id=' | append: section.id
+  assign fetch_url = fetch_url | append: '&type=product'
+
+  assign current_id = ''
+  if product != blank
+    assign current_id = product.id
+  endif
+
+  assign results_count = 0
+  if search.performed
+    assign results_count = search.results_count
+  endif
+-%}
+
+<recently-viewed
+  data-url="{{ fetch_url }}"
+  data-name="recently-viewed"
+  data-current-id="{{ current_id }}"
+  data-limit="{{ section.settings.products_to_show }}"
+>
+  {%- if results_count > 0 -%}
+    <div
+      class="section color-{{ section.settings.color_scheme }}"
+      style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+    >
+      <div class="page-width">
+        <div class="section__header">
+          <h2 class="h3 section__title">{{ section.settings.heading | escape }}</h2>
+        </div>
+
+        <ul class="grid" style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">
+          {%- for result in search.results -%}
+            {%- if result.id != current_id -%}
+              <li>
+                {%- render 'card-product',
+                  product: result,
+                  heading_tag: 'h3',
+                  sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+                -%}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  {%- endif -%}
+</recently-viewed>
+
+{% schema %}
+{
+  "name": "t:sections.recently_viewed.name",
+  "tag": "section",
+  "class": "section-recently-viewed",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Recently viewed"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "t:sections.related_products.products_to_show.label",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.main_collection.columns.label",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}
