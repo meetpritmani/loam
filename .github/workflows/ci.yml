@@ -1,12 +1,45 @@
 name: CI
-on: [push]
+
+on:
+  push:
+  pull_request:
+
+# Least privilege. The job below needs nothing but the checkout.
+#
+# The previous workflow used shopify/theme-check-action, which reports its
+# findings through the Checks API and therefore needs `checks: write`. The
+# default GITHUB_TOKEN is read-only, so every run failed with "Resource not
+# accessible by integration" before it had reported anything — the theme was
+# never actually the problem. Running the CLI directly removes the dependency
+# on token scopes entirely: the check is static and offline, so the build
+# result cannot be changed by a repository permission setting.
+permissions:
+  contents: read
+
 jobs:
   theme-check:
     name: Theme Check
     runs-on: ubuntu-latest
+
+    env:
+      # Keep the CLI non-interactive and quiet in CI.
+      CI: "true"
+      SHOPIFY_CLI_NO_ANALYTICS: "1"
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Theme Check
-        uses: shopify/theme-check-action@v2
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
         with:
-          token: ${{ github.token }}
+          node-version: 22
+
+      - name: Install Shopify CLI
+        run: npm install --global @shopify/cli
+
+      # Uses the repo's .theme-check.yml (theme-check:recommended), so CI
+      # validates exactly what `shopify theme check` validates locally.
+      # --fail-level error means warnings are reported but do not fail the
+      # build; OrphanedSnippet in particular is expected while a phase is in
+      # progress and a snippet's section has not been written yet.
+      - name: Theme Check
+        run: shopify theme check --fail-level error
