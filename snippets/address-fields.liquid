@@ -1,0 +1,185 @@
+{%- comment -%}
+  address-fields.liquid — the fields inside a {% form 'customer_address' %}.
+
+  Not in the §9.6 inventory; added because main-addresses renders this same
+  set of fourteen fields once per saved address plus once for the new one,
+  and three copies of it would be three places for a `for=` to go stale.
+
+  Must be called from inside a `{% form 'customer_address' %}` block — the
+  `form` object is passed in rather than reached for, so the snippet cannot
+  silently render empty fields outside one.
+
+  Country and province are Shopify's own `country_option_tags`, which emits
+  each country's provinces in a `data-provinces` attribute on its <option>.
+  <country-selector> reads that attribute, so the province list needs no
+  request and the theme hardcodes no geography. Neither select pre-selects in
+  Liquid — `country_option_tags` has no way to — so the current value rides
+  on `data-default` and the element applies it. With no JavaScript the
+  country select still submits correctly and the province field stays a
+  plain text input's worth of markup, visible and usable.
+
+  Params:
+    form    (form, required)  — the enclosing customer_address form
+    prefix  (string, required) — unique id prefix; there is more than one of
+                                 these forms on the page
+{%- endcomment -%}
+
+{%- liquid
+  assign p = prefix | append: '-'
+-%}
+
+<div class="address-fields">
+  {%- if form.errors -%}
+    <div class="customer__errors" role="alert">
+      {{ form.errors | default_errors }}
+    </div>
+  {%- endif -%}
+
+  <div class="customer__row">
+    <div class="field">
+      <label class="field__label" for="{{ p }}first-name">
+        {{- 'customers.addresses.first_name' | t -}}
+      </label>
+      <input
+        class="field__input"
+        id="{{ p }}first-name"
+        type="text"
+        name="address[first_name]"
+        value="{{ form.first_name }}"
+        autocomplete="given-name"
+      >
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="{{ p }}last-name">
+        {{- 'customers.addresses.last_name' | t -}}
+      </label>
+      <input
+        class="field__input"
+        id="{{ p }}last-name"
+        type="text"
+        name="address[last_name]"
+        value="{{ form.last_name }}"
+        autocomplete="family-name"
+      >
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field__label" for="{{ p }}company">{{ 'customers.addresses.company' | t }}</label>
+    <input
+      class="field__input"
+      id="{{ p }}company"
+      type="text"
+      name="address[company]"
+      value="{{ form.company }}"
+      autocomplete="organization"
+    >
+  </div>
+
+  <div class="field">
+    <label class="field__label" for="{{ p }}address1">{{ 'customers.addresses.address1' | t }}</label>
+    <input
+      class="field__input"
+      id="{{ p }}address1"
+      type="text"
+      name="address[address1]"
+      value="{{ form.address1 }}"
+      autocomplete="address-line1"
+      required
+    >
+  </div>
+
+  <div class="field">
+    <label class="field__label" for="{{ p }}address2">{{ 'customers.addresses.address2' | t }}</label>
+    <input
+      class="field__input"
+      id="{{ p }}address2"
+      type="text"
+      name="address[address2]"
+      value="{{ form.address2 }}"
+      autocomplete="address-line2"
+    >
+  </div>
+
+  <div class="customer__row">
+    <div class="field">
+      <label class="field__label" for="{{ p }}city">{{ 'customers.addresses.city' | t }}</label>
+      <input
+        class="field__input"
+        id="{{ p }}city"
+        type="text"
+        name="address[city]"
+        value="{{ form.city }}"
+        autocomplete="address-level2"
+        required
+      >
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="{{ p }}zip">{{ 'customers.addresses.zip' | t }}</label>
+      <input
+        class="field__input"
+        id="{{ p }}zip"
+        type="text"
+        name="address[zip]"
+        value="{{ form.zip }}"
+        autocomplete="postal-code"
+        autocapitalize="characters"
+        required
+      >
+    </div>
+  </div>
+
+  <country-selector class="customer__row" data-province-container="{{ p }}province-field">
+    <div class="field">
+      <label class="field__label" for="{{ p }}country">{{ 'customers.addresses.country' | t }}</label>
+      <select
+        class="field__select"
+        id="{{ p }}country"
+        name="address[country]"
+        autocomplete="country"
+        data-country-select
+        data-default="{{ form.country | escape }}"
+      >
+        {{ country_option_tags }}
+      </select>
+    </div>
+
+    <div class="field" id="{{ p }}province-field">
+      <label class="field__label" for="{{ p }}province">{{ 'customers.addresses.province' | t }}</label>
+      <select
+        class="field__select"
+        id="{{ p }}province"
+        name="address[province]"
+        autocomplete="address-level1"
+        data-province-select
+        data-default="{{ form.province | escape }}"
+      ></select>
+    </div>
+  </country-selector>
+
+  <div class="field">
+    <label class="field__label" for="{{ p }}phone">{{ 'customers.addresses.phone' | t }}</label>
+    <input
+      class="field__input"
+      id="{{ p }}phone"
+      type="tel"
+      name="address[phone]"
+      value="{{ form.phone }}"
+      autocomplete="tel"
+    >
+  </div>
+
+  <div class="field field--checkbox">
+    <input
+      class="field__checkbox"
+      id="{{ p }}default"
+      type="checkbox"
+      name="address[default]"
+      value="1"
+      {% if form.default? %}checked{% endif %}
+    >
+    <label for="{{ p }}default">{{ 'customers.addresses.set_default' | t }}</label>
+  </div>
+</div>

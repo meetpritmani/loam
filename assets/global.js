@@ -1970,3 +1970,116 @@ class RecentlyViewed extends LazySection {
 if (!customElements.get('recently-viewed')) {
   customElements.define('recently-viewed', RecentlyViewed);
 }
+
+
+/* ==========================================================================
+   Customer accounts
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   <country-selector>
+   Fills the province select from the country select, using the provinces
+   Shopify already put in a data attribute on each country <option>. No
+   request, no list of countries in the theme, and nothing to fall out of date
+   when a country changes its subdivisions.
+
+   The province field is hidden when the selected country has none — an empty
+   select labelled "Province" is a field the shopper cannot satisfy and cannot
+   skip. It is hidden with the `hidden` attribute rather than a class, so it
+   leaves the accessibility tree too and its now-empty select is not
+   focusable.
+
+   With the module unavailable the country select still submits and the
+   province select submits empty, which is what Shopify expects for a country
+   with no provinces and what the customer can correct on the next screen for
+   one that has them.
+   -------------------------------------------------------------------------- */
+
+class CountrySelector extends HTMLElement {
+  connectedCallback() {
+    this.country = this.querySelector('[data-country-select]');
+    this.province = this.querySelector('[data-province-select]');
+    this.container = document.getElementById(this.dataset.provinceContainer || '');
+
+    if (!this.country || !this.province) return;
+
+    // Shopify's country_option_tags cannot mark an option selected, so the
+    // saved value arrives on data-default and is applied here.
+    const current = this.country.dataset.default;
+    if (current) this.country.value = current;
+
+    this.onChange = this.onChange.bind(this);
+    this.country.addEventListener('change', this.onChange);
+    this.render();
+  }
+
+  disconnectedCallback() {
+    this.country?.removeEventListener('change', this.onChange);
+  }
+
+  onChange() {
+    // A different country invalidates whatever province was saved, so the
+    // remembered value is dropped rather than silently re-applied to a list
+    // it does not belong to.
+    if (this.province) this.province.dataset.default = '';
+    this.render();
+  }
+
+  render() {
+    const option = this.country?.selectedOptions?.[0];
+    if (!option || !this.province) return;
+
+    let provinces = [];
+    try {
+      provinces = JSON.parse(option.dataset.provinces || '[]');
+    } catch {
+      provinces = [];
+    }
+
+    this.province.innerHTML = '';
+
+    if (!Array.isArray(provinces) || provinces.length === 0) {
+      this.province.disabled = true;
+      this.container?.setAttribute('hidden', '');
+      return;
+    }
+
+    provinces.forEach(([value, label]) => {
+      const node = document.createElement('option');
+      node.value = value;
+      node.textContent = label;
+      this.province.appendChild(node);
+    });
+
+    this.province.disabled = false;
+    this.container?.removeAttribute('hidden');
+
+    const saved = this.province.dataset.default;
+    if (saved) this.province.value = saved;
+  }
+}
+
+if (!customElements.get('country-selector')) {
+  customElements.define('country-selector', CountrySelector);
+}
+
+/* --------------------------------------------------------------------------
+   Confirm before a destructive submit.
+   Delegated, because address rows are re-rendered on every save. The confirm
+   is the browser's own: a themed modal here would need focus management and
+   a keyboard trap for a single yes/no, and would fail closed if the module
+   had not loaded — leaving a delete button that deletes with no confirmation
+   at all. With no JavaScript the form still posts, which is the same
+   behaviour Shopify's own account pages have.
+   -------------------------------------------------------------------------- */
+
+document.addEventListener('click', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+
+  const trigger = target.closest('[data-confirm]');
+  if (!trigger) return;
+
+  const message = trigger.getAttribute('data-confirm');
+  if (message && !window.confirm(message)) event.preventDefault();
+});

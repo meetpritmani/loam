@@ -1,0 +1,214 @@
+{%- comment -%}
+  main-order.liquid — one order.
+
+  §9.5: "tracking link when available. Reorder and support routes present."
+
+  Tracking is rendered per fulfilment, from `fulfillment.tracking_url`, and
+  only when Shopify actually has one. A "track your order" button that leads
+  to a carrier's homepage with no number is the single most complained-about
+  thing on an order page — so when there is no URL, there is no link, just
+  the fulfilment's status in words.
+
+  Support is a merchant-set route. A customer looking at an order that has
+  gone wrong needs to reach a human from this page, not from the footer.
+{%- endcomment -%}
+
+{%- liquid
+  assign recovery = settings.cro_empty_cart_collection
+  assign recovery_url = recovery.url | default: routes.all_products_collection_url
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div class="customer-page">
+      <header class="customer-page__header">
+        <div>
+          <p class="caption">
+            <a class="link-underline" href="{{ routes.account_url }}">
+              {{- 'customers.account.order_history' | t -}}
+            </a>
+          </p>
+          <h1 class="h3">{{ 'customers.order.title' | t: name: order.name }}</h1>
+          <p class="text-muted">
+            {%- assign order_date = order.created_at | date: format: 'date' -%}
+            {{ 'customers.order.date_html' | t: date: order_date }}
+          </p>
+        </div>
+
+        {%- render 'customer-nav', current: 'account' -%}
+      </header>
+
+      {%- comment -%}
+        Status and tracking first. It is what the customer opened the page
+        for, so it goes above the line items rather than below them.
+      {%- endcomment -%}
+      <div class="order-status">
+        <div class="order-status__row">
+          <span class="caption">{{ 'customers.order.payment_status' | t }}</span>
+          <span>{{ order.financial_status_label }}</span>
+        </div>
+        <div class="order-status__row">
+          <span class="caption">{{ 'customers.order.fulfillment_status' | t }}</span>
+          <span>{{ order.fulfillment_status_label }}</span>
+        </div>
+
+        {%- for fulfillment in order.fulfillments -%}
+          {%- if fulfillment.tracking_url != blank -%}
+            <div class="order-status__row">
+              <span class="caption">
+                {%- if fulfillment.tracking_company != blank -%}
+                  {{ fulfillment.tracking_company | escape }}
+                {%- else -%}
+                  {{ 'customers.order.track_shipment' | t }}
+                {%- endif -%}
+              </span>
+              <a class="link-underline" href="{{ fulfillment.tracking_url }}" rel="noopener">
+                {{- 'customers.order.track_shipment' | t -}}
+                {%- if fulfillment.tracking_number != blank -%}
+                  <span class="visually-hidden">: {{ fulfillment.tracking_number }}</span>
+                {%- endif -%}
+              </a>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      <div class="table-scroll">
+        <table class="order-table">
+          <caption class="visually-hidden">{{ 'customers.order.title' | t: name: order.name }}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{{ 'customers.order.product' | t }}</th>
+              <th scope="col">{{ 'customers.order.sku' | t }}</th>
+              <th scope="col" class="text-end">{{ 'customers.order.price' | t }}</th>
+              <th scope="col" class="text-end">{{ 'customers.order.quantity' | t }}</th>
+              <th scope="col" class="text-end">{{ 'customers.order.total' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%- for line in order.line_items -%}
+              <tr>
+                <th scope="row">
+                  {%- if line.product != blank -%}
+                    <a class="link-underline" href="{{ line.product.url }}">{{ line.title | escape }}</a>
+                  {%- else -%}
+                    {{ line.title | escape }}
+                  {%- endif -%}
+                </th>
+                <td>{{ line.sku }}</td>
+                <td class="text-end">{{ line.price | money }}</td>
+                <td class="text-end">{{ line.quantity }}</td>
+                <td class="text-end">{{ line.final_line_price | money }}</td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" colspan="4" class="text-end">{{ 'customers.order.subtotal' | t }}</th>
+              <td class="text-end">{{ order.line_items_subtotal_price | money }}</td>
+            </tr>
+            {%- for shipping in order.shipping_methods -%}
+              <tr>
+                <th scope="row" colspan="4" class="text-end">
+                  {{- 'customers.order.shipping' | t }} ({{ shipping.title | escape }})
+                </th>
+                <td class="text-end">{{ shipping.price | money }}</td>
+              </tr>
+            {%- endfor -%}
+            {%- for tax_line in order.tax_lines -%}
+              <tr>
+                <th scope="row" colspan="4" class="text-end">
+                  {{- 'customers.order.tax' | t }} ({{ tax_line.title | escape }})
+                </th>
+                <td class="text-end">{{ tax_line.price | money }}</td>
+              </tr>
+            {%- endfor -%}
+            <tr>
+              <th scope="row" colspan="4" class="text-end">{{ 'customers.order.total' | t }}</th>
+              <td class="text-end">
+                <strong>{{ order.total_net_amount | money_with_currency }}</strong>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="order-addresses">
+        {%- if order.billing_address != blank -%}
+          <div>
+            <h2 class="h6">{{ 'customers.order.billing_address' | t }}</h2>
+            <address class="text-body-sm">{{ order.billing_address | format_address }}</address>
+          </div>
+        {%- endif -%}
+
+        {%- if order.shipping_address != blank -%}
+          <div>
+            <h2 class="h6">{{ 'customers.order.shipping_address' | t }}</h2>
+            <address class="text-body-sm">{{ order.shipping_address | format_address }}</address>
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%}
+        Reorder and support (§9.5). Neither is decorative: this page is where
+        a repeat purchase starts and where a problem gets raised.
+      {%- endcomment -%}
+      <div class="customer-page__actions cluster">
+        <a class="button button--primary" href="{{ recovery_url }}">
+          {{- 'customers.order.shop_again' | t -}}
+        </a>
+
+        {%- if section.settings.support_url != blank -%}
+          <a class="link-underline" href="{{ section.settings.support_url }}">
+            {{- 'customers.order.need_help' | t -}}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_order.name",
+  "tag": "section",
+  "class": "section-main-order",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "url",
+      "id": "support_url",
+      "label": "t:sections.main_order.support_url.label",
+      "info": "t:sections.main_order.support_url.info"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

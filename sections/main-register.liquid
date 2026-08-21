@@ -1,0 +1,219 @@
+{%- comment -%}
+  main-register.liquid — create an account.
+
+  §9.5: "states the benefit of an account before the fields. Minimum viable
+  field count." Both matter and they pull the same way — nobody fills a form
+  whose payoff is unstated, and every field past the necessary ones is a
+  place to stop.
+
+  Shopify needs email and password. First and last name are optional to
+  Shopify and optional here, behind a merchant checkbox, off by default. A
+  merchant who wants names for their email tool can switch them on knowing
+  what it costs; the theme does not decide for them.
+
+  The benefits are blocks so a merchant can say what is actually true of
+  their store rather than inheriting three generic promises.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div class="customer customer--split">
+      <div class="customer__panel">
+        <h1 class="h3">{{ 'customers.register.title' | t }}</h1>
+
+        {%- comment -%}
+          Benefits before fields, in source order — a screen reader and a
+          phone both meet the reason before the work.
+        {%- endcomment -%}
+        {%- if section.blocks.size > 0 -%}
+          <ul class="customer__benefits">
+            {%- for block in section.blocks -%}
+              {%- if block.settings.text != blank -%}
+                <li class="customer__benefit" {{ block.shopify_attributes }}>
+                  {%- render 'icon', icon: block.settings.icon, size: 18 -%}
+                  <span>{{ block.settings.text | escape }}</span>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- form 'create_customer', class: 'customer__form' -%}
+          {%- if form.errors -%}
+            <div class="customer__errors" role="alert">
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.collect_name -%}
+            <div class="customer__row">
+              <div class="field">
+                <label class="field__label" for="register-first-name">
+                  {{- 'customers.register.first_name' | t -}}
+                </label>
+                <input
+                  class="field__input"
+                  id="register-first-name"
+                  type="text"
+                  name="customer[first_name]"
+                  value="{{ form.first_name }}"
+                  autocomplete="given-name"
+                >
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="register-last-name">
+                  {{- 'customers.register.last_name' | t -}}
+                </label>
+                <input
+                  class="field__input"
+                  id="register-last-name"
+                  type="text"
+                  name="customer[last_name]"
+                  value="{{ form.last_name }}"
+                  autocomplete="family-name"
+                >
+              </div>
+            </div>
+          {%- endif -%}
+
+          <div class="field">
+            <label class="field__label" for="register-email">{{ 'customers.register.email' | t }}</label>
+            <input
+              class="field__input"
+              id="register-email"
+              type="email"
+              name="customer[email]"
+              value="{{ form.email }}"
+              autocomplete="email"
+              autocapitalize="off"
+              required
+            >
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="register-password">
+              {{- 'customers.register.password' | t -}}
+            </label>
+            <input
+              class="field__input"
+              id="register-password"
+              type="password"
+              name="customer[password]"
+              autocomplete="new-password"
+              required
+              aria-describedby="register-password-hint"
+            >
+            <p class="field__hint" id="register-password-hint">
+              {{- 'customers.register.password_hint' | t -}}
+            </p>
+          </div>
+
+          <button class="button button--primary button--full" type="submit">
+            {{ 'customers.register.submit' | t }}
+          </button>
+        {%- endform -%}
+
+        <p class="customer__aside text-body-sm">
+          {{ 'customers.register.have_account' | t }}
+          <a class="link-underline" href="{{ routes.account_login_url }}">
+            {{- 'customers.login.submit' | t -}}
+          </a>
+        </p>
+      </div>
+
+      {%- if section.settings.image != blank -%}
+        <div class="customer__media media media--portrait">
+          {%- assign register_alt = section.settings.image.alt | default: shop.name -%}
+          {%- render 'image-fallback',
+            image: section.settings.image,
+            fallback: 'demo-material-wool.webp',
+            alt: register_alt,
+            widths: '600,800,1200,1600',
+            sizes: '(min-width: 990px) 40vw, 92vw'
+          -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_register.name",
+  "tag": "section",
+  "class": "section-main-register",
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "t:sections.main_register.blocks.benefit.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "Track a delivery without digging out the email"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "t:options.icon.name",
+          "options": [
+            { "value": "truck", "label": "t:options.icon.truck" },
+            { "value": "return", "label": "t:options.icon.return" },
+            { "value": "heart", "label": "t:options.icon.heart" },
+            { "value": "leaf", "label": "t:options.icon.leaf" },
+            { "value": "shield", "label": "t:options.icon.shield" },
+            { "value": "check", "label": "t:options.icon.check" }
+          ],
+          "default": "truck"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "checkbox",
+      "id": "collect_name",
+      "label": "t:sections.main_register.collect_name.label",
+      "info": "t:sections.main_register.collect_name.info",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

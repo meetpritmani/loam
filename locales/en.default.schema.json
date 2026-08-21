@@ -878,6 +878,48 @@
     },
     "recently_viewed": {
       "name": "Recently viewed"
+    },
+    "main_login": {
+      "name": "Login",
+      "show_guest_route": {
+        "label": "Mention guest checkout",
+        "info": "Only tick this if guest checkout is on under Settings → Checkout. Liquid cannot read that setting, so the theme cannot check it for you — and telling a shopper they can check out as a guest when they cannot is worse than not mentioning it."
+      }
+    },
+    "main_register": {
+      "name": "Create account",
+      "collect_name": {
+        "label": "Ask for first and last name",
+        "info": "Off by default. Shopify does not need a name to create an account, and every extra field is somewhere to stop. Turn it on only if you actually use names in your email tool."
+      },
+      "blocks": {
+        "benefit": {
+          "name": "Benefit"
+        }
+      }
+    },
+    "main_account": {
+      "name": "Account",
+      "show_reorder": {
+        "label": "Show products from the last order",
+        "info": "A customer who already knows their size is the cheapest repeat sale you have. The cards link to the product page rather than adding to cart, so they confirm the size first."
+      }
+    },
+    "main_order": {
+      "name": "Order",
+      "support_url": {
+        "label": "Support link",
+        "info": "Where someone goes when an order has gone wrong. Point this at your contact page, not at the footer."
+      }
+    },
+    "main_addresses": {
+      "name": "Addresses"
+    },
+    "main_reset_password": {
+      "name": "Reset password"
+    },
+    "main_activate_account": {
+      "name": "Activate account"
     }
   },
   "labels": {
@@ -944,7 +986,9 @@
       "star": "Star",
       "globe": "Globe",
       "sun": "Sun",
-      "check": "Check"
+      "check": "Check",
+      "return": "Returns",
+      "name": "Icon"
     },
     "span": {
       "normal": "Normal",

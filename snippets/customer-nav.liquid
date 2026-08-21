@@ -1,0 +1,42 @@
+{%- comment -%}
+  customer-nav.liquid — moving between the three account pages.
+
+  Not in the §9.6 inventory; added because the alternative is three copies of
+  the same list in main-account, main-order and main-addresses, which drift.
+
+  The current page is marked with aria-current, so which page you are on is
+  carried to assistive tech and not only by weight. Log out is last and is a
+  link rather than a button — it is a route, and treating it as an action
+  puts a destructive-looking control next to two navigational ones.
+
+  Params:
+    current  (string, required) — 'account' | 'addresses'
+{%- endcomment -%}
+
+<nav class="customer-nav" aria-label="{{ 'customers.account.menu' | t }}">
+  <ul class="cluster customer-nav__list">
+    <li>
+      <a
+        class="customer-nav__link"
+        href="{{ routes.account_url }}"
+        {% if current == 'account' %}aria-current="page"{% endif %}
+      >
+        {{- 'customers.account.order_history' | t -}}
+      </a>
+    </li>
+    <li>
+      <a
+        class="customer-nav__link"
+        href="{{ routes.account_addresses_url }}"
+        {% if current == 'addresses' %}aria-current="page"{% endif %}
+      >
+        {{- 'customers.addresses.title' | t -}}
+      </a>
+    </li>
+    <li>
+      <a class="customer-nav__link" href="{{ routes.account_logout_url }}">
+        {{- 'customers.account.logout' | t -}}
+      </a>
+    </li>
+  </ul>
+</nav>

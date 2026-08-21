@@ -1,0 +1,168 @@
+{%- comment -%}
+  main-account.liquid — order history.
+
+  §9.5: "reorder route from order history. Empty order state links to a
+  collection." The reorder route is the whole point of this page commercially
+  — a customer who already owns a pair that fits is the cheapest repeat sale
+  a store has, and making them search for it again is the expensive way.
+
+  Shopify has no "reorder this order" endpoint in Liquid, so reorder is a
+  link to the line item's product rather than a one-click cart fill. That is
+  the honest version: it lands on the PDP with the variant preselected, where
+  the shopper confirms the size before it goes in the cart. A button that
+  claimed to reorder and silently added last year's discontinued colourway
+  would be worse than no button.
+
+  The orders table is a real <table> with scope on every header. A grid of
+  divs reads as one long unlabelled list to a screen reader, and order
+  history is exactly the kind of data that needs its columns announced.
+{%- endcomment -%}
+
+{%- liquid
+  assign recovery = settings.cro_empty_cart_collection
+  assign recovery_url = recovery.url | default: routes.all_products_collection_url
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div class="customer-page">
+      <header class="customer-page__header">
+        <div>
+          <h1 class="h3">{{ 'customers.account.title' | t }}</h1>
+          {%- if customer.email != blank -%}
+            <p class="text-muted">{{ customer.email }}</p>
+          {%- endif -%}
+        </div>
+
+        {%- render 'customer-nav', current: 'account' -%}
+      </header>
+
+      {%- if customer.orders.size == 0 -%}
+        {%- liquid
+          assign empty_heading = 'customers.account.empty_heading' | t
+          assign empty_text = 'customers.account.no_orders' | t
+          assign empty_label = 'cart.continue_shopping' | t
+          assign addresses_label = 'customers.addresses.title' | t
+        -%}
+        {%- render 'empty-state',
+          heading: empty_heading,
+          text: empty_text,
+          link_url: recovery_url,
+          link_label: empty_label,
+          link_2_url: routes.account_addresses_url,
+          link_2_label: addresses_label,
+          icon: 'cart'
+        -%}
+      {%- else -%}
+        {%- paginate customer.orders by 12 -%}
+          <div class="table-scroll">
+            <table class="order-table">
+              <caption class="visually-hidden">{{ 'customers.account.order_history' | t }}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'customers.account.order_number' | t }}</th>
+                  <th scope="col">{{ 'customers.order.date_label' | t }}</th>
+                  <th scope="col">{{ 'customers.order.payment_status' | t }}</th>
+                  <th scope="col">{{ 'customers.order.fulfillment_status' | t }}</th>
+                  <th scope="col" class="text-end">{{ 'customers.order.total' | t }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for order in customer.orders -%}
+                  <tr>
+                    <th scope="row">
+                      <a class="link-underline" href="{{ order.customer_url }}">{{ order.name }}</a>
+                    </th>
+                    <td>
+                      <time datetime="{{ order.created_at | date: '%Y-%m-%d' }}">
+                        {{- order.created_at | date: format: 'date' -}}
+                      </time>
+                    </td>
+                    <td>{{ order.financial_status_label }}</td>
+                    <td>{{ order.fulfillment_status_label }}</td>
+                    <td class="text-end">{{ order.total_net_amount | money }}</td>
+                  </tr>
+                {%- endfor -%}
+              </tbody>
+            </table>
+          </div>
+
+          {%- render 'pagination', paginate: paginate, anchor: '#main' -%}
+        {%- endpaginate -%}
+
+        {%- comment -%}
+          The reorder route (§9.5). Drawn from the most recent order's line
+          items, because that is the one a customer is most likely to want
+          again and the one whose sizes they can still remember.
+        {%- endcomment -%}
+        {%- if section.settings.show_reorder -%}
+          {%- assign last_order = customer.orders.first -%}
+          {%- if last_order.line_items.size > 0 -%}
+            <div class="customer-page__reorder">
+              <h2 class="h6">{{ 'customers.account.reorder_title' | t }}</h2>
+              <ul class="grid" style="--grid-cols: 4; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">
+                {%- for line in last_order.line_items limit: 4 -%}
+                  {%- if line.product != blank -%}
+                    <li>
+                      {%- render 'card-product',
+                        product: line.product,
+                        heading_tag: 'h3',
+                        sizes: '(min-width: 990px) 22vw, (min-width: 750px) 30vw, 45vw'
+                      -%}
+                    </li>
+                  {%- endif -%}
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_account.name",
+  "tag": "section",
+  "class": "section-main-account",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reorder",
+      "label": "t:sections.main_account.show_reorder.label",
+      "info": "t:sections.main_account.show_reorder.info",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

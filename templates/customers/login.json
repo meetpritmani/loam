@@ -1,0 +1,26 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main-login": {
+      "type": "main-login",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "login_text": "Sign in to see your orders, track a delivery, or reorder a pair you already know fits.",
+        "show_guest_route": true,
+        "padding_top": 64,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main-login"
+  ]
+}

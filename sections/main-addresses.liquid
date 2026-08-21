@@ -1,0 +1,157 @@
+{%- comment -%}
+  main-addresses.liquid — the address book.
+
+  §9.6: "inline edit, no full page reload." Every form on this page is a
+  <details> that opens where the address already is, so editing never
+  navigates away and never loses the shopper's place in a long list. The
+  submit itself is a Shopify POST and does reload — there is no address API
+  in Liquid to avoid that — but the interaction the shopper controls, opening
+  and abandoning an edit, costs no navigation at all.
+
+  <details> rather than a JavaScript panel: the disclosure works before the
+  module loads and survives it never loading.
+
+  Deleting is a real form POST with a confirm, not a link. A GET link that
+  deletes gets fired by any prefetcher or crawler that follows it.
+
+  Province fields come from Shopify's own `country_option_tags`, which
+  carries each country's provinces in a data attribute.
+  <country-selector> reads that attribute rather than fetching a list, so
+  there is no second request and no hardcoded geography in the theme.
+{%- endcomment -%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div class="customer-page">
+      <header class="customer-page__header">
+        <div>
+          <p class="caption">
+            <a class="link-underline" href="{{ routes.account_url }}">
+              {{- 'customers.account.title' | t -}}
+            </a>
+          </p>
+          <h1 class="h3">{{ 'customers.addresses.title' | t }}</h1>
+        </div>
+
+        {%- render 'customer-nav', current: 'addresses' -%}
+      </header>
+
+      {%- paginate customer.addresses by 12 -%}
+        <details class="address-form address-form--new">
+          <summary class="button button--primary">
+            {{- 'customers.addresses.add_new' | t -}}
+          </summary>
+
+          <div class="address-form__body">
+            {%- form 'customer_address', customer.new_address -%}
+              {%- render 'address-fields', form: form, prefix: 'new' -%}
+
+              <div class="cluster">
+                <button class="button button--primary" type="submit">
+                  {{ 'customers.addresses.submit' | t }}
+                </button>
+              </div>
+            {%- endform -%}
+          </div>
+        </details>
+
+        {%- if customer.addresses.size == 0 -%}
+          <p class="text-muted address-list__empty">{{ 'customers.addresses.empty' | t }}</p>
+        {%- else -%}
+          <ul class="address-list">
+            {%- for address in customer.addresses -%}
+              <li class="address-card">
+                {%- if address == customer.default_address -%}
+                  <p class="badge">{{ 'customers.addresses.default' | t }}</p>
+                {%- endif -%}
+
+                <address class="address-card__body text-body-sm">
+                  {{ address | format_address }}
+                </address>
+
+                <div class="cluster address-card__actions">
+                  <details class="address-form">
+                    <summary class="link-underline">{{ 'customers.addresses.edit' | t }}</summary>
+
+                    <div class="address-form__body">
+                      {%- form 'customer_address', address -%}
+                        {%- assign address_prefix = address.id | prepend: 'address-' -%}
+                        {%- render 'address-fields', form: form, prefix: address_prefix -%}
+
+                        <div class="cluster">
+                          <button class="button button--primary" type="submit">
+                            {{ 'customers.addresses.submit' | t }}
+                          </button>
+                        </div>
+                      {%- endform -%}
+                    </div>
+                  </details>
+
+                  {%- comment -%}
+                    A form, not a link. Shopify's delete route is a POST for
+                    a reason — a GET that deletes is fired by link
+                    prefetchers and by anything that crawls a logged-in
+                    session.
+                  {%- endcomment -%}
+                  {%- assign delete_url = routes.account_addresses_url | append: '/' | append: address.id -%}
+                  <form method="post" action="{{ delete_url }}">
+                    <input type="hidden" name="_method" value="delete">
+                    <button
+                      class="address-card__delete button--tertiary"
+                      type="submit"
+                      data-confirm="{{ 'customers.addresses.delete_confirm' | t | escape }}"
+                    >
+                      {{- 'customers.addresses.delete' | t -}}
+                      <span class="visually-hidden">: {{ address.address1 | escape }}</span>
+                    </button>
+                  </form>
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          {%- render 'pagination', paginate: paginate, anchor: '#main' -%}
+        {%- endif -%}
+      {%- endpaginate -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_addresses.name",
+  "tag": "section",
+  "class": "section-main-addresses",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

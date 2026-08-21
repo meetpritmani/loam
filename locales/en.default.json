@@ -151,7 +151,11 @@
       "view_addresses": "View addresses",
       "order_history": "Order history",
       "no_orders": "You have not placed any orders yet.",
-      "logout": "Log out"
+      "logout": "Log out",
+      "menu": "Account",
+      "order_number": "Order",
+      "empty_heading": "No orders yet",
+      "reorder_title": "Order it again"
     },
     "activate_account": {
       "title": "Activate account",
@@ -180,7 +184,8 @@
       "zip": "Postal/ZIP code",
       "phone": "Phone",
       "submit": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "empty": "No addresses saved yet. Add one and checkout fills itself in next time."
     },
     "login": {
       "title": "Login",
@@ -190,7 +195,9 @@
       "submit": "Sign in",
       "create_account": "Create account",
       "guest_title": "Continue as a guest",
-      "guest_continue": "Continue"
+      "guest_continue": "Continue",
+      "no_account": "No account yet?",
+      "guest_text": "You do not need an account to buy. Checkout works without one, and you can make one afterwards from the confirmation email."
     },
     "order": {
       "title": "Order {{ name }}",
@@ -207,7 +214,10 @@
       "shipping_address": "Shipping address",
       "payment_status": "Payment status",
       "fulfillment_status": "Fulfillment status",
-      "track_shipment": "Track shipment"
+      "track_shipment": "Track shipment",
+      "date_label": "Date",
+      "shop_again": "Shop again",
+      "need_help": "Something wrong with this order?"
     },
     "recover_password": {
       "title": "Reset your password",
@@ -222,7 +232,9 @@
       "last_name": "Last name",
       "email": "Email",
       "password": "Password",
-      "submit": "Create account"
+      "submit": "Create account",
+      "password_hint": "At least five characters.",
+      "have_account": "Already have an account?"
     },
     "reset_password": {
       "title": "Reset account password",

@@ -1,0 +1,188 @@
+{%- comment -%}
+  main-login.liquid — sign in, recover password, and the guest route.
+
+  §9.5 asks for two things this template usually gets wrong.
+
+  "Password reset visible, not hidden behind a second click." The common
+  build hides recovery behind a JavaScript toggle that swaps the two forms.
+  Someone who cannot remember their password is already at the end of their
+  patience, and a link that appears to do nothing (the form swaps below the
+  fold) loses them. Both forms are rendered, both are always visible, and the
+  recovery form is a real second form on the page.
+
+  "Guest checkout route stated where applicable." Shopify decides whether
+  guest checkout is on, and Liquid cannot read that setting — so this is a
+  merchant-facing checkbox rather than a claim the theme invents. Off would
+  be the safe default; on is the honest one for the far more common store
+  configuration, and the setting says plainly what to do if it is wrong.
+
+  Both forms post to Shopify and work with no JavaScript at all.
+{%- endcomment -%}
+
+{%- liquid
+  assign recovery = settings.cro_empty_cart_collection
+  assign recovery_url = recovery.url | default: routes.all_products_collection_url
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div class="customer customer--split">
+      <div class="customer__panel">
+        <h1 class="h3">{{ 'customers.login.title' | t }}</h1>
+
+        {%- if section.settings.login_text != blank -%}
+          <p class="text-muted">{{ section.settings.login_text | escape }}</p>
+        {%- endif -%}
+
+        {%- form 'customer_login', class: 'customer__form' -%}
+          {%- if form.errors -%}
+            <div class="customer__errors" role="alert">
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+
+          <div class="field">
+            <label class="field__label" for="login-email">{{ 'customers.login.email' | t }}</label>
+            <input
+              class="field__input"
+              id="login-email"
+              type="email"
+              name="customer[email]"
+              autocomplete="email"
+              autocapitalize="off"
+              required
+            >
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="login-password">{{ 'customers.login.password' | t }}</label>
+            <input
+              class="field__input"
+              id="login-password"
+              type="password"
+              name="customer[password]"
+              autocomplete="current-password"
+              required
+            >
+          </div>
+
+          <button class="button button--primary button--full" type="submit">
+            {{ 'customers.login.submit' | t }}
+          </button>
+        {%- endform -%}
+
+        <p class="customer__aside text-body-sm">
+          {{ 'customers.login.no_account' | t }}
+          <a class="link-underline" href="{{ routes.account_register_url }}">
+            {{- 'customers.login.create_account' | t -}}
+          </a>
+        </p>
+      </div>
+
+      <div class="customer__panel customer__panel--muted">
+        {%- comment -%}
+          Recovery, always on screen. Shopify posts back to this same URL, so
+          the success message lands here rather than on a confirmation page
+          the shopper then has to leave.
+        {%- endcomment -%}
+        <h2 class="h5">{{ 'customers.recover_password.title' | t }}</h2>
+
+        {%- form 'recover_customer_password', class: 'customer__form' -%}
+          {%- if form.posted_successfully? -%}
+            <p class="field__hint" role="status">
+              {%- render 'icon', icon: 'check', size: 14 -%}
+              {{ 'customers.recover_password.success' | t }}
+            </p>
+          {%- else -%}
+            <p class="text-body-sm text-muted">{{ 'customers.recover_password.subtext' | t }}</p>
+
+            {%- if form.errors -%}
+              <div class="customer__errors" role="alert">
+                {{ form.errors | default_errors }}
+              </div>
+            {%- endif -%}
+
+            <div class="field">
+              <label class="field__label" for="recover-email">{{ 'customers.login.email' | t }}</label>
+              <input
+                class="field__input"
+                id="recover-email"
+                type="email"
+                name="email"
+                autocomplete="email"
+                autocapitalize="off"
+                required
+              >
+            </div>
+
+            <button class="button button--secondary button--full" type="submit">
+              {{ 'customers.recover_password.submit' | t }}
+            </button>
+          {%- endif -%}
+        {%- endform -%}
+
+        {%- if section.settings.show_guest_route -%}
+          <div class="customer__guest">
+            <h2 class="h6">{{ 'customers.login.guest_title' | t }}</h2>
+            <p class="text-body-sm text-muted">{{ 'customers.login.guest_text' | t }}</p>
+            <a class="link-underline" href="{{ recovery_url }}">
+              {{- 'customers.login.guest_continue' | t -}}
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_login.name",
+  "tag": "section",
+  "class": "section-main-login",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "textarea",
+      "id": "login_text",
+      "label": "t:labels.text",
+      "default": "Sign in to see your orders, track a delivery, or reorder a pair you already know fits."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_guest_route",
+      "label": "t:sections.main_login.show_guest_route.label",
+      "info": "t:sections.main_login.show_guest_route.info",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

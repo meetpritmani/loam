@@ -1,0 +1,115 @@
+{%- comment -%}
+  main-activate-account.liquid — finish an invited account.
+
+  §9.5: single clear action, and a success state that routes onward. The
+  primary action is activate; declining is Shopify's own second submit on
+  the same form, rendered as a text link rather than a button so the page
+  keeps one visually dominant action (§9.2 rule 1).
+
+  Declining is not hidden. An invitation the customer did not ask for needs a
+  visible way out, and burying it produces support email rather than
+  activations.
+{%- endcomment -%}
+
+{%- liquid
+  assign recovery = settings.cro_empty_cart_collection
+  assign recovery_url = recovery.url | default: routes.all_products_collection_url
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width page-width--narrow">
+    <div class="customer__panel customer__panel--single">
+      <h1 class="h3">{{ 'customers.activate_account.title' | t }}</h1>
+      <p class="text-muted">{{ 'customers.activate_account.subtext' | t }}</p>
+
+      {%- form 'activate_customer_password', class: 'customer__form' -%}
+        {%- if form.errors -%}
+          <div class="customer__errors" role="alert">
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        <div class="field">
+          <label class="field__label" for="activate-password">
+            {{- 'customers.activate_account.password' | t -}}
+          </label>
+          <input
+            class="field__input"
+            id="activate-password"
+            type="password"
+            name="customer[password]"
+            autocomplete="new-password"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="activate-password-confirm">
+            {{- 'customers.activate_account.password_confirm' | t -}}
+          </label>
+          <input
+            class="field__input"
+            id="activate-password-confirm"
+            type="password"
+            name="customer[password_confirmation]"
+            autocomplete="new-password"
+            required
+          >
+        </div>
+
+        <button class="button button--primary button--full" type="submit">
+          {{ 'customers.activate_account.submit' | t }}
+        </button>
+
+        <button class="link-underline customer__decline" type="submit" name="decline">
+          {{ 'customers.activate_account.cancel' | t }}
+        </button>
+      {%- endform -%}
+
+      <p class="customer__aside text-body-sm">
+        <a class="link-underline" href="{{ recovery_url }}">
+          {{- 'cart.continue_shopping' | t -}}
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_activate_account.name",
+  "tag": "section",
+  "class": "section-main-activate-account",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

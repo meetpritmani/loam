@@ -1589,6 +1589,316 @@ cart-items[aria-busy] {
   transition: width var(--dur-slow) var(--ease);
 }
 
+/* --- Customer accounts ---------------------------------------------------
+   Login and register are two panels side by side from 990px and stacked
+   below it. Order and address data is tabular, and tables that outgrow a
+   phone scroll inside their own container rather than pushing the page
+   sideways. */
+
+.customer {
+  display: grid;
+  gap: var(--sp-7);
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+@media (min-width: 990px) {
+  .customer--split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-8);
+    align-items: start;
+  }
+}
+
+.customer__panel {
+  display: grid;
+  gap: var(--sp-4);
+  align-content: start;
+}
+
+.customer__panel--muted {
+  padding: var(--sp-5);
+  background-color: var(--c-surface);
+  border-radius: var(--radius);
+}
+
+.customer__panel--single {
+  max-width: 460px;
+  margin-inline: auto;
+}
+
+.customer__form {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.customer__row {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 750px) {
+  .customer__row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.customer__errors {
+  padding: var(--sp-3) var(--sp-4);
+  border-inline-start: 2px solid var(--c-signal);
+  color: var(--c-signal);
+  font-size: var(--t-sm);
+}
+
+.customer__errors ul {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.customer__benefits {
+  display: grid;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-2);
+}
+
+.customer__benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  font-size: var(--t-sm);
+}
+
+.customer__benefit .icon {
+  color: var(--c-accent);
+}
+
+.customer__guest {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: start;
+  margin-block-start: var(--sp-5);
+  padding-block-start: var(--sp-5);
+  background-image: var(--seam);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: top left;
+}
+
+/* The decline submit on the activation form. A button, because it submits —
+   styled as a link, because it is the secondary of two actions and §9.2 rule
+   1 allows only one filled button per section. */
+.customer__decline {
+  justify-self: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.customer-page {
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.customer-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+}
+
+.customer-page__reorder {
+  display: grid;
+  gap: var(--sp-4);
+  margin-block-start: var(--sp-6);
+}
+
+.customer-page__actions {
+  align-items: center;
+}
+
+.customer-nav__list {
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.customer-nav__link {
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+  text-decoration: none;
+}
+
+.customer-nav__link:hover {
+  color: var(--c-accent);
+}
+
+.customer-nav__link[aria-current='page'] {
+  color: var(--c-ink);
+  font-weight: var(--f-body-weight-bold);
+}
+
+/* --- Order tables -------------------------------------------------------- */
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.order-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+}
+
+.order-table th,
+.order-table td {
+  padding: var(--sp-3) var(--sp-3);
+  text-align: start;
+  vertical-align: top;
+}
+
+.order-table thead th {
+  font-size: var(--t-xs);
+  letter-spacing: var(--caption-letter-spacing, 1px);
+  text-transform: uppercase;
+  color: var(--c-ink-70);
+  font-weight: var(--f-body-weight-bold);
+}
+
+.order-table tbody tr,
+.order-table tfoot tr {
+  background-image: var(--seam);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: top left;
+}
+
+.order-table tbody th {
+  font-weight: var(--f-body-weight-bold);
+}
+
+.order-status {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background-color: var(--c-surface);
+  border-radius: var(--radius);
+}
+
+.order-status__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--t-sm);
+}
+
+.order-addresses {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.order-addresses h2 {
+  margin-block-end: var(--sp-2);
+}
+
+@media (min-width: 750px) {
+  .order-addresses {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Address book -------------------------------------------------------- */
+
+.address-list {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 750px) {
+  .address-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.address-card {
+  display: grid;
+  gap: var(--sp-3);
+  align-content: start;
+  padding: var(--sp-4);
+  background-color: var(--c-surface);
+  border-radius: var(--radius);
+}
+
+.address-card__body {
+  font-style: normal;
+  line-height: 1.6;
+}
+
+.address-card__actions {
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.address-card__delete {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+.address-card__delete:hover {
+  color: var(--c-signal);
+}
+
+.address-form summary {
+  cursor: pointer;
+}
+
+.address-form--new {
+  justify-self: start;
+}
+
+.address-form__body {
+  margin-block-start: var(--sp-4);
+}
+
+.address-fields {
+  display: grid;
+  gap: var(--sp-4);
+  margin-block-end: var(--sp-4);
+}
+
+.field--checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.field--checkbox label {
+  font-size: var(--t-sm);
+}
+
+.field__checkbox {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  accent-color: var(--c-accent);
+}
+
+.address-list__empty {
+  margin-block-start: var(--sp-4);
+}
+
+
 /* --- 404 ----------------------------------------------------------------
    Everything that recovers the session is in the first column and above the
    fold at 375px: heading, search, and the two text routes. Collections sit
