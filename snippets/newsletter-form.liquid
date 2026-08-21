@@ -87,7 +87,7 @@
     {%- if form.errors -%}
       <span class="field__error">{{ form.errors.messages.email }}</span>
     {%- elsif form.posted_successfully? -%}
-      <span class="field__hint">
+      <span class="field__hint" data-analytics-signup>
         {%- render 'icon', icon: 'check', size: 14 -%}
         {{ 'newsletter.success' | t }}
       </span>

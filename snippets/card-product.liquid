@@ -68,7 +68,19 @@
     endif
   -%}
 
-  <div class="card card-product">
+  {%- comment -%}
+    The GA4 item for select_item and view_item_list (§9.8). Renders as an
+    empty string when the data layer is off, so a store that is not measuring
+    does not pay for the attribute on every card in every grid.
+  {%- endcomment -%}
+  {%- capture analytics_item -%}
+    {%- render 'analytics-events', scope: 'item', product: product -%}
+  {%- endcapture -%}
+
+  <div
+    class="card card-product"
+    {% if analytics_item != blank %}data-analytics-item="{{ analytics_item | strip | escape }}"{% endif %}
+  >
     <a
       class="card-product__media media {{ ratio_class }}{{ zoom_class }}"
       href="{{ product.url }}"

@@ -18,13 +18,15 @@ external CDN. Everything a shopper downloads is in this repository.
 | 1 | Foundation — layout, tokens, CSS/JS core, settings, SEO, a11y | Complete |
 | 2 | Chrome — announcement bar, header, mega menu, footer, cart drawer | Complete |
 | 3 | Homepage — 15 sections | Complete |
-| 4 | Templates — product, collection, search, cart, blog, customers | **In progress** — product page done |
+| 4 | Templates — product, collection, search, cart, blog, customers | Complete |
 | 5 | Demo store seeding | Not started |
 | 6 | Demo content shipped in the repo | Not started |
 | 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | Not started |
 
-Sections marked *planned* below are specified and scheduled but not yet built.
-Nothing in this file describes behaviour that does not exist today.
+Nothing in this file describes behaviour that does not exist today. Phases 5
+to 7 add the demo store, the demo content shipped in the repo, and the release
+hardening pass — the theme is complete and functional without them, but it
+installs onto an empty store showing placeholder imagery until phase 6.
 
 ---
 
@@ -107,9 +109,9 @@ testing on your own traffic.
 | `cro_low_stock_threshold` | 10 | Low-stock message at or below this quantity. `0` disables |
 | `cro_trust_returns` | "Free returns for 30 days" | Shown beside Add to Cart |
 | `cro_trust_shipping` | "Carbon neutral shipping on every order" | Shown beside Add to Cart |
-| `cro_cart_upsell_products` | — | Up to three products offered in the cart *(planned)* |
-| `cro_empty_cart_collection` | — | Drives empty-cart and 404 recovery *(planned)* |
-| `cro_datalayer` | **off** | GA4-shaped events to `window.dataLayer` *(planned)* |
+| `cro_cart_upsell_products` | — | Up to three products offered in the cart and drawer |
+| `cro_empty_cart_collection` | — | Drives empty-cart, 404, search and blog recovery routes |
+| `cro_datalayer` | **off** | GA4-shaped events to `window.dataLayer` |
 
 `cro_datalayer` defaults to **off** deliberately. Most stores already track
 events through Google Tag Manager or an app, and running both double-counts
@@ -190,9 +192,59 @@ Behaviour worth knowing:
 
 ### Other templates
 
-Collection, search, cart page, blog, article, page, the customer account
-templates, 404, password and gift card are **planned** — they are the
-remainder of phase 4.
+| Template | Section | Notes |
+|---|---|---|
+| Collection | `main-collection-banner`, `main-collection` | Faceted filters and sort without a page reload; scroll position and filter state survive |
+| Collections list | `main-list-collections` | Empty collections hidden |
+| Search | `main-search` | Products rank above articles above pages. Popular products before a search; spelling help and your own popular searches after a fruitless one |
+| Cart page | `main-cart` | Same components as the drawer. Shown when your cart type is Page, and at `/cart` either way |
+| Blog | `main-blog` | Topic filter, signup at the foot of the list |
+| Article | `main-article` | Related products from an article metafield, share, comments |
+| Page | `main-page` | Ends in a next step and a contact route |
+| 404 | `main-404` | Search box, your chosen collections, and a home link |
+| Password | `main-password` | Email capture is the primary action; store login sits below it |
+| Customer accounts | `main-login`, `main-register`, `main-account`, `main-order`, `main-addresses`, `main-reset-password`, `main-activate-account` | All seven templates |
+| Gift card | `templates/gift_card.liquid` | Balance, code, print and Apple Wallet |
+
+Two rows load only as you approach them, so they cost nothing above the fold:
+
+- **Related products** — from Shopify's recommendations, never a slice of the
+  same collection. Hidden entirely below three results.
+- **Recently viewed** — held in the shopper's own browser, never sent to you or
+  joined to a customer record. Hidden when empty, and it never shows the
+  product currently open.
+
+---
+
+## Analytics
+
+With `cro_datalayer` on, Loam pushes GA4-shaped events to `window.dataLayer`.
+It is **off** by default — most stores already fire these from Google Tag
+Manager or an app, and running both double-counts every event. Turn it on only
+if this is your only source.
+
+| Event | Fires when |
+|---|---|
+| `view_item` | A product page loads |
+| `view_item_list` | A collection grid or a featured-collection row enters the viewport, once per list |
+| `select_item` | A product card is clicked through to its page |
+| `add_to_cart` | The cart API confirms the add — never on the click |
+| `remove_from_cart` | A line is removed, or its quantity stepped to zero |
+| `view_cart` | The cart drawer opens, or the cart page loads |
+| `begin_checkout` | The checkout button is clicked |
+| `search` | Search results render, with the term and the result count |
+| `sign_up` | A newsletter signup succeeds |
+
+Every `items[]` entry carries `item_id` (your SKU, falling back to the variant
+id), `item_name`, `item_brand`, `item_category`, `item_variant`, `price` in
+major units, `quantity` and `currency`. List events add `index` and
+`item_list_name`.
+
+`window.dataLayer` is guarded before every push, so load order against your tag
+manager does not matter.
+
+No customer data is ever pushed. Not an email, not a name, not a customer id —
+only catalogue fields and the shopper's own interaction with them.
 
 ---
 

@@ -183,7 +183,11 @@
 
         <div data-collection-results>
           {%- if collection.products.size > 0 -%}
-            <ul class="grid collection__grid" style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 3; --grid-cols-mobile: {{ section.settings.columns_mobile }};">
+            <ul
+              class="grid collection__grid"
+              style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 3; --grid-cols-mobile: {{ section.settings.columns_mobile }};"
+              data-analytics-list="{{ collection.title | escape }}"
+            >
               {%- for product in collection.products -%}
                 <li>
                   {%- render 'card-product', product: product, sizes: grid_sizes, heading_tag: 'h2' -%}

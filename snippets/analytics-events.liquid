@@ -1,0 +1,172 @@
+{%- comment -%}
+  analytics-events.liquid — GA4-shaped events for window.dataLayer (§9.8).
+
+  Off by default. `cro_datalayer` ships false because most merchants already
+  fire these events from Google Tag Manager or an app, and running both
+  double-counts every add to cart and everything else in the funnel. A theme
+  that silently doubled a merchant's numbers would be worse than a theme with
+  no analytics at all.
+
+  With the setting off this snippet renders nothing, every `data-analytics-*`
+  attribute is omitted, and the analytics region of global.js returns on its
+  first line.
+
+  No customer PII is ever pushed. Not the email on the order page, not the
+  name on an address, not the customer id. Catalogue data and the shopper's
+  own interaction with it, nothing else.
+
+  Two modes
+  ---------
+  scope: 'page' — renders the JSON island global.js reads on load. Emits
+                  view_item, view_cart or search depending on the template.
+                  Called once, from theme.liquid.
+
+  scope: 'item' — returns one GA4 item object, no wrapper, for a caller to
+                  capture into a data attribute:
+
+                    {%- capture item -%}
+                      {%- render 'analytics-events', scope: 'item', product: product -%}
+                    {%- endcapture -%}
+                    <div data-analytics-item="{{ item | strip | escape }}">
+
+  The item object is written out twice in this file — once for the 'item'
+  scope and once inside the page payload. That is deliberate: a snippet
+  cannot render itself, and splitting the item builder into a second file
+  would put half of §9.8 somewhere §9.6 does not list. Both copies emit the
+  same nine keys; change one and change the other.
+
+  The remaining events — select_item, view_item_list, add_to_cart,
+  remove_from_cart, begin_checkout, sign_up — are interactions, so they are
+  raised in global.js from the elements these attributes mark. add_to_cart
+  fires on the cart API's confirmation and never on the click (§16).
+
+  Params:
+    scope    (string, required)  — 'page' | 'item'
+    product  (product, optional) — item scope
+    variant  (variant, optional) — item scope, defaults to the product's
+                                   selected or first available variant
+    quantity (number, optional)  — item scope, defaults to 1
+{%- endcomment -%}
+
+{%- if settings.cro_datalayer -%}
+  {%- if scope == 'item' -%}
+    {%- liquid
+      assign item_variant = variant
+      if item_variant == blank
+        assign item_variant = product.selected_or_first_available_variant
+      endif
+
+      comment
+        SKU first: it is the id a merchant recognises in their own reports.
+        Variant id is the fallback, because a store with no SKUs still needs
+        a stable key and a blank item_id makes the whole event useless.
+      endcomment
+      assign item_id = item_variant.sku
+      if item_id == blank
+        assign item_id = item_variant.id
+      endif
+
+      assign item_price = item_variant.price | divided_by: 100.0
+      assign item_quantity = quantity | default: 1
+    -%}
+    {
+      "item_id": {{ item_id | json }},
+      "item_name": {{ product.title | json }},
+      "item_brand": {{ product.vendor | json }},
+      "item_category": {{ product.type | json }},
+      "item_variant": {{ item_variant.title | json }},
+      "price": {{ item_price | json }},
+      "quantity": {{ item_quantity | json }},
+      "currency": {{ cart.currency.iso_code | json }}
+    }
+
+  {%- elsif scope == 'page' -%}
+    {%- liquid
+      assign event_name = ''
+
+      case request.page_type
+        when 'product'
+          assign event_name = 'view_item'
+        when 'cart'
+          assign event_name = 'view_cart'
+        when 'search'
+          if search.performed
+            assign event_name = 'search'
+          endif
+      endcase
+    -%}
+
+    {%- if event_name != blank -%}
+      {%- capture payload -%}
+        {
+          "event": {{ event_name | json }},
+          "currency": {{ cart.currency.iso_code | json }},
+
+          {%- if event_name == 'view_item' -%}
+            {%- liquid
+              assign view_variant = product.selected_or_first_available_variant
+              assign view_id = view_variant.sku
+              if view_id == blank
+                assign view_id = view_variant.id
+              endif
+              assign view_price = view_variant.price | divided_by: 100.0
+            -%}
+            "value": {{ view_price | json }},
+            "items": [
+              {
+                "item_id": {{ view_id | json }},
+                "item_name": {{ product.title | json }},
+                "item_brand": {{ product.vendor | json }},
+                "item_category": {{ product.type | json }},
+                "item_variant": {{ view_variant.title | json }},
+                "price": {{ view_price | json }},
+                "quantity": 1,
+                "currency": {{ cart.currency.iso_code | json }}
+              }
+            ]
+
+          {%- elsif event_name == 'view_cart' -%}
+            {%- assign cart_value = cart.total_price | divided_by: 100.0 -%}
+            "value": {{ cart_value | json }},
+            "items": [
+              {%- for line in cart.items -%}
+                {%- liquid
+                  assign line_id = line.variant.sku
+                  if line_id == blank
+                    assign line_id = line.variant.id
+                  endif
+                  assign line_price = line.variant.price | divided_by: 100.0
+                -%}
+                {
+                  "item_id": {{ line_id | json }},
+                  "item_name": {{ line.product.title | json }},
+                  "item_brand": {{ line.product.vendor | json }},
+                  "item_category": {{ line.product.type | json }},
+                  "item_variant": {{ line.variant.title | json }},
+                  "price": {{ line_price | json }},
+                  "quantity": {{ line.quantity | json }},
+                  "currency": {{ cart.currency.iso_code | json }}
+                }
+                {%- unless forloop.last -%},{%- endunless -%}
+              {%- endfor -%}
+            ]
+
+          {%- elsif event_name == 'search' -%}
+            "search_term": {{ search.terms | json }},
+            "results_count": {{ search.results_count | json }}
+          {%- endif -%}
+        }
+      {%- endcapture -%}
+
+      {%- comment -%}
+        A JSON island, not an inline script. Nothing here executes, so the
+        theme stays compatible with a strict script-src Content Security
+        Policy — which a merchant on Shopify Plus may well have — and there
+        is still exactly one JavaScript file in the theme (§5).
+      {%- endcomment -%}
+      <script type="application/json" id="loam-analytics">
+        {{- payload | strip -}}
+      </script>
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}
