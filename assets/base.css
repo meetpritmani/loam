@@ -283,7 +283,15 @@ dialog {
    3. LAYOUT
    ========================================================================== */
 
+/* `width: 100%` is not redundant. This class is used inside grid and flex
+   containers as well as in normal block flow, and `margin-inline: auto`
+   disables stretch alignment on a grid or flex item — so without an explicit
+   width the element shrink-wraps to its max-content size and the auto margins
+   then centre the result, leaving it narrower than, and out of line with,
+   every other section. Harmless in normal flow: `box-sizing` is border-box
+   theme-wide, so `width: 100%` and `width: auto` compute identically there. */
 .page-width {
+  width: 100%;
   max-width: var(--page-width);
   margin-inline: auto;
   padding-inline: var(--page-gutter);
@@ -793,6 +801,24 @@ dialog {
   gap: var(--sp-2);
 }
 
+/* Quick add. The title link's stretched ::after sits at z-index 1 over the
+   whole card, so any real control inside the card has to be lifted above it
+   or the overlay swallows the click. */
+.card__action {
+  position: relative;
+  z-index: 2;
+  margin-block-start: var(--sp-1);
+}
+
+.card__action-form {
+  margin: 0;
+}
+
+.card__action [aria-disabled='true'] {
+  cursor: progress;
+  opacity: 0.65;
+}
+
 /* --- Drawer -------------------------------------------------------------
    Shared by the cart drawer, the mobile nav, and the size-guide drawer.
    The dialog element handles the top layer; JS handles the focus trap,
@@ -806,6 +832,14 @@ dialog {
    close it is delayed by the slide duration so the panel is still painted
    while it slides away. Focusable children inside a hidden subtree stay out
    of the tab order, exactly as they did under display: none. */
+
+/* The scheme class (`color-*`) belongs on `.drawer__panel`, NEVER here.
+   `.color-*` paints `background-color: var(--c-paper)`, and this element is
+   `position: fixed; inset: 0` — a full-viewport box. A scheme class on it
+   lays an opaque sheet over the whole page, so the storefront behind an open
+   drawer renders as a flat colour under the scrim rather than as the page.
+   That reads as "the drawer blanked the page" and sends you hunting through
+   the scroll lock, which is not where the problem is. */
 .drawer {
   position: fixed;
   inset: 0;
@@ -912,6 +946,9 @@ dialog {
 }
 
 .accordion__content {
+  /* Answers ran to 109ch on a wide viewport, well past the ~75ch where prose
+     stops being comfortable to read. */
+  max-width: 68ch;
   padding-block-end: var(--sp-4);
   color: var(--c-ink-70);
 }
@@ -1055,11 +1092,21 @@ loam-drawer {
   text-underline-offset: 0.25em;
 }
 
+/* The visible control stays 28px so the bar keeps its height, but the touch
+   area is pushed out to 44px with a pseudo-element — the arrows sit next to
+   each other on mobile and are easy to mis-hit at 28px. */
 .announcement-bar__control {
+  position: relative;
   width: 28px;
   height: 28px;
   flex: 0 0 auto;
   color: inherit;
+}
+
+.announcement-bar__control::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 
 /* --- Header ------------------------------------------------------------- */
@@ -1256,6 +1303,8 @@ loam-drawer {
 }
 
 .mega__link {
+  display: inline-block;
+  padding-block: var(--sp-1);
   font-size: var(--t-sm);
   color: var(--c-ink-70);
   text-decoration: none;
@@ -1289,6 +1338,7 @@ loam-drawer {
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-3);
+  min-height: 44px;
   padding-block: var(--sp-3);
   font-size: var(--t-md);
 }
@@ -1312,8 +1362,13 @@ loam-drawer {
   padding-block-end: 0;
 }
 
+/* This is the mobile navigation, so every row is a thumb target. The padding
+   alone left rows at 38-42px; min-height pins them to 44 regardless of the
+   font scale a merchant picks. */
 .menu-drawer__link {
-  display: block;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
   padding-block: var(--sp-2);
   text-decoration: none;
 }
@@ -1601,6 +1656,7 @@ cart-items[aria-busy] {
 }
 
 .localization__select {
+  min-height: 44px;
   padding: var(--sp-1) var(--sp-2);
   border: var(--border-hairline) solid transparent;
   border-radius: var(--radius);
@@ -1656,6 +1712,15 @@ cart-items[aria-busy] {
 .footer__links {
   display: grid;
   gap: var(--sp-2);
+}
+
+/* Footer menu rows are a common mis-tap on mobile at their natural 18px
+   line-box height. `align-items: start` keeps the underline tight to the
+   text rather than stretching it across the padded row. */
+.footer__links .link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 .footer__bottom {
@@ -1983,7 +2048,10 @@ cart-items[aria-busy] {
   margin-block-start: var(--sp-2);
 }
 
+/* Feature copy measured 94ch at 1440 — past the point prose stays readable.
+   The list sits in a half-width column, so this only bites on wide screens. */
 .image-with-text__item {
+  max-width: 62ch;
   display: grid;
   gap: var(--sp-2);
 }
@@ -2059,7 +2127,17 @@ cart-items[aria-busy] {
 .collection-card__scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgb(var(--c-ink-rgb) / 0.55), rgb(var(--c-ink-rgb) / 0) 55%);
+  /* Bottom stop is 0.7, not 0.55. §9.6 requires the overlay caption to pass
+     contrast over ANY image, and the caption is 12px so it needs 4.5:1. At
+     0.55 over a white image it measured 3.60:1 and failed; 0.62 is the break
+     even and 0.7 gives headroom (5.98:1 on white, 6.97:1 on light sand). The
+     mid stop keeps the ramp short so only the caption zone darkens. */
+  background: linear-gradient(
+    to top,
+    rgb(var(--c-ink-rgb) / 0.7) 0%,
+    rgb(var(--c-ink-rgb) / 0.45) 30%,
+    rgb(var(--c-ink-rgb) / 0) 62%
+  );
   transition: opacity var(--dur) var(--ease);
 }
 
@@ -2491,6 +2569,361 @@ cart-items[aria-busy] {
 .multicolumn__media {
   width: 100%;
   margin-block-end: var(--sp-1);
+}
+
+
+/* --- Product page -------------------------------------------------------
+   Media first on mobile, two columns from 990px. The info column is sticky
+   on desktop so Add to Cart stays reachable no matter how long the
+   description or the accordion runs. */
+
+.product {
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.product__breadcrumbs {
+  margin-block-end: var(--sp-4);
+}
+
+.product__media-main {
+  position: relative;
+}
+
+.product__thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-3);
+}
+
+.product__thumb {
+  display: block;
+  width: 64px;
+  padding: 0;
+  border: var(--border-hairline) solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.product__thumb.is-active {
+  border-color: var(--c-ink);
+}
+
+.product__info-inner {
+  display: grid;
+  gap: var(--sp-4);
+  align-content: start;
+}
+
+.product__vendor {
+  color: var(--c-ink-45);
+}
+
+.product__title {
+  margin: 0;
+}
+
+.product__carbon,
+.low-stock {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.low-stock {
+  color: var(--c-signal);
+  font-size: var(--t-sm);
+}
+
+.product__description {
+  color: var(--c-ink-70);
+}
+
+/* --- Variant picker ----------------------------------------------------- */
+
+.variant-picker {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.variant-picker__option {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.variant-picker__legend {
+  display: flex;
+  gap: var(--sp-2);
+  padding: 0;
+  margin-block-end: var(--sp-2);
+}
+
+.variant-picker__selected {
+  font-size: var(--t-xs);
+  color: var(--c-ink-70);
+}
+
+.variant-picker__values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.variant-picker__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: var(--sp-3);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+  font-size: var(--t-sm);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.variant-picker__input:checked + .variant-picker__value {
+  border-color: var(--c-ink);
+  border-width: 2px;
+}
+
+/* The focus ring has to live on the label: the input itself is
+   visually-hidden, so its own ring would be invisible. */
+.variant-picker__input:focus-visible + .variant-picker__value {
+  outline: var(--focus-width) solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Unavailable is MARKED, never hidden (§9.7). The strike-through carries the
+   meaning visually; the label text carries it for assistive tech. */
+.variant-picker__value--unavailable {
+  color: var(--c-ink-45);
+  text-decoration: line-through;
+}
+
+.variant-picker__fallback {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+/* --- Buy buttons -------------------------------------------------------- */
+
+.buy-buttons {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.buy-buttons__express {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+/* --- Trust row ---------------------------------------------------------- */
+
+.trust-row {
+  display: grid;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+  border-block: var(--border-hairline) solid var(--c-ink-12);
+}
+
+.trust-row__list {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.trust-row__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+}
+
+.payment-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.payment-icons__icon {
+  width: 38px;
+  height: 24px;
+}
+
+/* --- Size guide + share ------------------------------------------------- */
+
+.size-guide__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.share__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+}
+
+/* --- Sticky Add to Cart -------------------------------------------------
+   Mobile only. Above 990px the info column is already sticky, so a second
+   bar would be redundant and would cover the footer CTA (§9.6). */
+
+.sticky-atc {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 20;
+  padding-block: var(--sp-3);
+  border-block-start: var(--border-hairline) solid var(--c-ink-12);
+  background-color: var(--c-surface);
+}
+
+.sticky-atc[hidden] {
+  display: none;
+}
+
+.sticky-atc__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.sticky-atc__info {
+  min-width: 0;
+}
+
+.sticky-atc__title {
+  overflow: hidden;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sticky-atc__meta {
+  display: flex;
+  gap: var(--sp-2);
+  font-size: var(--t-xs);
+  color: var(--c-ink-70);
+}
+
+.sticky-atc__button {
+  flex: 0 0 auto;
+}
+
+/* --- Breadcrumbs -------------------------------------------------------- */
+
+.breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--t-xs);
+  color: var(--c-ink-45);
+}
+
+.breadcrumbs__item + .breadcrumbs__item::before {
+  content: '/';
+  margin-inline-end: var(--sp-2);
+  color: var(--c-ink-12);
+}
+
+.breadcrumbs__link {
+  color: inherit;
+}
+
+/* --- Pagination --------------------------------------------------------- */
+
+.pagination {
+  margin-block-start: var(--sp-7);
+}
+
+.pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-1);
+}
+
+.pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+
+.pagination__link--current {
+  border: var(--border-hairline) solid var(--c-ink);
+  font-weight: 600;
+}
+
+.pagination__gap {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  color: var(--c-ink-45);
+}
+
+/* --- Empty state -------------------------------------------------------- */
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  max-width: 46ch;
+  margin-inline: auto;
+  padding-block: var(--sp-8);
+  text-align: center;
+}
+
+.empty-state__icon {
+  color: var(--c-ink-45);
+}
+
+.empty-state__text {
+  margin: 0;
+}
+
+.empty-state__actions {
+  justify-content: center;
+  margin-block-start: var(--sp-2);
+}
+
+@media (min-width: 990px) {
+  .product {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--sp-8);
+    align-items: start;
+  }
+
+  .product__info-inner {
+    position: sticky;
+    top: calc(var(--header-height, 0px) + var(--sp-5));
+  }
+
+  .sticky-atc {
+    display: none;
+  }
 }
 
 /* ==========================================================================

@@ -1,0 +1,51 @@
+{%- comment -%}
+  breadcrumbs.liquid — visual trail only.
+
+  Deliberately emits NO JSON-LD. `structured-data.liquid` already emits
+  BreadcrumbList for product and collection templates; a second copy here
+  would put two BreadcrumbList graphs on the same page, which validators
+  flag and which can suppress the rich result entirely.
+
+  §9.6: gives a route back up, not just to home. On a product reached from a
+  collection, Shopify populates `collection` and the middle crumb is that
+  collection — so the trail matches the path the shopper actually took.
+
+  Params:
+    class  (string, optional)
+{%- endcomment -%}
+
+{%- liquid
+  assign show = false
+  if request.page_type == 'product' or request.page_type == 'article' or request.page_type == 'collection'
+    assign show = true
+  endif
+-%}
+
+{%- if show -%}
+  <nav class="breadcrumbs {{ class }}" aria-label="{{ 'general.breadcrumb.label' | t }}">
+    <ol class="breadcrumbs__list">
+      <li class="breadcrumbs__item">
+        <a class="breadcrumbs__link" href="{{ routes.root_url }}">{{ 'general.breadcrumb.home' | t }}</a>
+      </li>
+
+      {%- case request.page_type -%}
+        {%- when 'product' -%}
+          {%- if collection.url != blank -%}
+            <li class="breadcrumbs__item">
+              <a class="breadcrumbs__link" href="{{ collection.url }}">{{ collection.title | escape }}</a>
+            </li>
+          {%- endif -%}
+          <li class="breadcrumbs__item" aria-current="page">{{ product.title | escape }}</li>
+
+        {%- when 'collection' -%}
+          <li class="breadcrumbs__item" aria-current="page">{{ collection.title | escape }}</li>
+
+        {%- when 'article' -%}
+          <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="{{ blog.url }}">{{ blog.title | escape }}</a>
+          </li>
+          <li class="breadcrumbs__item" aria-current="page">{{ article.title | escape }}</li>
+      {%- endcase -%}
+    </ol>
+  </nav>
+{%- endif -%}

@@ -10,8 +10,108 @@
 {
   "sections": {
     "main": {
-      "type": "product",
-      "settings": {}
+      "type": "main-product",
+      "blocks": {
+        "vendor": {
+          "type": "vendor"
+        },
+        "title": {
+          "type": "title"
+        },
+        "price": {
+          "type": "price"
+        },
+        "badges": {
+          "type": "badges"
+        },
+        "material": {
+          "type": "material"
+        },
+        "picker": {
+          "type": "variant_picker",
+          "settings": {
+            "show_size_guide": true
+          }
+        },
+        "low_stock": {
+          "type": "low_stock"
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_quantity": true
+          }
+        },
+        "trust": {
+          "type": "trust"
+        },
+        "carbon": {
+          "type": "carbon"
+        },
+        "acc_materials": {
+          "type": "accordion",
+          "settings": {
+            "heading": "Materials",
+            "source": "custom",
+            "content": "<p>Merino wool upper, eucalyptus fibre lining, sugarcane foam sole. Three materials, all of which grow back.</p>",
+            "open": true
+          }
+        },
+        "acc_care": {
+          "type": "accordion",
+          "settings": {
+            "heading": "Care",
+            "source": "care",
+            "content": "<p>Cold gentle machine wash with the insoles removed. Air dry away from direct heat. Skip the dryer — it shrinks the wool and hardens the foam.</p>",
+            "open": false
+          }
+        },
+        "acc_shipping": {
+          "type": "accordion",
+          "settings": {
+            "heading": "Shipping &amp; returns",
+            "source": "custom",
+            "content": "<p>Carbon neutral shipping on every order. Two to four working days domestically, five to ten internationally. Free returns for 30 days, worn or unworn.</p>",
+            "open": false
+          }
+        },
+        "acc_fit": {
+          "type": "accordion",
+          "settings": {
+            "heading": "Size &amp; fit",
+            "source": "custom",
+            "content": "<p>True to size for most feet. Between sizes, size down — the knit gives about half a size as it settles.</p>",
+            "open": false
+          }
+        },
+        "share": {
+          "type": "share"
+        }
+      },
+      "block_order": [
+        "vendor",
+        "title",
+        "price",
+        "badges",
+        "material",
+        "picker",
+        "low_stock",
+        "buy",
+        "trust",
+        "carbon",
+        "acc_materials",
+        "acc_care",
+        "acc_shipping",
+        "acc_fit",
+        "share"
+      ],
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "show_breadcrumbs": true,
+        "image_ratio": "portrait",
+        "padding_top": 40,
+        "padding_bottom": 64
+      }
     }
   },
   "order": [

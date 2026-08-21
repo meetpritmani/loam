@@ -1,0 +1,92 @@
+{%- comment -%}
+  buy-buttons.liquid — Add to Cart, then the express buttons beneath it.
+
+  §9.6: a disabled button must explain why. Sold out and unavailable are
+  different states and get different labels — "Sold out" means the shop
+  stocks it and has none; "Unavailable" means that combination does not
+  exist. A silently dead button is never acceptable.
+
+  The express (dynamic checkout) buttons sit BELOW Add to Cart, not above.
+  Above, they harvest shoppers who would otherwise browse on, and they skip
+  the cart where the free-shipping threshold and upsells live.
+
+  Params:
+    product     (product, required)
+    section_id  (string, required)
+    show_qty    (boolean, optional) — default true
+{%- endcomment -%}
+
+{%- liquid
+  assign current = product.selected_or_first_available_variant
+  assign with_qty = show_qty | default: true, allow_false: true
+
+  assign can_buy = false
+  if current != blank and current.available
+    assign can_buy = true
+  endif
+
+  assign disabled_label = 'products.product.unavailable' | t
+  if current != blank
+    assign disabled_label = 'products.product.sold_out' | t
+  endif
+-%}
+
+{%- comment -%}
+  The form id is assigned first, not built inline. A filter inside the form
+  tag's arguments makes Liquid mis-parse the form TYPE — it read the type as
+  "-form" and threw. theme-check only flags filter-on-argument for `render`,
+  so this only shows up against the real compiler.
+{%- endcomment -%}
+{%- assign form_id = section_id | append: '-form' -%}
+<product-form data-success-message="{{ 'products.product.added_to_cart' | t | escape }}">
+{%- form 'product', product, id: form_id, class: 'buy-buttons', novalidate: 'novalidate' -%}
+  <input
+    type="hidden"
+    name="id"
+    value="{{ current.id }}"
+    data-variant-id
+    {% unless can_buy %}disabled{% endunless %}
+  >
+
+  {%- if with_qty -%}
+    {%- liquid
+      assign qty_id = section_id | append: '-qty'
+      # §9.6: never offer a quantity the merchant cannot fulfil. A ceiling
+      # only exists when inventory is tracked and overselling is off.
+      assign qty_max = blank
+      if current.inventory_management != blank and current.inventory_policy != 'continue'
+        assign qty_max = current.inventory_quantity
+      endif
+    -%}
+    {%- render 'quantity-input', id: qty_id, value: 1, min: 1, max: qty_max -%}
+  {%- endif -%}
+
+  {%- comment -%}
+    The three state labels ride along as data attributes so the client can
+    swap the button between them on a variant change without another network
+    round trip, and without any English in the JavaScript.
+  {%- endcomment -%}
+  <button
+    class="button button--primary button--full buy-buttons__add"
+    type="submit"
+    name="add"
+    data-add-button
+    data-label-add="{{ 'products.product.add_to_cart' | t | escape }}"
+    data-label-sold-out="{{ 'products.product.sold_out' | t | escape }}"
+    data-label-unavailable="{{ 'products.product.unavailable' | t | escape }}"
+    {% unless can_buy %}disabled{% endunless %}
+  >
+    <span data-add-label>
+      {%- if can_buy -%}
+        {{ 'products.product.add_to_cart' | t }}
+      {%- else -%}
+        {{ disabled_label }}
+      {%- endif -%}
+    </span>
+  </button>
+
+  {%- if settings.cro_dynamic_checkout and can_buy -%}
+    <div class="buy-buttons__express">{{ form | payment_button }}</div>
+  {%- endif -%}
+{%- endform -%}
+</product-form>

@@ -1,0 +1,45 @@
+{%- comment -%}
+  empty-state.liquid — the one place an empty or failed state is rendered.
+
+  §9.6: no empty state ships without a route out. This snippet enforces that
+  by contract — it renders nothing at all unless it is given a link, so a
+  caller cannot accidentally produce a dead end by omitting one.
+
+  Params:
+    heading      (string, required)
+    text         (string, optional)  — one line of guidance
+    link_url     (string, required)  — primary route out
+    link_label   (string, required)
+    link_2_url   (string, optional)  — secondary route
+    link_2_label (string, optional)
+    icon         (string, optional)  — decorative, from icon.liquid
+    class        (string, optional)
+{%- endcomment -%}
+
+{%- liquid
+  assign has_route = false
+  if link_url != blank and link_label != blank
+    assign has_route = true
+  endif
+-%}
+
+{%- if has_route -%}
+  <div class="empty-state {{ class }}">
+    {%- if icon != blank -%}
+      {%- render 'icon', icon: icon, size: 32, class: 'empty-state__icon' -%}
+    {%- endif -%}
+
+    <h2 class="empty-state__heading h4">{{ heading }}</h2>
+
+    {%- if text != blank -%}
+      <p class="empty-state__text text-muted">{{ text }}</p>
+    {%- endif -%}
+
+    <div class="empty-state__actions cluster">
+      <a class="button button--primary" href="{{ link_url }}">{{ link_label }}</a>
+      {%- if link_2_url != blank and link_2_label != blank -%}
+        <a class="link-underline" href="{{ link_2_url }}">{{ link_2_label }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}

@@ -1,0 +1,48 @@
+{%- comment -%}
+  product-badges.liquid — sale, new, and sold-out. Nothing else.
+
+  §9.6 and §9.1: only real, derivable status. There is no "trending",
+  "almost gone", or merchant-typed badge here, and there never should be —
+  a badge the merchant can type is a claim the theme cannot stand behind.
+
+  Precedence is deliberate and mutually exclusive: sold out beats sale beats
+  new. A card showing "Sale" on something it cannot sell is worse than no
+  badge, and stacking three badges is noise.
+
+  The row keeps its height whether or not a badge renders, so a grid of
+  mixed products does not reflow (§9.6).
+
+  Params:
+    product   (product, required)
+    variant   (variant, optional)  — PDP passes the selected variant
+{%- endcomment -%}
+
+{%- liquid
+  assign target = variant | default: product.selected_or_first_available_variant
+
+  assign is_available = product.available
+  if variant != blank
+    assign is_available = variant.available
+  endif
+
+  assign compare_price = target.compare_at_price | default: 0
+  assign on_sale = false
+  if compare_price > target.price
+    assign on_sale = true
+  endif
+
+  assign is_new = false
+  if product.tags contains 'new'
+    assign is_new = true
+  endif
+-%}
+
+<div class="badge-row">
+  {%- if is_available == false -%}
+    <span class="badge badge--sold-out">{{ 'products.product.sold_out' | t }}</span>
+  {%- elsif on_sale and settings.card_show_sale_badge -%}
+    <span class="badge badge--sale">{{ 'products.product.on_sale' | t }}</span>
+  {%- elsif is_new and settings.card_show_new_badge -%}
+    <span class="badge">{{ 'products.product.new' | t }}</span>
+  {%- endif -%}
+</div>

@@ -1,0 +1,27 @@
+{%- comment -%}
+  accordion.liquid — one disclosure row.
+
+  Built on <details>/<summary> so it opens, is keyboard operable, and is
+  announced correctly with no JavaScript at all. Callers loop this to build
+  a group; there is no wrapper element here so a group can be laid out
+  however the section needs.
+
+  §9.6: the first item on a PDP is open by default, and shipping and returns
+  are never more than one click away — pass `open: true` for the first row.
+
+  Params:
+    heading   (string, required)
+    content   (string, required)  — may be rich text
+    open      (boolean, optional) — default false
+    id        (string, optional)
+{%- endcomment -%}
+
+{%- if heading != blank and content != blank -%}
+  <details class="accordion__item" {% if open %}open{% endif %} {% if id != blank %}id="{{ id }}"{% endif %}>
+    <summary class="accordion__summary">
+      <span class="h6">{{ heading }}</span>
+      {%- render 'icon', icon: 'chevron-down', class: 'accordion__icon', size: 18 -%}
+    </summary>
+    <div class="accordion__content rte">{{ content }}</div>
+  </details>
+{%- endif -%}

@@ -91,6 +91,14 @@
     "social_pinterest_link": "",
     "social_x_link": "",
     "social_linkedin_link": "",
-    "demo_images": true
+    "demo_images": true,
+    "cro_sticky_atc": true,
+    "cro_dynamic_checkout": true,
+    "cro_show_payment_icons_pdp": true,
+    "cro_low_stock_threshold": 10,
+    "cro_trust_returns": "Free returns for 30 days",
+    "cro_trust_shipping": "Carbon neutral shipping on every order",
+    "cro_datalayer": false,
+    "card_quick_add": true
   }
 }

@@ -16,7 +16,9 @@
   Theme settings → Demo content.
 
   One tab stop per card: the title carries a stretched ::after that covers
-  the card, and the image link is removed from the tab order.
+  the card, and the image link is removed from the tab order. Quick add adds
+  a second stop only where it is a genuinely new action — see the comment on
+  the action block below.
 
   Params:
     product      (product, optional)
@@ -124,6 +126,60 @@
       {%- endif -%}
 
       {%- render 'price', product: product, show_from: true -%}
+
+      {%- comment -%}
+        Quick add (§9.2 rule 6). Three states, and the disabled one says why
+        rather than sitting there dead:
+
+          sold out       → disabled button labelled Sold out
+          one variant    → real POST form, adds without leaving the page
+          many variants  → Choose options, routed to the PDP
+
+        The multi-variant link is `tabindex="-1" aria-hidden="true"`: it goes
+        to the same URL as the card title, so exposing it again would put two
+        identical stops in the tab order for no gain. Touch users still get
+        the affordance without hovering, which is what §9.4 asks for, and
+        keyboard and screen-reader users keep the one stop per card promised
+        in §8. The single-variant button is a genuinely different action, so
+        it earns its own stop.
+      {%- endcomment -%}
+      {%- if settings.card_quick_add -%}
+        <div class="card__action">
+          {%- if product.available == false -%}
+            <button class="button button--secondary button--full" type="button" disabled>
+              {{ 'products.product.sold_out' | t }}
+            </button>
+          {%- elsif product.variants.size == 1 -%}
+            {%- assign quick_add_label = 'products.product.quick_add_label' | t: title: product.title -%}
+            <product-form data-success-message="{{ 'products.product.added_to_cart' | t | escape }}">
+              {%- form 'product', product, class: 'card__action-form', novalidate: 'novalidate' -%}
+                <input
+                  type="hidden"
+                  name="id"
+                  value="{{ product.selected_or_first_available_variant.id }}"
+                >
+                <button
+                  class="button button--secondary button--full"
+                  type="submit"
+                  name="add"
+                  aria-label="{{ quick_add_label | escape }}"
+                >
+                  {{ 'products.product.add_to_cart' | t }}
+                </button>
+              {%- endform -%}
+            </product-form>
+          {%- else -%}
+            <a
+              class="button button--secondary button--full"
+              href="{{ product.url }}"
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              {{ 'products.product.choose_options' | t }}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
     </div>
   </div>
 

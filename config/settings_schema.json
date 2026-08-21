@@ -278,6 +278,13 @@
       },
       {
         "type": "checkbox",
+        "id": "card_quick_add",
+        "label": "t:settings.product_cards.card_quick_add.label",
+        "info": "t:settings.product_cards.card_quick_add.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
         "id": "card_show_swatches",
         "label": "t:settings.product_cards.card_show_swatches.label",
         "default": true
@@ -448,6 +455,96 @@
         "type": "text",
         "id": "social_linkedin_link",
         "label": "t:settings.social.linkedin.label"
+      }
+    ]
+  },
+  {
+    "name": "t:settings.cro.name",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:settings.cro.paragraph"
+      },
+      {
+        "type": "header",
+        "content": "t:settings.cro.headers.product"
+      },
+      {
+        "type": "checkbox",
+        "id": "cro_sticky_atc",
+        "label": "t:settings.cro.cro_sticky_atc.label",
+        "info": "t:settings.cro.cro_sticky_atc.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cro_dynamic_checkout",
+        "label": "t:settings.cro.cro_dynamic_checkout.label",
+        "info": "t:settings.cro.cro_dynamic_checkout.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cro_show_payment_icons_pdp",
+        "label": "t:settings.cro.cro_show_payment_icons_pdp.label",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "cro_low_stock_threshold",
+        "min": 0,
+        "max": 50,
+        "step": 1,
+        "unit": "t:settings.cro.cro_low_stock_threshold.unit",
+        "label": "t:settings.cro.cro_low_stock_threshold.label",
+        "info": "t:settings.cro.cro_low_stock_threshold.info",
+        "default": 10
+      },
+      {
+        "type": "header",
+        "content": "t:settings.cro.headers.trust"
+      },
+      {
+        "type": "text",
+        "id": "cro_trust_returns",
+        "label": "t:settings.cro.cro_trust_returns.label",
+        "info": "t:settings.cro.cro_trust_returns.info",
+        "default": "Free returns for 30 days"
+      },
+      {
+        "type": "text",
+        "id": "cro_trust_shipping",
+        "label": "t:settings.cro.cro_trust_shipping.label",
+        "info": "t:settings.cro.cro_trust_shipping.info",
+        "default": "Carbon neutral shipping on every order"
+      },
+      {
+        "type": "header",
+        "content": "t:settings.cro.headers.recovery"
+      },
+      {
+        "type": "product_list",
+        "id": "cro_cart_upsell_products",
+        "limit": 3,
+        "label": "t:settings.cro.cro_cart_upsell_products.label",
+        "info": "t:settings.cro.cro_cart_upsell_products.info"
+      },
+      {
+        "type": "collection",
+        "id": "cro_empty_cart_collection",
+        "label": "t:settings.cro.cro_empty_cart_collection.label",
+        "info": "t:settings.cro.cro_empty_cart_collection.info"
+      },
+      {
+        "type": "header",
+        "content": "t:settings.cro.headers.measurement"
+      },
+      {
+        "type": "checkbox",
+        "id": "cro_datalayer",
+        "label": "t:settings.cro.cro_datalayer.label",
+        "info": "t:settings.cro.cro_datalayer.info",
+        "default": false
       }
     ]
   },

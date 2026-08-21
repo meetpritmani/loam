@@ -215,13 +215,13 @@
   {%- comment -%} Mobile navigation {%- endcomment -%}
   <loam-drawer id="menu-drawer" class="menu-drawer">
     <div
-      class="drawer drawer--start color-{{ section.settings.color_scheme }}"
+      class="drawer drawer--start"
       role="dialog"
       aria-modal="true"
       aria-label="{{ 'general.menu' | t }}"
     >
       <div class="drawer__overlay" data-drawer-close></div>
-      <div class="drawer__panel">
+      <div class="drawer__panel color-{{ section.settings.color_scheme }}">
         <div class="drawer__header">
           <span class="caption">{{ 'general.menu' | t }}</span>
           <button
@@ -295,13 +295,13 @@
   {%- comment -%} Search {%- endcomment -%}
   <loam-drawer id="search-drawer">
     <div
-      class="drawer drawer--top color-{{ section.settings.color_scheme }}"
+      class="drawer drawer--top"
       role="dialog"
       aria-modal="true"
       aria-label="{{ 'search.title' | t }}"
     >
       <div class="drawer__overlay" data-drawer-close></div>
-      <div class="drawer__panel drawer__panel--top">
+      <div class="drawer__panel drawer__panel--top color-{{ section.settings.color_scheme }}">
         <div class="page-width search-drawer__inner">
           <form class="search-drawer__form" action="{{ routes.search_url }}" method="get" role="search">
             <label class="visually-hidden" for="search-drawer-input">

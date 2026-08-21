@@ -1,0 +1,137 @@
+{%- comment -%}
+  variant-picker.liquid — real form controls, not divs with click handlers.
+
+  Each option is a <fieldset> of radios: keyboard arrow-key navigation and
+  correct grouping announcements come for free, which they do not if you
+  build a picker out of divs.
+
+  Radios alone do NOT survive JavaScript being unavailable — /cart/add takes
+  a variant `id`, not option names — so a <noscript> <select name="id"> is
+  rendered alongside them. That select is the no-JS path; CSS hides the radio
+  UI when it is in play.
+
+  §9.7: unavailable combinations are SHOWN and MARKED, never hidden. Hiding
+  them makes the picker feel broken ("where did my size go?").
+
+  The server-rendered marking is deliberately coarse: a value is marked
+  unavailable when NO variant containing it is purchasable. Marking against
+  the current selection of the other options needs the full combination
+  matrix and is done in JS on the client, which also re-marks on every
+  change. The coarse pass is what a no-JS shopper sees, and it is never
+  wrong — only less specific.
+
+  Single-variant products render nothing — a picker with one choice is noise.
+
+  Params:
+    product   (product, required)
+    section_id (string, required)  — namespaces input ids across sections
+{%- endcomment -%}
+
+{%- liquid
+  assign current = product.selected_or_first_available_variant
+-%}
+
+{%- unless product.has_only_default_variant -%}
+  <variant-picker
+    class="variant-picker"
+    data-url="{{ product.url }}"
+    data-section="{{ section_id }}"
+  >
+    {%- for option in product.options_with_values -%}
+      {%- assign option_index = forloop.index0 -%}
+      <fieldset class="variant-picker__option">
+        <legend class="variant-picker__legend">
+          <span class="caption">{{ option.name | escape }}</span>
+          <span class="variant-picker__selected" data-selected-for="{{ option_index }}">
+            {{- option.selected_value | escape -}}
+          </span>
+        </legend>
+
+        <div class="variant-picker__values">
+          {%- for value in option.values -%}
+            {%- liquid
+              assign input_id = section_id | append: '-opt' | append: option_index | append: '-' | append: forloop.index
+
+              assign exists = false
+              assign in_stock = false
+              for v in product.variants
+                assign v_value = v.options[option_index]
+                if v_value == value
+                  assign exists = true
+                  if v.available
+                    assign in_stock = true
+                    break
+                  endif
+                endif
+              endfor
+
+              assign is_unavailable = false
+              if exists == false or in_stock == false
+                assign is_unavailable = true
+              endif
+            -%}
+            <input
+              class="variant-picker__input visually-hidden"
+              type="radio"
+              id="{{ input_id }}"
+              name="{{ section_id }}-option-{{ option_index }}"
+              value="{{ value | escape }}"
+              form="{{ section_id }}-form"
+              {% if value == option.selected_value %}checked{% endif %}
+              {% if is_unavailable %}data-unavailable="true"{% endif %}
+            >
+            <label
+              class="variant-picker__value{% if is_unavailable %} variant-picker__value--unavailable{% endif %}"
+              for="{{ input_id }}"
+            >
+              <span>{{ value | escape }}</span>
+              {%- if is_unavailable -%}
+                <span class="visually-hidden">
+                  {{- ' ' }}{{ 'products.product.variant_sold_out' | t -}}
+                </span>
+              {%- endif -%}
+            </label>
+          {%- endfor -%}
+        </div>
+      </fieldset>
+    {%- endfor -%}
+
+    {%- comment -%}
+      The variant table for the client. `| json` on the variants array is the
+      only safe way to get this into the page — string concatenation here is
+      how XSS gets into a theme.
+    {%- endcomment -%}
+    <script type="application/json" data-variant-data>
+      {{ product.variants | json }}
+    </script>
+
+    {%- comment -%}
+      The no-JS path. Every purchasable combination as one select posting a
+      real variant id, so the product is buyable with the module blocked.
+    {%- endcomment -%}
+    <noscript>
+      <div class="variant-picker__fallback">
+        <label class="caption" for="{{ section_id }}-variant-select">
+          {{- 'products.product.choose_variant' | t -}}
+        </label>
+        <select
+          class="select"
+          id="{{ section_id }}-variant-select"
+          name="id"
+          form="{{ section_id }}-form"
+        >
+          {%- for variant in product.variants -%}
+            <option
+              value="{{ variant.id }}"
+              {% if variant == current %}selected{% endif %}
+              {% unless variant.available %}disabled{% endunless %}
+            >
+              {{ variant.title }}
+              {%- unless variant.available %} — {{ 'products.product.sold_out' | t }}{% endunless -%}
+            </option>
+          {%- endfor -%}
+        </select>
+      </div>
+    </noscript>
+  </variant-picker>
+{%- endunless -%}

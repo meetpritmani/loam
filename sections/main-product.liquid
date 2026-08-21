@@ -1,0 +1,358 @@
+{%- comment -%}
+  main-product.liquid — the product page (§9.7).
+
+  Two columns on desktop: media on the left, a sticky info column on the
+  right so Add to Cart stays reachable however long the description runs.
+  One column on mobile, media first.
+
+  The info column is built from blocks so a merchant can reorder it. The
+  order that ships puts title, price and the picker above the fold at 375px
+  with Add to Cart immediately beneath — that is the §9.7 requirement and the
+  reason the preset order is what it is.
+
+  App blocks are supported (`@app`), which the Theme Store requires.
+{%- endcomment -%}
+
+{%- liquid
+  assign current = product.selected_or_first_available_variant
+  assign section_id = 'product-' | append: section.id
+  assign media_count = product.media.size
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    {%- if section.settings.show_breadcrumbs -%}
+      {%- render 'breadcrumbs', class: 'product__breadcrumbs' -%}
+    {%- endif -%}
+
+    <div class="product">
+      {%- comment -%} ---------------- Media ---------------- {%- endcomment -%}
+      <product-gallery class="product__media" data-count="{{ media_count }}">
+        {%- if media_count > 0 -%}
+          <div class="product__media-main" data-gallery-stage>
+            {%- for media in product.media -%}
+              {%- liquid
+                assign img_loading = 'lazy'
+                assign img_priority = 'auto'
+                if forloop.first
+                  assign img_loading = 'eager'
+                  assign img_priority = 'high'
+                endif
+                assign media_alt = media.alt | default: product.title
+              -%}
+              <div
+                class="product__media-item media media--{{ section.settings.image_ratio }}"
+                data-media-id="{{ media.id }}"
+                {% unless forloop.first %}hidden{% endunless %}
+              >
+                {%- case media.media_type -%}
+                  {%- when 'image' -%}
+                    {%- render 'image-fallback',
+                      image: media,
+                      fallback: 'demo-product-1.webp',
+                      alt: media_alt,
+                      sizes: '(min-width: 990px) 50vw, 100vw',
+                      widths: '400, 600, 800, 1000, 1200, 1600',
+                      loading: img_loading,
+                      fetchpriority: img_priority
+                    -%}
+                  {%- when 'video' -%}
+                    {{ media | video_tag: image_size: '1200x', controls: true, muted: true }}
+                  {%- when 'external_video' -%}
+                    {{ media | external_video_tag }}
+                  {%- when 'model' -%}
+                    {{ media | model_viewer_tag }}
+                  {%- else -%}
+                    {{ media | media_tag }}
+                {%- endcase -%}
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {%- if media_count > 1 -%}
+            <ul class="product__thumbs" data-gallery-thumbs>
+              {%- for media in product.media -%}
+                <li>
+                  <button
+                    class="product__thumb{% if forloop.first %} is-active{% endif %}"
+                    type="button"
+                    data-media-target="{{ media.id }}"
+                    aria-label="{{ 'products.product.media_gallery' | t }} {{ forloop.index }}"
+                    {% if forloop.first %}aria-current="true"{% endif %}
+                  >
+                    {%- render 'image-fallback',
+                      image: media.preview_image,
+                      fallback: 'demo-product-1.webp',
+                      alt: '',
+                      sizes: '80px',
+                      widths: '80, 160, 240',
+                      loading: 'lazy'
+                    -%}
+                  </button>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        {%- else -%}
+          {%- comment -%}
+            A product with no media still has to look deliberate — this is the
+            state a merchant sees while they are still uploading.
+          {%- endcomment -%}
+          <div class="product__media-item media media--{{ section.settings.image_ratio }}">
+            {%- render 'image-fallback',
+              fallback: 'demo-product-1.webp',
+              alt: product.title,
+              sizes: '(min-width: 990px) 50vw, 100vw',
+              widths: '400, 600, 800, 1000, 1200',
+              loading: 'eager'
+            -%}
+          </div>
+        {%- endif -%}
+      </product-gallery>
+
+      {%- comment -%} ---------------- Info ---------------- {%- endcomment -%}
+      <div class="product__info">
+        <div class="product__info-inner" data-product-info>
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+
+              {%- when 'vendor' -%}
+                {%- if product.vendor != blank -%}
+                  <p class="product__vendor caption" {{ block.shopify_attributes }}>
+                    {{- product.vendor | escape -}}
+                  </p>
+                {%- endif -%}
+
+              {%- when 'title' -%}
+                <h1 class="product__title h2" {{ block.shopify_attributes }}>
+                  {{- product.title | escape -}}
+                </h1>
+
+              {%- when 'badges' -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- render 'product-badges', product: product, variant: current -%}
+                </div>
+
+              {%- when 'price' -%}
+                <div class="product__price" data-price-target {{ block.shopify_attributes }}>
+                  {%- render 'price', product: product, variant: current -%}
+                </div>
+
+              {%- when 'material' -%}
+                {%- assign material = product.metafields.custom.material -%}
+                {%- if material != blank -%}
+                  <p class="material-tag" {{ block.shopify_attributes }}>
+                    {{- material | escape -}}
+                  </p>
+                {%- endif -%}
+
+              {%- when 'carbon' -%}
+                {%- assign footprint = product.metafields.custom.carbon_footprint -%}
+                {%- if footprint != blank -%}
+                  <p class="product__carbon caption" {{ block.shopify_attributes }}>
+                    {%- render 'icon', icon: 'leaf', size: 16 -%}
+                    <span>{{ 'products.product.carbon_footprint_html' | t: value: footprint }}</span>
+                  </p>
+                {%- endif -%}
+
+              {%- when 'variant_picker' -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- render 'variant-picker', product: product, section_id: section_id -%}
+                  {%- if block.settings.show_size_guide -%}
+                    {%- render 'size-guide', product: product, section_id: section_id -%}
+                  {%- endif -%}
+                </div>
+
+              {%- when 'low_stock' -%}
+                <div data-low-stock {{ block.shopify_attributes }}>
+                  {%- render 'low-stock', variant: current -%}
+                </div>
+
+              {%- when 'buy_buttons' -%}
+                <div class="product__buy" data-buy-block {{ block.shopify_attributes }}>
+                  {%- render 'buy-buttons',
+                    product: product,
+                    section_id: section_id,
+                    show_qty: block.settings.show_quantity
+                  -%}
+                </div>
+
+              {%- when 'trust' -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- render 'trust-row', show_payment: settings.cro_show_payment_icons_pdp -%}
+                </div>
+
+              {%- when 'description' -%}
+                {%- if product.description != blank -%}
+                  <div class="product__description rte" {{ block.shopify_attributes }}>
+                    {{- product.description -}}
+                  </div>
+                {%- endif -%}
+
+              {%- when 'accordion' -%}
+                {%- liquid
+                  assign body = block.settings.content
+                  if block.settings.source == 'care' and product.metafields.custom.care != blank
+                    assign body = product.metafields.custom.care
+                  elsif block.settings.source == 'description' and product.description != blank
+                    assign body = product.description
+                  endif
+                -%}
+                <div class="accordion" {{ block.shopify_attributes }}>
+                  {%- render 'accordion',
+                    heading: block.settings.heading,
+                    content: body,
+                    open: block.settings.open
+                  -%}
+                </div>
+
+              {%- when 'share' -%}
+                {%- assign share_url = request.origin | append: product.url -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- render 'share', url: share_url, title: product.title -%}
+                </div>
+
+              {%- when '@app' -%}
+                {%- render block -%}
+
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- render 'sticky-atc', product: product, section_id: section_id -%}
+
+{% schema %}
+{
+  "name": "t:sections.main_product.name",
+  "tag": "section",
+  "class": "section-main-product",
+  "blocks": [
+    { "type": "@app" },
+    { "type": "vendor", "name": "t:sections.main_product.blocks.vendor.name", "limit": 1 },
+    { "type": "title", "name": "t:sections.main_product.blocks.title.name", "limit": 1 },
+    { "type": "badges", "name": "t:sections.main_product.blocks.badges.name", "limit": 1 },
+    { "type": "price", "name": "t:sections.main_product.blocks.price.name", "limit": 1 },
+    { "type": "material", "name": "t:sections.main_product.blocks.material.name", "limit": 1 },
+    { "type": "carbon", "name": "t:sections.main_product.blocks.carbon.name", "limit": 1 },
+    {
+      "type": "variant_picker",
+      "name": "t:sections.main_product.blocks.variant_picker.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_size_guide",
+          "label": "t:sections.main_product.blocks.variant_picker.show_size_guide.label",
+          "info": "t:sections.main_product.blocks.variant_picker.show_size_guide.info",
+          "default": true
+        }
+      ]
+    },
+    { "type": "low_stock", "name": "t:sections.main_product.blocks.low_stock.name", "limit": 1 },
+    {
+      "type": "buy_buttons",
+      "name": "t:sections.main_product.blocks.buy_buttons.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_quantity",
+          "label": "t:sections.main_product.blocks.buy_buttons.show_quantity.label",
+          "default": true
+        }
+      ]
+    },
+    { "type": "trust", "name": "t:sections.main_product.blocks.trust.name", "limit": 1 },
+    { "type": "description", "name": "t:sections.main_product.blocks.description.name", "limit": 1 },
+    {
+      "type": "accordion",
+      "name": "t:sections.main_product.blocks.accordion.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:labels.heading",
+          "default": "Shipping & returns"
+        },
+        {
+          "type": "select",
+          "id": "source",
+          "label": "t:sections.main_product.blocks.accordion.source.label",
+          "options": [
+            { "value": "custom", "label": "t:sections.main_product.blocks.accordion.source.options.custom" },
+            { "value": "care", "label": "t:sections.main_product.blocks.accordion.source.options.care" },
+            { "value": "description", "label": "t:sections.main_product.blocks.accordion.source.options.description" }
+          ],
+          "default": "custom"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "t:labels.text",
+          "default": "<p>Free returns for 30 days. Carbon neutral shipping on every order, arriving in two to four working days.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "open",
+          "label": "t:sections.main_product.blocks.accordion.open.label",
+          "info": "t:sections.main_product.blocks.accordion.open.info",
+          "default": false
+        }
+      ]
+    },
+    { "type": "share", "name": "t:sections.main_product.blocks.share.name", "limit": 1 }
+  ],
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "t:sections.main_product.show_breadcrumbs.label",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.product_cards.card_image_ratio.label",
+      "options": [
+        { "value": "square", "label": "t:settings.product_cards.card_image_ratio.options.square" },
+        { "value": "portrait", "label": "t:settings.product_cards.card_image_ratio.options.portrait" },
+        { "value": "landscape", "label": "t:settings.product_cards.card_image_ratio.options.landscape" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "label": "t:labels.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "label": "t:labels.padding_bottom",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}

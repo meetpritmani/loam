@@ -5,7 +5,8 @@
       "page": "Page {{ page }}"
     },
     "breadcrumb": {
-      "home": "Home"
+      "home": "Home",
+      "label": "Breadcrumb"
     },
     "pagination": {
       "label": "Pagination",
@@ -20,7 +21,11 @@
     "account": "Account",
     "view_all": "View all",
     "learn_more": "Learn more",
-    "loading": "Loading"
+    "loading": "Loading",
+    "share": {
+      "label": "Share",
+      "copied": "Link copied"
+    }
   },
   "accessibility": {
     "skip_to_content": "Skip to content",
@@ -211,29 +216,35 @@
   "products": {
     "product": {
       "add_to_cart": "Add to cart",
-      "sold_out": "Sold out",
-      "unavailable": "Unavailable",
-      "quantity": "Quantity",
-      "increase_quantity": "Increase quantity",
+      "added_to_cart": "Added to your cart.",
+      "carbon_footprint_html": "{{ amount }} kg CO2e per pair",
+      "choose_options": "Choose options",
+      "choose_options_label": "Choose options for {{ title }}",
+      "choose_variant": "Choose a variant",
       "decrease_quantity": "Decrease quantity",
-      "vendor": "Vendor",
-      "sku": "SKU",
+      "increase_quantity": "Increase quantity",
+      "low_stock": "Only {{ count }} left",
+      "material": "Material",
+      "media_gallery": "Product media",
       "new": "New",
       "on_sale": "Sale",
-      "share": "Share",
-      "view_details": "View details",
-      "material": "Material",
-      "carbon_footprint_html": "{{ amount }} kg CO2e per pair",
-      "size_guide": "Size guide",
-      "media_gallery": "Product media",
-      "variant_sold_out": "{{ option }} — sold out",
       "price": {
         "from": "From {{ price }}",
         "sale_price": "Sale price",
         "regular_price": "Regular price",
         "unit_price": "Unit price",
         "savings_percent": "Save {{ percent }}%"
-      }
+      },
+      "quantity": "Quantity",
+      "quick_add_label": "Add {{ title }} to cart",
+      "share": "Share",
+      "size_guide": "Size guide",
+      "sku": "SKU",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "variant_sold_out": "{{ option }} — sold out",
+      "vendor": "Vendor",
+      "view_details": "View details"
     }
   },
   "search": {

@@ -698,6 +698,14 @@ const Cart = {
   },
 
   /**
+   * @param {number|string} id variant id
+   * @param {number} quantity
+   */
+  add(id, quantity) {
+    return this.post(cartRoute('cart/add.js'), { id, quantity });
+  },
+
+  /**
    * @param {number} line 1-based cart line
    * @param {number} quantity
    */
@@ -770,6 +778,66 @@ class CartItems extends HTMLElement {
 if (!customElements.get('cart-items')) {
   customElements.define('cart-items', CartItems);
 }
+
+/* --------------------------------------------------------------------------
+   <product-form>
+   Quick add from a product card. Wraps a real <form action="/cart/add">, so
+   with JavaScript unavailable the button still posts and the shopper lands on
+   the cart page — the add never depends on this class running.
+
+   The add is only reported once the cart API has confirmed it. Nothing is
+   announced, opened, or counted on the click itself: an optimistic update
+   that later fails tells the shopper they bought something they did not.
+   -------------------------------------------------------------------------- */
+
+class ProductForm extends HTMLElement {
+  connectedCallback() {
+    this.form = this.querySelector('form');
+    this.button = this.querySelector('[type="submit"]');
+    this.onSubmit = this.onSubmit.bind(this);
+    this.form?.addEventListener('submit', this.onSubmit);
+  }
+
+  disconnectedCallback() {
+    this.form?.removeEventListener('submit', this.onSubmit);
+  }
+
+  /** @param {SubmitEvent} event */
+  async onSubmit(event) {
+    event.preventDefault();
+    if (this.button?.hasAttribute('aria-disabled')) return;
+
+    const id = this.form?.querySelector('[name="id"]')?.value;
+    if (!id) return;
+
+    // The PDP has a quantity stepper; a product card does not. Default to 1
+    // rather than assuming either shape.
+    const quantity = Number(this.form?.querySelector('[name="quantity"]')?.value) || 1;
+
+    // aria-disabled rather than disabled: a disabled button loses focus, and
+    // the shopper's place on the page goes with it.
+    this.button?.setAttribute('aria-disabled', 'true');
+    this.toggleAttribute('aria-busy', true);
+
+    const cart = await Cart.add(id, quantity);
+
+    this.button?.removeAttribute('aria-disabled');
+    this.toggleAttribute('aria-busy', false);
+
+    if (!cart) return;
+
+    announce(this.dataset.successMessage || '');
+
+    // Opening the drawer is the confirmation. Only on success, and only when
+    // the merchant is running the drawer rather than the cart page.
+    document.getElementById('cart-drawer')?.show?.();
+  }
+}
+
+if (!customElements.get('product-form')) {
+  customElements.define('product-form', ProductForm);
+}
+
 
 /* --------------------------------------------------------------------------
    Cart note. Delegated from the document because the textarea sits inside the
@@ -1176,4 +1244,366 @@ class VideoPlayer extends HTMLElement {
 
 if (!customElements.get('video-player')) {
   customElements.define('video-player', VideoPlayer);
+}
+
+/* ==========================================================================
+   PRODUCT
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   <product-gallery>
+   Thumbnail switching. Every media item is in the DOM from the start and
+   toggled with `hidden`, rather than swapping one <img>'s src — swapping src
+   re-downloads on every click and flashes an empty box on a slow connection.
+   -------------------------------------------------------------------------- */
+
+class ProductGallery extends HTMLElement {
+  connectedCallback() {
+    this.onClick = this.onClick.bind(this);
+    this.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this.onClick);
+  }
+
+  /** @param {string|number} mediaId */
+  show(mediaId) {
+    const id = String(mediaId);
+    let matched = false;
+
+    this.querySelectorAll('[data-media-id]').forEach((item) => {
+      const isTarget = item.getAttribute('data-media-id') === id;
+      item.toggleAttribute('hidden', !isTarget);
+      if (isTarget) matched = true;
+    });
+
+    // A variant can point at media that is not in this gallery, or at none at
+    // all. Leaving every item hidden would blank the gallery, so fall back to
+    // the first item instead of showing nothing.
+    if (!matched) {
+      this.querySelector('[data-media-id]')?.removeAttribute('hidden');
+      return;
+    }
+
+    this.querySelectorAll('[data-media-target]').forEach((thumb) => {
+      const isTarget = thumb.getAttribute('data-media-target') === id;
+      thumb.classList.toggle('is-active', isTarget);
+      if (isTarget) thumb.setAttribute('aria-current', 'true');
+      else thumb.removeAttribute('aria-current');
+    });
+  }
+
+  /** @param {MouseEvent} event */
+  onClick(event) {
+    const thumb = event.target instanceof Element && event.target.closest('[data-media-target]');
+    if (!thumb) return;
+    event.preventDefault();
+    this.show(thumb.getAttribute('data-media-target'));
+  }
+}
+
+if (!customElements.get('product-gallery')) {
+  customElements.define('product-gallery', ProductGallery);
+}
+
+/* --------------------------------------------------------------------------
+   <variant-picker>
+   Owns option selection. On change it resolves the variant and updates the
+   hidden id, the URL, the gallery and the button state straight from the
+   variant table, then asks the Section Rendering API for the price and
+   low-stock regions.
+
+   Money is deliberately NOT formatted here. Re-implementing Liquid's `money`
+   filter in JavaScript is how themes end up printing the wrong currency
+   symbol, decimal separator or placement for a market, so the price comes
+   back rendered by Shopify.
+   -------------------------------------------------------------------------- */
+
+class VariantPicker extends HTMLElement {
+  connectedCallback() {
+    this.section = this.dataset.section || '';
+    this.productUrl = this.dataset.url || '';
+    this.variants = this.readVariants();
+
+    this.onChange = this.onChange.bind(this);
+    this.addEventListener('change', this.onChange);
+
+    this.markAvailability();
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('change', this.onChange);
+    this.controller?.abort();
+  }
+
+  /** @returns {Array<object>} */
+  readVariants() {
+    const node = this.querySelector('[data-variant-data]');
+    if (!node) return [];
+    try {
+      return JSON.parse(node.textContent);
+    } catch (error) {
+      console.warn('[Loam] Variant data could not be parsed:', error);
+      return [];
+    }
+  }
+
+  /** @returns {Array<string>} selected value of each option, in order */
+  get selection() {
+    return [...this.querySelectorAll('.variant-picker__option')].map(
+      (group) => group.querySelector('input:checked')?.value ?? ''
+    );
+  }
+
+  /** @returns {object|undefined} */
+  get variant() {
+    const chosen = this.selection;
+    return this.variants.find((v) =>
+      chosen.every((value, index) => !value || v.options[index] === value)
+    );
+  }
+
+  /* Re-mark every value against the CURRENT selection of the other options,
+     which is finer than the coarse pass the server can do. Unavailable values
+     stay visible and focusable: §9.7 is explicit that hiding a combination is
+     what makes a picker feel broken. */
+  markAvailability() {
+    const chosen = this.selection;
+
+    this.querySelectorAll('.variant-picker__option').forEach((group, index) => {
+      group.querySelectorAll('input').forEach((input) => {
+        const probe = [...chosen];
+        probe[index] = input.value;
+
+        const match = this.variants.find((v) =>
+          probe.every((value, i) =>
+            i === index ? v.options[i] === value : !value || v.options[i] === value
+          )
+        );
+        const usable = Boolean(match && match.available);
+
+        input.toggleAttribute('data-unavailable', !usable);
+        const label = this.querySelector('label[for="' + input.id + '"]');
+        label?.classList.toggle('variant-picker__value--unavailable', !usable);
+      });
+
+      const selected = group.querySelector('input:checked');
+      const readout = group.querySelector('[data-selected-for]');
+      if (readout && selected) readout.textContent = selected.value;
+    });
+  }
+
+  async onChange() {
+    this.markAvailability();
+
+    const variant = this.variant;
+    const root = this.closest('.section') ?? document;
+
+    const idField = root.querySelector('[data-variant-id]');
+    const button = root.querySelector('[data-add-button]');
+    const label = root.querySelector('[data-add-label]');
+
+    if (idField) {
+      idField.value = variant?.id ?? '';
+      idField.toggleAttribute('disabled', !variant?.available);
+    }
+
+    if (button && label) {
+      const usable = Boolean(variant && variant.available);
+      button.toggleAttribute('disabled', !usable);
+      label.textContent = usable
+        ? button.dataset.labelAdd
+        : variant
+          ? button.dataset.labelSoldOut
+          : button.dataset.labelUnavailable;
+    }
+
+    if (!variant) return;
+
+    // Keep the URL shareable and the back button honest.
+    const url = new URL(window.location.href);
+    url.searchParams.set('variant', String(variant.id));
+    window.history.replaceState({}, '', url.toString());
+
+    if (variant.featured_media?.id) {
+      root.querySelector('product-gallery')?.show(variant.featured_media.id);
+    }
+
+    document.dispatchEvent(
+      new CustomEvent('variant:change', { detail: { variant }, bubbles: true })
+    );
+
+    await this.refreshRegions(variant.id, root);
+  }
+
+  /**
+   * Swap the server-rendered price and low-stock regions.
+   * @param {number} variantId
+   * @param {Element|Document} root
+   */
+  async refreshRegions(variantId, root) {
+    if (!this.productUrl || !this.section) return;
+
+    // A fast clicker can outrun the network. Abort the in-flight request so a
+    // stale response cannot land after a newer one and show the wrong price.
+    this.controller?.abort();
+    this.controller = new AbortController();
+
+    try {
+      const url = this.productUrl + '?variant=' + variantId + '&section_id=' + this.section;
+      const response = await fetch(url, { signal: this.controller.signal });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+
+      ['[data-price-target]', '[data-low-stock]'].forEach((selector) => {
+        const next = parsed.querySelector(selector);
+        const current = root.querySelector(selector);
+        if (next && current) current.innerHTML = next.innerHTML;
+      });
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('[Loam] Variant details could not be refreshed:', error);
+    }
+  }
+}
+
+if (!customElements.get('variant-picker')) {
+  customElements.define('variant-picker', VariantPicker);
+}
+
+/* --------------------------------------------------------------------------
+   <sticky-atc>
+   Revealed only once the real Add to Cart has left the viewport (§9.7). It
+   forwards to that button rather than owning a second form.
+   -------------------------------------------------------------------------- */
+
+class StickyAtc extends HTMLElement {
+  connectedCallback() {
+    this.buyBlock = document.querySelector('[data-buy-block]');
+    this.button = this.querySelector('[data-sticky-add]');
+
+    this.onClick = this.onClick.bind(this);
+    this.button?.addEventListener('click', this.onClick);
+
+    this.onVariantChange = this.onVariantChange.bind(this);
+    document.addEventListener('variant:change', this.onVariantChange);
+
+    if (!this.buyBlock) return;
+
+    this.observer = new IntersectionObserver(
+      ([entry]) => this.toggleAttribute('hidden', entry.isIntersecting),
+      { rootMargin: '0px 0px -80px 0px' }
+    );
+    this.observer.observe(this.buyBlock);
+  }
+
+  disconnectedCallback() {
+    this.observer?.disconnect();
+    this.button?.removeEventListener('click', this.onClick);
+    document.removeEventListener('variant:change', this.onVariantChange);
+  }
+
+  onClick() {
+    // Forwarding keeps one form, one variant id, one source of truth for
+    // availability. A second form here is how the wrong variant gets added.
+    this.buyBlock?.querySelector('[data-add-button]')?.click();
+  }
+
+  /** @param {CustomEvent} event */
+  onVariantChange(event) {
+    const variant = event.detail?.variant;
+    if (!variant) return;
+
+    const name = this.querySelector('[data-sticky-variant]');
+    if (name) name.textContent = variant.title;
+
+    const label = this.querySelector('[data-sticky-label]');
+    const source = this.buyBlock?.querySelector('[data-add-label]');
+    if (label && source) label.textContent = source.textContent;
+
+    this.button?.toggleAttribute('disabled', !variant.available);
+  }
+}
+
+if (!customElements.get('sticky-atc')) {
+  customElements.define('sticky-atc', StickyAtc);
+}
+
+/* The sticky bar mirrors the price region, which is swapped in after the
+   variant request resolves — so it listens for the same signal the picker
+   uses rather than trying to time it. */
+document.addEventListener('variant:change', () => {
+  window.requestAnimationFrame(() => {
+    const live = document.querySelector('[data-price-target]');
+    const mirror = document.querySelector('[data-sticky-price]');
+    if (live && mirror) mirror.innerHTML = live.innerHTML;
+  });
+});
+
+/* --------------------------------------------------------------------------
+   <share-button>
+   Native share sheet where the browser has one, clipboard copy where it does
+   not. The markup starts as a plain link, so with no JavaScript it is still a
+   usable link to the page rather than a button that does nothing.
+   -------------------------------------------------------------------------- */
+
+class ShareButton extends HTMLElement {
+  connectedCallback() {
+    this.link = this.querySelector('.share__link');
+    this.label = this.querySelector('[data-share-label]');
+    if (!this.link) return;
+
+    this.original = this.label?.textContent ?? '';
+    this.onClick = this.onClick.bind(this);
+    this.link.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    this.link?.removeEventListener('click', this.onClick);
+    window.clearTimeout(this.resetTimer);
+  }
+
+  /** @param {MouseEvent} event */
+  async onClick(event) {
+    const url = this.dataset.url;
+    if (!url) return;
+
+    if (navigator.share) {
+      event.preventDefault();
+      try {
+        await navigator.share({ title: this.dataset.title || document.title, url });
+      } catch {
+        // The shopper dismissed the sheet. Not an error, not worth reporting.
+      }
+      return;
+    }
+
+    // No clipboard API: let the click fall through to the plain link.
+    if (!navigator.clipboard) return;
+    event.preventDefault();
+
+    try {
+      await navigator.clipboard.writeText(url);
+      this.flash(this.dataset.copied || '');
+    } catch (error) {
+      console.warn('[Loam] Copy failed:', error);
+    }
+  }
+
+  /** @param {string} message */
+  flash(message) {
+    if (!this.label || !message) return;
+    this.label.textContent = message;
+    announce(message);
+    window.clearTimeout(this.resetTimer);
+    this.resetTimer = window.setTimeout(() => {
+      if (this.label) this.label.textContent = this.original;
+    }, 2400);
+  }
+}
+
+if (!customElements.get('share-button')) {
+  customElements.define('share-button', ShareButton);
 }

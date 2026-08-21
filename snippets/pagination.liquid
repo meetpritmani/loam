@@ -1,0 +1,68 @@
+{%- comment -%}
+  pagination.liquid — numbered pagination that keeps the shopper's place.
+
+  §9.6: preserves filter state. Shopify's `paginate.parts` URLs already carry
+  the full query string, so applied filters and the chosen sort survive a
+  page change without any work here — the important thing is to use those
+  URLs rather than rebuilding them by hand, which is where filter state
+  normally gets dropped.
+
+  Rendering nothing for a single page is intentional: pagination controls on
+  a one-page result set are noise.
+
+  Params:
+    paginate  (paginate, required)
+    anchor    (string, optional)  — id to jump to, defaults to the results
+{%- endcomment -%}
+
+{%- liquid
+  assign target = anchor | default: '#main'
+-%}
+
+{%- if paginate.pages > 1 -%}
+  <nav class="pagination" aria-label="{{ 'general.pagination.label' | t }}">
+    <ul class="pagination__list">
+      {%- if paginate.previous -%}
+        <li>
+          <a class="pagination__link" href="{{ paginate.previous.url }}{{ target }}" rel="prev">
+            {%- render 'icon', icon: 'chevron-left', size: 16 -%}
+            <span class="visually-hidden">{{ 'general.pagination.previous' | t }}</span>
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        <li>
+          {%- if part.is_link -%}
+            <a class="pagination__link" href="{{ part.url }}{{ target }}">
+              <span class="visually-hidden">{{ 'general.pagination.page' | t: number: part.title }}</span>
+              <span aria-hidden="true">{{ part.title }}</span>
+            </a>
+          {%- elsif part.title != paginate.current_page -%}
+            {%- comment -%}
+              A non-link part that is not the current page is Shopify's gap
+              marker. Comparing against a bare `hellip` variable does not work
+              — it is undefined in Liquid and resolves to nil, so the branch
+              silently never matches and the ellipsis renders as a page link.
+            {%- endcomment -%}
+            <span class="pagination__gap" aria-hidden="true">{{ part.title }}</span>
+          {%- else -%}
+            <span class="pagination__link pagination__link--current" aria-current="page">
+              <span class="visually-hidden">{{ 'general.pagination.page' | t: number: part.title }}</span>
+              <span aria-hidden="true">{{ part.title }}</span>
+            </span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+
+      {%- if paginate.next -%}
+        <li>
+          <a class="pagination__link" href="{{ paginate.next.url }}{{ target }}" rel="next">
+            {%- render 'icon', icon: 'chevron-right', size: 16 -%}
+            <span class="visually-hidden">{{ 'general.pagination.next' | t }}</span>
+          </a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

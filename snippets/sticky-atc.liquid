@@ -1,0 +1,54 @@
+{%- comment -%}
+  sticky-atc.liquid — the mobile Add to Cart bar (§9.7, §9.2 rule 8).
+
+  Appears only once the main Add to Cart has scrolled out of view, and never
+  before — a bar that is present on load covers content the shopper has not
+  read yet and reads as an ad.
+
+  It does not duplicate the product form. The button forwards the click to
+  the real Add to Cart, so there is exactly one form, one variant id, and one
+  source of truth for availability. Two forms on a PDP is how themes end up
+  adding the wrong variant.
+
+  §9.6: shows name, price and variant so the shopper knows what they are
+  buying without scrolling back up.
+
+  Params:
+    product     (product, required)
+    section_id  (string, required)
+{%- endcomment -%}
+
+{%- liquid
+  assign current = product.selected_or_first_available_variant
+-%}
+
+{%- if settings.cro_sticky_atc -%}
+  <sticky-atc class="sticky-atc" data-for="{{ section_id }}" hidden>
+    <div class="sticky-atc__inner page-width">
+      <div class="sticky-atc__info">
+        <p class="sticky-atc__title">{{ product.title | escape }}</p>
+        <p class="sticky-atc__meta">
+          <span data-sticky-price>{%- render 'price', variant: current -%}</span>
+          {%- unless product.has_only_default_variant -%}
+            <span class="sticky-atc__variant" data-sticky-variant>{{ current.title | escape }}</span>
+          {%- endunless -%}
+        </p>
+      </div>
+
+      <button
+        class="button button--primary sticky-atc__button"
+        type="button"
+        data-sticky-add
+        {% unless current.available %}disabled{% endunless %}
+      >
+        <span data-sticky-label>
+          {%- if current.available -%}
+            {{ 'products.product.add_to_cart' | t }}
+          {%- else -%}
+            {{ 'products.product.sold_out' | t }}
+          {%- endif -%}
+        </span>
+      </button>
+    </div>
+  </sticky-atc>
+{%- endif -%}

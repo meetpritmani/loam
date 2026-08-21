@@ -44,14 +44,14 @@
 
 <loam-drawer id="cart-drawer">
   <div
-    class="drawer color-{{ section.settings.color_scheme }}"
+    class="drawer"
     role="dialog"
     aria-modal="true"
     aria-labelledby="cart-drawer-title"
   >
     <div class="drawer__overlay" data-drawer-close></div>
 
-    <div class="drawer__panel">
+    <div class="drawer__panel color-{{ section.settings.color_scheme }}">
       <div class="drawer__header">
         <h2 class="h5" id="cart-drawer-title">
           {{ 'cart.title' | t }}

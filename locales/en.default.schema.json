@@ -134,6 +134,10 @@
       "card_show_new_badge": {
         "label": "Show new badge",
         "info": "Shown on products tagged \"new\"."
+      },
+      "card_quick_add": {
+        "label": "Show quick add button",
+        "info": "Products with one variant are added straight from the card. Products with options link through to the product page so the shopper can choose."
       }
     },
     "cart": {
@@ -218,6 +222,52 @@
         "label": "LinkedIn"
       }
     },
+    "cro": {
+      "name": "Conversion",
+      "paragraph": "These settings control how clearly your store answers a shopper's objections at the moment they arise. Nothing here fabricates urgency or stock levels — every figure shown to a shopper comes from your real catalogue and cart.",
+      "headers": {
+        "product": "Product page",
+        "trust": "Trust messaging",
+        "recovery": "Cart and recovery",
+        "measurement": "Measurement"
+      },
+      "cro_sticky_atc": {
+        "label": "Sticky Add to Cart bar on mobile",
+        "info": "Appears only after the main Add to Cart button scrolls out of view."
+      },
+      "cro_dynamic_checkout": {
+        "label": "Show express checkout buttons",
+        "info": "Shop Pay, Apple Pay and other accelerated methods you have enabled, shown beneath Add to Cart."
+      },
+      "cro_show_payment_icons_pdp": {
+        "label": "Show payment icons on the product page"
+      },
+      "cro_low_stock_threshold": {
+        "label": "Low stock message below",
+        "info": "Shows a low stock message once a variant drops to this quantity. Only appears for variants where you track inventory — never for untracked stock. Set to 0 to turn the message off.",
+        "unit": "left"
+      },
+      "cro_trust_returns": {
+        "label": "Returns message",
+        "info": "Shown next to Add to Cart and in the footer. Keep it specific — state the actual window."
+      },
+      "cro_trust_shipping": {
+        "label": "Shipping message",
+        "info": "Shown next to Add to Cart and in the cart."
+      },
+      "cro_cart_upsell_products": {
+        "label": "Cart suggestions",
+        "info": "Up to three products offered in the cart. Choose them yourself — the theme never picks products at random."
+      },
+      "cro_empty_cart_collection": {
+        "label": "Recovery collection",
+        "info": "Shown when the cart is empty and on the 404 page, so a shopper always has somewhere to go."
+      },
+      "cro_datalayer": {
+        "label": "Push analytics events to the data layer",
+        "info": "Sends GA4-shaped events to window.dataLayer. Leave this off if you already track events with Google Tag Manager or an app, or every event will be counted twice."
+      }
+    },
     "demo": {
       "name": "Demo content",
       "paragraph": "The theme ships with demo photography so a new store looks finished before you upload anything. Turn this off once you have added your own images.",
@@ -297,7 +347,70 @@
       "name": "Password"
     },
     "main_product": {
-      "name": "Product information"
+      "name": "Product information",
+      "show_breadcrumbs": {
+        "label": "Show breadcrumbs"
+      },
+      "blocks": {
+        "vendor": {
+          "name": "Vendor"
+        },
+        "title": {
+          "name": "Title"
+        },
+        "badges": {
+          "name": "Badges"
+        },
+        "price": {
+          "name": "Price"
+        },
+        "material": {
+          "name": "Material tag"
+        },
+        "carbon": {
+          "name": "Carbon footprint"
+        },
+        "variant_picker": {
+          "name": "Variant picker",
+          "show_size_guide": {
+            "label": "Show size guide link",
+            "info": "Appears only on products with a size guide page set in the custom.size_guide metafield."
+          }
+        },
+        "low_stock": {
+          "name": "Low stock message"
+        },
+        "buy_buttons": {
+          "name": "Buy buttons",
+          "show_quantity": {
+            "label": "Show quantity selector"
+          }
+        },
+        "trust": {
+          "name": "Trust row"
+        },
+        "description": {
+          "name": "Description"
+        },
+        "accordion": {
+          "name": "Collapsible row",
+          "source": {
+            "label": "Content from",
+            "options": {
+              "custom": "Text below",
+              "care": "Care metafield",
+              "description": "Product description"
+            }
+          },
+          "open": {
+            "label": "Open by default",
+            "info": "Open the first row so shipping and returns are never two clicks away."
+          }
+        },
+        "share": {
+          "name": "Share"
+        }
+      }
     },
     "main_search": {
       "name": "Search results"
@@ -517,9 +630,7 @@
       "paragraph": "These quotes are shown to shoppers but are deliberately not published as review structured data — marking up unverified testimonials as reviews risks a Google manual action against your store.",
       "blocks": {
         "testimonial": {
-          "name": {
-            "label": "Name"
-          },
+          "name": "Testimonial",
           "rating": {
             "label": "Stars"
           },
@@ -652,6 +763,7 @@
     "padding_bottom": "Bottom padding",
     "image": "Image",
     "heading": "Heading",
+    "name": "Name",
     "link": "Link",
     "text": "Text",
     "padding": "Padding",

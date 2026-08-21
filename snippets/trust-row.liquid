@@ -1,0 +1,50 @@
+{%- comment -%}
+  trust-row.liquid — returns window, shipping promise, payment marks.
+
+  §9.6 and §9.2 rule 10: rendered adjacent to a purchase action, never as
+  standalone decoration. If you are about to render this somewhere that is
+  not next to an Add to Cart or a checkout button, it does not belong there.
+
+  Every line is merchant-set (`cro_trust_returns`, `cro_trust_shipping`) so
+  the claims match the store's real policy. Blank settings render nothing.
+
+  Params:
+    show_payment  (boolean, optional) — default true
+    class         (string, optional)
+{%- endcomment -%}
+
+{%- liquid
+  assign show_marks = show_payment | default: true, allow_false: true
+  assign returns = settings.cro_trust_returns
+  assign shipping = settings.cro_trust_shipping
+
+  assign has_copy = false
+  if returns != blank or shipping != blank
+    assign has_copy = true
+  endif
+-%}
+
+{%- if has_copy or show_marks -%}
+  <div class="trust-row {{ class }}">
+    {%- if has_copy -%}
+      <ul class="trust-row__list">
+        {%- if returns != blank -%}
+          <li class="trust-row__item">
+            {%- render 'icon', icon: 'return', size: 18 -%}
+            <span>{{ returns | escape }}</span>
+          </li>
+        {%- endif -%}
+        {%- if shipping != blank -%}
+          <li class="trust-row__item">
+            {%- render 'icon', icon: 'truck', size: 18 -%}
+            <span>{{ shipping | escape }}</span>
+          </li>
+        {%- endif -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if show_marks -%}
+      {%- render 'payment-icons', class: 'trust-row__payment' -%}
+    {%- endif -%}
+  </div>
+{%- endif -%}

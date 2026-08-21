@@ -1,0 +1,58 @@
+{%- comment -%}
+  size-guide.liquid — opens as a drawer, never a new tab (§9.6).
+
+  Sending a shopper to another page to check a size is how a purchase gets
+  abandoned: they lose the variant they had selected and the scroll position
+  they were at. The drawer keeps the PDP state intact underneath.
+
+  Content comes from `product.metafields.custom.size_guide`, a page
+  reference. No metafield, no trigger and no drawer — this degrades to
+  nothing rather than to an empty panel.
+
+  Params:
+    product     (product, required)
+    section_id  (string, required)
+{%- endcomment -%}
+
+{%- liquid
+  assign guide = product.metafields.custom.size_guide.value
+  assign drawer_id = section_id | append: '-size-guide'
+-%}
+
+{%- if guide != blank and guide.content != blank -%}
+  <button
+    class="link-underline size-guide__trigger"
+    type="button"
+    data-drawer-toggle
+    aria-controls="{{ drawer_id }}"
+    aria-expanded="false"
+  >
+    {%- render 'icon', icon: 'filter', size: 16 -%}
+    <span>{{ 'products.product.size_guide' | t }}</span>
+  </button>
+
+  <loam-drawer id="{{ drawer_id }}">
+    <div
+      class="drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="{{ drawer_id }}-title"
+    >
+      <div class="drawer__overlay" data-drawer-close></div>
+      <div class="drawer__panel color-{{ settings.drawer_color_scheme | default: 'scheme-surface' }}">
+        <div class="drawer__header">
+          <h2 class="h5" id="{{ drawer_id }}-title">{{ guide.title | escape }}</h2>
+          <button
+            class="icon-button"
+            type="button"
+            data-drawer-close
+            aria-label="{{ 'accessibility.close_drawer' | t }}"
+          >
+            {%- render 'icon', icon: 'close' -%}
+          </button>
+        </div>
+        <div class="drawer__body rte">{{ guide.content }}</div>
+      </div>
+    </div>
+  </loam-drawer>
+{%- endif -%}

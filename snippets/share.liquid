@@ -1,0 +1,29 @@
+{%- comment -%}
+  share.liquid — native share where it exists, copy link everywhere else.
+
+  Renders as a plain link to the URL by default. If the Web Share API is
+  available the custom element upgrades it to a share sheet; if not, it
+  becomes a copy-to-clipboard button. Either way there is something usable
+  before any JavaScript runs, and nothing that looks interactive but is not.
+
+  §9.6: never blocks the ATC area — callers place this below the buy block.
+
+  Params:
+    url    (string, required)
+    title  (string, optional)
+    class  (string, optional)
+{%- endcomment -%}
+
+{%- if url != blank -%}
+  <share-button
+    class="share {{ class }}"
+    data-url="{{ url }}"
+    data-title="{{ title | escape }}"
+    data-copied="{{ 'general.share.copied' | t | escape }}"
+  >
+    <a class="link-underline share__link" href="{{ url }}">
+      {%- render 'icon', icon: 'external', size: 16 -%}
+      <span data-share-label>{{ 'general.share.label' | t }}</span>
+    </a>
+  </share-button>
+{%- endif -%}
