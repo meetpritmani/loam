@@ -10,8 +10,18 @@
 {
   "sections": {
     "main": {
-      "type": "collections",
-      "settings": {}
+      "type": "main-list-collections",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "heading": "Shop by category",
+        "text": "Everything we make, grouped by how you are going to wear it.",
+        "sort": "default",
+        "image_ratio": "portrait",
+        "columns": 3,
+        "columns_mobile": "2",
+        "padding_top": 64,
+        "padding_bottom": 96
+      }
     }
   },
   "order": [

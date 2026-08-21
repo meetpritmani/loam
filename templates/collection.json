@@ -9,12 +9,33 @@
  */
 {
   "sections": {
+    "banner": {
+      "type": "main-collection-banner",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "show_breadcrumbs": true,
+        "show_description": true,
+        "show_image": false,
+        "padding_top": 40,
+        "padding_bottom": 24
+      }
+    },
     "main": {
-      "type": "collection",
-      "settings": {}
+      "type": "main-collection",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "show_filters": true,
+        "show_sort": true,
+        "products_per_page": 24,
+        "columns": 4,
+        "columns_mobile": "2",
+        "padding_top": 24,
+        "padding_bottom": 64
+      }
     }
   },
   "order": [
+    "banner",
     "main"
   ]
 }

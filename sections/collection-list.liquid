@@ -44,24 +44,14 @@
           assign fallback_image = demo_images[position]
         -%}
         <li class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;" {{ block.shopify_attributes }}>
-          <a class="collection-card media media--{{ section.settings.image_ratio }}" href="{{ url }}">
-            {%- render 'image-fallback',
-              image: block.settings.image,
-              fallback: fallback_image,
-              alt: title,
-              width: 1200,
-              height: 1500,
-              sizes: '(min-width: 990px) 25vw, 50vw',
-              placeholder: 'collection-1'
-            -%}
-            <span class="collection-card__scrim" aria-hidden="true"></span>
-            <span class="collection-card__caption">
-              <span class="collection-card__title h4">{{ title | escape }}</span>
-              {%- if block.settings.text != blank -%}
-                <span class="collection-card__text caption">{{ block.settings.text | escape }}</span>
-              {%- endif -%}
-            </span>
-          </a>
+          {%- render 'card-collection',
+            url: url,
+            title: title,
+            text: block.settings.text,
+            image: block.settings.image,
+            fallback: fallback_image,
+            ratio: section.settings.image_ratio
+          -%}
         </li>
       {%- endfor -%}
     </ul>

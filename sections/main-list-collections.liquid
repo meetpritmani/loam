@@ -1,0 +1,159 @@
+{%- comment -%}
+  main-list-collections.liquid — every collection in the store.
+
+  §9.5: collections with zero products are hidden rather than linked. A card
+  that leads to an empty page is a dead end, and on this template it is also
+  the shopper's whole sense of what the shop sells — a grid half full of empty
+  categories reads as a store that has nothing in it.
+
+  If every collection is empty the page falls back to an empty state that
+  routes to the full catalogue rather than rendering an empty grid.
+{%- endcomment -%}
+
+{%- liquid
+  assign sorted = collections
+  if section.settings.sort == 'alphabetical'
+    assign sorted = collections | sort: 'title'
+  endif
+
+  assign visible_count = 0
+  for c in collections
+    if c.all_products_count > 0
+      assign visible_count = visible_count | plus: 1
+    endif
+  endfor
+
+  assign empty_heading = 'collections.list_empty.heading' | t
+  assign empty_text = 'collections.list_empty.text' | t
+  assign view_all_label = 'general.view_all' | t
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div class="section__head">
+      <h1 class="h2">{{ section.settings.heading | escape }}</h1>
+      {%- if section.settings.text != blank -%}
+        <p class="text-muted">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+    </div>
+
+    {%- if visible_count > 0 -%}
+      <ul
+        class="grid"
+        style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 2; --grid-cols-mobile: {{ section.settings.columns_mobile }};"
+      >
+        {%- for collection in sorted -%}
+          {%- if collection.all_products_count > 0 -%}
+            <li class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;">
+              {%- render 'card-collection',
+                collection: collection,
+                fallback: 'demo-collection-mens.webp',
+                ratio: section.settings.image_ratio,
+                sizes: '(min-width: 990px) 25vw, 50vw'
+              -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      {%- render 'empty-state',
+        heading: empty_heading,
+        text: empty_text,
+        link_url: routes.all_products_collection_url,
+        link_label: view_all_label,
+        icon: 'search'
+      -%}
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_list_collections.name",
+  "tag": "section",
+  "class": "section-list-collections",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Shop by category"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:labels.text",
+      "default": "Everything we make, grouped by how you are going to wear it."
+    },
+    {
+      "type": "select",
+      "id": "sort",
+      "label": "t:sections.main_list_collections.sort.label",
+      "options": [
+        { "value": "default", "label": "t:sections.main_list_collections.sort.options.default" },
+        { "value": "alphabetical", "label": "t:sections.main_list_collections.sort.options.alphabetical" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.product_cards.card_image_ratio.label",
+      "options": [
+        { "value": "portrait", "label": "t:settings.product_cards.card_image_ratio.options.portrait" },
+        { "value": "square", "label": "t:settings.product_cards.card_image_ratio.options.square" },
+        { "value": "landscape", "label": "t:settings.product_cards.card_image_ratio.options.landscape" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.main_collection.columns.label",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "t:sections.main_collection.columns_mobile.label",
+      "options": [
+        { "value": "1", "label": "t:options.count.one" },
+        { "value": "2", "label": "t:options.count.two" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 96
+    }
+  ]
+}
+{% endschema %}

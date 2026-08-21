@@ -1,0 +1,54 @@
+{%- comment -%}
+  card-collection.liquid — a collection tile with an overlay caption.
+
+  §9.6: the caption has to stay legible over ANY image, which a photograph
+  cannot guarantee on its own. The scrim's bottom stop is 0.7, not something
+  softer — at 0.55 the 12px caption measured 3.60:1 against a white image and
+  failed AA. The ramp is short so only the caption band darkens and the
+  photograph is left alone above it.
+
+  Callers are responsible for not linking to an empty collection. This snippet
+  cannot decide that for them: `collection-list` lets a merchant point a tile
+  anywhere, while `list-collections` iterates real collections and filters
+  empties out before it gets here.
+
+  Params:
+    collection  (collection, optional) — real collection, when there is one
+    url         (string, optional)     — overrides collection.url
+    title       (string, optional)     — overrides collection.title
+    text        (string, optional)     — caption second line
+    image       (image, optional)      — overrides collection.featured_image
+    fallback    (string, optional)     — demo asset filename
+    ratio       (string, optional)     — square | portrait | landscape
+    sizes       (string, optional)
+    class       (string, optional)
+{%- endcomment -%}
+
+{%- liquid
+  assign card_url = url | default: collection.url | default: routes.all_products_collection_url
+  assign card_title = title | default: collection.title
+  assign card_image = image | default: collection.featured_image
+  assign card_ratio = ratio | default: 'portrait'
+  assign card_sizes = sizes | default: '(min-width: 990px) 25vw, 50vw'
+-%}
+
+<a class="collection-card media media--{{ card_ratio }} {{ class }}" href="{{ card_url }}">
+  {%- render 'image-fallback',
+    image: card_image,
+    fallback: fallback,
+    alt: card_title,
+    width: 1200,
+    height: 1500,
+    sizes: card_sizes,
+    placeholder: 'collection-1'
+  -%}
+
+  <span class="collection-card__scrim" aria-hidden="true"></span>
+
+  <span class="collection-card__caption">
+    <span class="collection-card__title h4">{{ card_title | escape }}</span>
+    {%- if text != blank -%}
+      <span class="collection-card__text caption">{{ text | escape }}</span>
+    {%- endif -%}
+  </span>
+</a>

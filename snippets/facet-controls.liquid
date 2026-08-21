@@ -1,0 +1,118 @@
+{%- comment -%}
+  facet-controls.liquid — the inputs for one filter, whatever its type.
+
+  Every `name` and `value` comes straight from `collection.filters`. Building
+  a filter param by hand ("filter.v.option.color") looks fine until the
+  merchant renames an option or Shopify changes a param shape, and then the
+  filter silently stops matching anything.
+
+  A value with `count: 0` is still rendered, disabled and marked. Removing it
+  makes the list jump around as the shopper narrows down; showing it greyed
+  tells them that combination has nothing in it, which is the useful fact.
+
+  Params:
+    filter      (filter, required)
+    section_id  (string, required) — namespaces input ids
+{%- endcomment -%}
+
+{%- case filter.type -%}
+
+  {%- when 'boolean' -%}
+    <ul class="facet-list">
+      {%- for value in filter.values -%}
+        {%- assign input_id = section_id | append: '-' | append: filter.param_name | append: '-' | append: forloop.index -%}
+        <li class="facet-list__item">
+          <input
+            class="facet-list__input"
+            type="checkbox"
+            id="{{ input_id }}"
+            name="{{ value.param_name }}"
+            value="{{ value.value }}"
+            {% if value.active %}checked{% endif %}
+            {% if value.count == 0 and value.active == false %}disabled{% endif %}
+          >
+          <label class="facet-list__label" for="{{ input_id }}">
+            <span>{{ value.label | escape }}</span>
+            <span class="facet-list__count">{{ value.count }}</span>
+          </label>
+        </li>
+      {%- endfor -%}
+    </ul>
+
+  {%- when 'price_range' -%}
+    {%- liquid
+      assign min_id = section_id | append: '-price-min'
+      assign max_id = section_id | append: '-price-max'
+      assign range_max = filter.range_max | money_without_currency | replace: ',', ''
+    -%}
+    <div class="facet-price">
+      <div class="facet-price__field">
+        <label class="visually-hidden" for="{{ min_id }}">
+          {{- 'collections.filters.price_from' | t -}}
+        </label>
+        <span class="facet-price__symbol" aria-hidden="true">{{ cart.currency.symbol }}</span>
+        <input
+          class="facet-price__input"
+          type="number"
+          id="{{ min_id }}"
+          name="{{ filter.min_value.param_name }}"
+          value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
+          placeholder="0"
+          min="0"
+          max="{{ range_max }}"
+          inputmode="decimal"
+        >
+      </div>
+
+      <span class="facet-price__dash" aria-hidden="true">–</span>
+
+      <div class="facet-price__field">
+        <label class="visually-hidden" for="{{ max_id }}">
+          {{- 'collections.filters.price_to' | t -}}
+        </label>
+        <span class="facet-price__symbol" aria-hidden="true">{{ cart.currency.symbol }}</span>
+        <input
+          class="facet-price__input"
+          type="number"
+          id="{{ max_id }}"
+          name="{{ filter.max_value.param_name }}"
+          value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
+          placeholder="{{ range_max }}"
+          min="0"
+          max="{{ range_max }}"
+          inputmode="decimal"
+        >
+      </div>
+    </div>
+
+  {%- else -%}
+    {%- comment -%}
+      `list` and anything Shopify adds later. Falling through to checkboxes is
+      deliberate: a new filter type still renders something usable rather than
+      disappearing from the UI.
+    {%- endcomment -%}
+    <ul class="facet-list">
+      {%- for value in filter.values -%}
+        {%- assign input_id = section_id | append: '-' | append: filter.param_name | append: '-' | append: forloop.index -%}
+        <li class="facet-list__item">
+          <input
+            class="facet-list__input"
+            type="checkbox"
+            id="{{ input_id }}"
+            name="{{ value.param_name }}"
+            value="{{ value.value }}"
+            {% if value.active %}checked{% endif %}
+            {% if value.count == 0 and value.active == false %}disabled{% endif %}
+          >
+          <label class="facet-list__label" for="{{ input_id }}">
+            {%- if value.swatch.color -%}
+              <span class="facet-list__swatch" style="--swatch: {{ value.swatch.color }};" aria-hidden="true"></span>
+            {%- endif -%}
+            <span>{{ value.label | escape }}</span>
+            <span class="facet-list__count">{{ value.count }}</span>
+          </label>
+        </li>
+      {%- endfor -%}
+    </ul>
+
+{%- endcase -%}

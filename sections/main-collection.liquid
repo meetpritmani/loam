@@ -1,0 +1,321 @@
+{%- comment -%}
+  main-collection.liquid — the product grid, with filters and sort.
+
+  §9.4: filters and sort sit above the fold, the result count is always
+  visible, and an empty filter result offers a reset rather than a blank page.
+
+  The whole filter UI is a real <form method="get">. With JavaScript
+  unavailable it submits, the page reloads, and filtering works — Shopify's
+  faceted URLs do the work. <facet-filters> upgrades that to a fetch against
+  the Section Rendering API and swaps the results in place, which is what
+  keeps the shopper's scroll position (§9.5).
+
+  Nothing here rebuilds a filter URL by hand. Every link and input name comes
+  from `collection.filters`, because hand-built URLs are exactly where the
+  other applied filters get dropped.
+
+  There is exactly ONE set of filter controls, rendered once. The obvious
+  alternative — an inline bar for desktop plus a copy inside a mobile drawer —
+  puts two inputs with the same name and value in the same form, so every
+  checked filter submits twice. The groups are <details> elements instead:
+  a row of dropdowns on desktop, a stacked disclosure list on mobile, same
+  DOM, no duplication and nothing moved on resize.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = section.id
+  assign has_filters = false
+  if collection.filters.size > 0 and section.settings.show_filters
+    assign has_filters = true
+  endif
+
+  assign grid_sizes = '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <facet-filters
+      class="collection"
+      data-section="{{ section_id }}"
+      data-results="[data-collection-results]"
+    >
+      {%- paginate collection.products by section.settings.products_per_page -%}
+        {%- if has_filters or section.settings.show_sort -%}
+          <form class="facets" id="facets-{{ section_id }}" data-facet-form>
+            {%- comment -%}
+              Carry the current query and any non-filter params through, or
+              submitting the form silently drops them.
+            {%- endcomment -%}
+            {%- for param in request.url_params -%}
+              {%- unless param.first contains 'filter.' or param.first == 'sort_by' or param.first == 'page' -%}
+                <input type="hidden" name="{{ param.first }}" value="{{ param.last | escape }}">
+              {%- endunless -%}
+            {%- endfor -%}
+
+            <div class="facets__bar">
+              {%- if has_filters -%}
+                <p class="facets__label caption">
+                  {%- render 'icon', icon: 'filter', size: 16 -%}
+                  <span>{{ 'collections.filters.title' | t }}</span>
+                </p>
+
+                <div class="facets__inline" data-facet-inline>
+                  {%- for filter in collection.filters -%}
+                    <details class="facets__group" data-facet-group>
+                      <summary class="facets__summary">
+                        <span>{{ filter.label | escape }}</span>
+                        {%- render 'icon', icon: 'chevron-down', size: 14 -%}
+                      </summary>
+                      <div class="facets__panel">
+                        {%- render 'facet-controls', filter: filter, section_id: section_id -%}
+                      </div>
+                    </details>
+                  {%- endfor -%}
+                </div>
+              {%- endif -%}
+
+              <p class="facets__count" role="status" data-result-count>
+                {{ 'collections.result_count' | t: count: collection.products_count }}
+              </p>
+
+              {%- if section.settings.show_sort -%}
+                {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+                <div class="facets__sort">
+                  <label class="visually-hidden" for="sort-{{ section_id }}">
+                    {{- 'collections.sort_by' | t -}}
+                  </label>
+                  <select class="select" id="sort-{{ section_id }}" name="sort_by" data-facet-sort>
+                    {%- for option in collection.sort_options -%}
+                      <option value="{{ option.value }}" {% if option.value == sort_by %}selected{% endif %}>
+                        {{ option.name | escape }}
+                      </option>
+                    {%- endfor -%}
+                  </select>
+                </div>
+              {%- endif -%}
+
+              {%- comment -%}
+                Only reaches the shopper when scripting is off; the browser
+                handles that, no JavaScript involved. With the element running,
+                a change to any control applies immediately and an explicit
+                Apply button would be a second way to do the same thing.
+              {%- endcomment -%}
+              <noscript>
+                <button class="button button--secondary" type="submit">
+                  {{ 'collections.filters.apply' | t }}
+                </button>
+              </noscript>
+            </div>
+
+            {%- comment -%}
+              Active filters, each removable individually.
+
+              A price range contributes no `active_values`, so counting only
+              those would miss an applied price filter — the chips would
+              vanish and an empty result would offer the wrong route out.
+              Liquid also has no operator precedence (it evaluates right to
+              left), so each condition is tested on its own line rather than
+              combined with and/or.
+            {%- endcomment -%}
+            {%- liquid
+              assign active_count = 0
+              for filter in collection.filters
+                assign active_count = active_count | plus: filter.active_values.size
+                if filter.type == 'price_range'
+                  if filter.min_value.value != nil
+                    assign active_count = active_count | plus: 1
+                  endif
+                  if filter.max_value.value != nil
+                    assign active_count = active_count | plus: 1
+                  endif
+                endif
+              endfor
+            -%}
+
+            {%- if active_count > 0 -%}
+              <div class="facets__active">
+                <ul class="facets__chips">
+                  {%- for filter in collection.filters -%}
+                    {%- for value in filter.active_values -%}
+                      <li>
+                        <a class="chip" href="{{ value.url_to_remove }}" data-facet-link>
+                          <span>{{ filter.label | escape }}: {{ value.label | escape }}</span>
+                          {%- render 'icon', icon: 'close', size: 12 -%}
+                          <span class="visually-hidden">{{ 'collections.filters.remove' | t }}</span>
+                        </a>
+                      </li>
+                    {%- endfor -%}
+
+                    {%- if filter.type == 'price_range' -%}
+                      {%- liquid
+                        assign price_active = false
+                        if filter.min_value.value != nil
+                          assign price_active = true
+                        endif
+                        if filter.max_value.value != nil
+                          assign price_active = true
+                        endif
+                      -%}
+                      {%- if price_active -%}
+                        <li>
+                          <a class="chip" href="{{ filter.url_to_remove }}" data-facet-link>
+                            <span>{{ filter.label | escape }}</span>
+                            {%- render 'icon', icon: 'close', size: 12 -%}
+                            <span class="visually-hidden">{{ 'collections.filters.remove' | t }}</span>
+                          </a>
+                        </li>
+                      {%- endif -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+
+                <a class="link-underline" href="{{ collection.url }}" data-facet-link>
+                  {{ 'collections.filters.clear_all' | t }}
+                </a>
+              </div>
+            {%- endif -%}
+          </form>
+
+        {%- endif -%}
+
+        <div data-collection-results>
+          {%- if collection.products.size > 0 -%}
+            <ul class="grid collection__grid" style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 3; --grid-cols-mobile: {{ section.settings.columns_mobile }};">
+              {%- for product in collection.products -%}
+                <li>
+                  {%- render 'card-product', product: product, sizes: grid_sizes, heading_tag: 'h2' -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+
+            {%- render 'pagination', paginate: paginate, anchor: '#main' -%}
+          {%- else -%}
+            {%- comment -%}
+              §9.4: never a blank page. If filters caused the emptiness the
+              route out is a reset; if the collection itself is empty the route
+              out is the full catalogue.
+            {%- endcomment -%}
+            {%- liquid
+              assign view_all_label = 'general.view_all' | t
+              assign clear_label = 'collections.filters.clear_all' | t
+              if active_count > 0
+                assign empty_heading = 'collections.empty_filtered.heading' | t
+                assign empty_text = 'collections.empty_filtered.text' | t
+              else
+                assign empty_heading = 'collections.empty.heading' | t
+                assign empty_text = 'collections.empty.text' | t
+              endif
+            -%}
+            {%- if active_count > 0 -%}
+              {%- render 'empty-state',
+                heading: empty_heading,
+                text: empty_text,
+                link_url: collection.url,
+                link_label: clear_label,
+                link_2_url: routes.all_products_collection_url,
+                link_2_label: view_all_label,
+                icon: 'filter'
+              -%}
+            {%- else -%}
+              {%- render 'empty-state',
+                heading: empty_heading,
+                text: empty_text,
+                link_url: routes.all_products_collection_url,
+                link_label: view_all_label,
+                icon: 'search'
+              -%}
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+      {%- endpaginate -%}
+    </facet-filters>
+
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when '@app' -%}
+          {%- render block -%}
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_collection.name",
+  "tag": "section",
+  "class": "section-main-collection",
+  "blocks": [{ "type": "@app" }],
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "t:sections.main_collection.show_filters.label",
+      "info": "t:sections.main_collection.show_filters.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sort",
+      "label": "t:sections.main_collection.show_sort.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "t:sections.main_collection.products_per_page.label",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.main_collection.columns.label",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "t:sections.main_collection.columns_mobile.label",
+      "options": [
+        { "value": "1", "label": "t:options.count.one" },
+        { "value": "2", "label": "t:options.count.two" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}
