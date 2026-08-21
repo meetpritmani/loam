@@ -77,48 +77,12 @@
                   <p class="text-body-sm text-muted">{{ block.settings.text | escape }}</p>
                 {%- endif -%}
 
-                {%- form 'customer', class: 'footer__newsletter' -%}
-                  <input type="hidden" name="contact[tags]" value="newsletter">
-
-                  <div class="newsletter__field">
-                    <label class="visually-hidden" for="footer-newsletter-{{ block.id }}">
-                      {{- 'newsletter.label' | t -}}
-                    </label>
-                    <input
-                      class="field__input newsletter__input"
-                      id="footer-newsletter-{{ block.id }}"
-                      type="email"
-                      name="contact[email]"
-                      value="{{ form.email }}"
-                      placeholder="{{ 'newsletter.placeholder' | t }}"
-                      autocomplete="email"
-                      required
-                      {% if form.errors %}
-                        aria-invalid="true"
-                        aria-describedby="footer-newsletter-error-{{ block.id }}"
-                      {% endif %}
-                    >
-                    <button
-                      class="newsletter__submit icon-button"
-                      type="submit"
-                      aria-label="{{ 'newsletter.submit' | t }}"
-                    >
-                      {%- render 'icon', icon: 'arrow-right', size: 18 -%}
-                    </button>
-                  </div>
-
-                  {%- if form.errors -%}
-                    <p class="field__error" id="footer-newsletter-error-{{ block.id }}">
-                      {{- form.errors.messages.email -}}
-                    </p>
-                  {%- elsif form.posted_successfully? -%}
-                    <p class="field__hint">{{ 'newsletter.success' | t }}</p>
-                  {%- endif -%}
-
-                  {%- if block.settings.fine_print != blank -%}
-                    <p class="field__hint">{{ block.settings.fine_print | escape }}</p>
-                  {%- endif -%}
-                {%- endform -%}
+                {%- assign footer_newsletter_id = 'footer-' | append: block.id -%}
+                {%- render 'newsletter-form',
+                  id: footer_newsletter_id,
+                  class: 'footer__newsletter',
+                  fine_print: block.settings.fine_print
+                -%}
             {%- endcase -%}
           </div>
         {%- endfor -%}

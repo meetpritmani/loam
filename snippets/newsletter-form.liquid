@@ -1,0 +1,100 @@
+{%- comment -%}
+  newsletter-form.liquid — one field, one action, inline result.
+
+  §9.6: one field. Not first name, not "how did you hear about us" — every
+  extra field costs completions, and a name the merchant never uses costs
+  them for nothing. The address lands in the merchant's own customer list
+  through Shopify's {% form 'customer' %}, so there is no app and no
+  third-party script involved.
+
+  The result never clears the page or navigates away: Shopify posts back to
+  the same URL and the outcome renders in a region that is always present.
+  Always present matters — a message element that only exists after
+  submitting would shift everything below it on the way in. Reserved height,
+  no CLS.
+
+  The region carries role="status", so a screen reader is told the signup
+  worked rather than being left listening to an unchanged page. On error the
+  input gets aria-invalid and is pointed at the message.
+
+  Known Shopify behaviour: `form.posted_successfully?` is set for every
+  `customer` form on the page, not just the one submitted. Two capture points
+  on one page — the footer and a blog list, say — will both report success
+  after either is used. It is the platform's flag, not a per-form one, and
+  there is no server-side way to narrow it.
+
+  Params:
+    id           (string, required) — unique suffix; two forms per page is normal
+    class        (string, optional)
+    fine_print   (string, optional) — send frequency, unsubscribe note
+    tags         (string, optional) — customer tag, default 'newsletter'
+    placeholder  (string, optional)
+{%- endcomment -%}
+
+{%- liquid
+  comment
+    Three distinct ids, not one reused. The <form> and the <input> both carry
+    an id attribute; giving them the same value is invalid HTML and points
+    every `for=` and `aria-describedby` at whichever the parser saw first.
+  endcomment
+  assign form_id = 'newsletter-form-' | append: id
+  assign field_id = 'newsletter-' | append: id
+  assign message_id = 'newsletter-message-' | append: id
+
+  assign customer_tags = tags | default: 'newsletter'
+  assign form_class = 'newsletter-form ' | append: class
+
+  comment
+    Not `placeholder | default: 'key' | t` — that pipes a merchant's own
+    string through `t` as well, and a caller-supplied placeholder would come
+    back as "translation missing".
+  endcomment
+  assign field_placeholder = placeholder
+  if field_placeholder == blank
+    assign field_placeholder = 'newsletter.placeholder' | t
+  endif
+-%}
+
+{%- form 'customer', id: form_id, class: form_class -%}
+  <input type="hidden" name="contact[tags]" value="{{ customer_tags | escape }}">
+
+  <div class="newsletter__field">
+    <label class="visually-hidden" for="{{ field_id }}">{{ 'newsletter.label' | t }}</label>
+    <input
+      class="field__input newsletter__input"
+      id="{{ field_id }}"
+      type="email"
+      name="contact[email]"
+      value="{{ form.email }}"
+      placeholder="{{ field_placeholder }}"
+      autocomplete="email"
+      required
+      {% if form.errors %}
+        aria-invalid="true"
+        aria-describedby="{{ message_id }}"
+      {% endif %}
+    >
+    <button
+      class="newsletter__submit icon-button"
+      type="submit"
+      aria-label="{{ 'newsletter.submit' | t }}"
+    >
+      {%- render 'icon', icon: 'arrow-right', size: 18 -%}
+    </button>
+  </div>
+
+  <p class="newsletter-form__message" id="{{ message_id }}" role="status">
+    {%- if form.errors -%}
+      <span class="field__error">{{ form.errors.messages.email }}</span>
+    {%- elsif form.posted_successfully? -%}
+      <span class="field__hint">
+        {%- render 'icon', icon: 'check', size: 14 -%}
+        {{ 'newsletter.success' | t }}
+      </span>
+    {%- endif -%}
+  </p>
+
+  {%- if fine_print != blank -%}
+    <p class="field__hint">{{ fine_print | escape }}</p>
+  {%- endif -%}
+{%- endform -%}

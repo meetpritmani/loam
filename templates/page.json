@@ -9,12 +9,23 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "page",
-      "settings": {}
+    "main-page": {
+      "type": "main-page",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "show_next_step": true,
+        "next_color_scheme": "scheme-sand",
+        "next_heading": "Anything else?",
+        "next_text": "If this did not answer it, we read every message and reply within one working day.",
+        "next_label": "Shop the range",
+        "contact_label": "Contact us",
+        "contact_url": "/pages/contact",
+        "padding_top": 48,
+        "padding_bottom": 64
+      }
     }
   },
   "order": [
-    "main"
+    "main-page"
   ]
 }

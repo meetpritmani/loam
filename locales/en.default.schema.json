@@ -326,10 +326,41 @@
       "name": "404 page"
     },
     "main_article": {
-      "name": "Article"
+      "name": "Article",
+      "show_image": {
+        "label": "Show featured image"
+      },
+      "show_share": {
+        "label": "Show share"
+      },
+      "related_products": {
+        "label": "Products in this article"
+      },
+      "related_paragraph": "Set these per article with the custom.related_products metafield. Anything chosen here is the fallback for articles that do not have it. Only add products the article actually mentions.",
+      "headers": {
+        "related": "Related products"
+      }
     },
     "main_blog": {
-      "name": "Blog posts"
+      "name": "Blog posts",
+      "description": {
+        "label": "Intro text"
+      },
+      "show_tags": {
+        "label": "Show topic filter"
+      },
+      "columns": {
+        "label": "Columns on desktop"
+      },
+      "posts_per_page": {
+        "label": "Posts per page"
+      },
+      "show_newsletter": {
+        "label": "Show signup at the foot of the list"
+      },
+      "headers": {
+        "newsletter": "Email signup"
+      }
     },
     "main_cart": {
       "name": "Cart"
@@ -364,7 +395,26 @@
       }
     },
     "main_page": {
-      "name": "Page"
+      "name": "Page",
+      "show_next_step": {
+        "label": "Show the next step"
+      },
+      "next_paragraph": "Every page should end somewhere. This block gives a shopper who has finished reading a route back to the catalogue and a way to ask a question.",
+      "next_label": {
+        "label": "Button label"
+      },
+      "next_link": {
+        "info": "Leave empty to use your Conversion recovery collection."
+      },
+      "contact_label": {
+        "label": "Contact link label"
+      },
+      "contact_url": {
+        "label": "Contact link"
+      },
+      "headers": {
+        "next_step": "Next step"
+      }
     },
     "main_password": {
       "name": "Password"

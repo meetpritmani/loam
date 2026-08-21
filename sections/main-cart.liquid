@@ -115,7 +115,7 @@
               Merchant-picked products only (§9.4). Nothing here is generated
               from browsing behaviour or a random collection slice.
             {%- endcomment -%}
-            {%- if upsell_products.count > 0 -%}
+            {%- if upsell_products.size > 0 -%}
               <div class="cart-page__upsell">
                 <h2 class="h6">{{ 'cart.upsell_title' | t }}</h2>
                 <ul class="grid" style="--grid-cols: 3; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">

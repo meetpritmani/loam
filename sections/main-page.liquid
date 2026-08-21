@@ -1,0 +1,174 @@
+{%- comment -%}
+  main-page.liquid — a content page.
+
+  §9.5: "every page ends with a next step — shop link, contact route, or
+  FAQ." A policy page is where a shopper goes to resolve a doubt; ending it
+  with the last sentence of the returns policy leaves them to find their own
+  way back. So the next-step block is on by default and ships with real copy,
+  and the contact route is a separate, always-available link rather than
+  something the merchant has to remember to add.
+
+  The block is a setting rather than a section so it survives page templates
+  the merchant has not customised. A merchant who genuinely wants a page to
+  end flat can switch it off; the default is a route out.
+{%- endcomment -%}
+
+{%- liquid
+  assign next_url = section.settings.next_link
+  if next_url == blank
+    assign recovery = settings.cro_empty_cart_collection
+    assign next_url = recovery.url | default: routes.all_products_collection_url
+  endif
+
+  assign show_next = false
+  if section.settings.show_next_step and section.settings.next_label != blank
+    assign show_next = true
+  endif
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width page-width--narrow">
+    <div class="page-content">
+      <header class="page-content__header">
+        <h1 class="h1">{{ page.title | escape }}</h1>
+      </header>
+
+      {%- if page.content != blank -%}
+        <div class="page-content__body rte">
+          {{ page.content }}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{%- if show_next -%}
+  <div class="section color-{{ section.settings.next_color_scheme }}">
+    <div class="page-width page-width--narrow">
+      <div class="page-next">
+        {%- if section.settings.next_heading != blank -%}
+          <h2 class="h4">{{ section.settings.next_heading | escape }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.next_text != blank -%}
+          <p class="text-muted">{{ section.settings.next_text | escape }}</p>
+        {%- endif -%}
+
+        {%- comment -%}
+          One primary action (§9.2 rule 1). Contact is the secondary route,
+          underlined rather than filled, so the page still has a single
+          visually dominant CTA.
+        {%- endcomment -%}
+        <div class="cluster page-next__actions">
+          <a class="button button--primary" href="{{ next_url }}">
+            {{- section.settings.next_label | escape -}}
+          </a>
+
+          {%- if section.settings.contact_url != blank and section.settings.contact_label != blank -%}
+            <a class="link-underline" href="{{ section.settings.contact_url }}">
+              {{- section.settings.contact_label | escape -}}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.main_page.name",
+  "tag": "section",
+  "class": "section-main-page",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_page.headers.next_step"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.main_page.next_paragraph"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_next_step",
+      "label": "t:sections.main_page.show_next_step.label",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "next_color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-sand"
+    },
+    {
+      "type": "text",
+      "id": "next_heading",
+      "label": "t:labels.heading",
+      "default": "Anything else?"
+    },
+    {
+      "type": "textarea",
+      "id": "next_text",
+      "label": "t:labels.text",
+      "default": "If this did not answer it, we read every message and reply within one working day."
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "t:sections.main_page.next_label.label",
+      "default": "Shop the range"
+    },
+    {
+      "type": "url",
+      "id": "next_link",
+      "label": "t:labels.link",
+      "info": "t:sections.main_page.next_link.info"
+    },
+    {
+      "type": "text",
+      "id": "contact_label",
+      "label": "t:sections.main_page.contact_label.label",
+      "default": "Contact us"
+    },
+    {
+      "type": "url",
+      "id": "contact_url",
+      "label": "t:sections.main_page.contact_url.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}

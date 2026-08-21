@@ -588,9 +588,21 @@ dialog {
   }
 }
 
-.link--underline {
+/* The secondary action of §9.2 rule 1: underlined text, never a second filled
+   button of equal weight next to the primary CTA. Standalone rather than a
+   `.link` modifier, because it is used on its own throughout the theme. */
+.link-underline {
+  color: var(--c-ink);
   text-decoration: underline;
   text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+  transition: color var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+  .link-underline:hover {
+    color: var(--c-accent);
+  }
 }
 
 /* --- Icons -------------------------------------------------------------- */
@@ -1576,6 +1588,150 @@ cart-items[aria-busy] {
   background-color: var(--c-accent);
   transition: width var(--dur-slow) var(--ease);
 }
+
+/* --- Blog list ----------------------------------------------------------- */
+
+.blog-list__header {
+  display: grid;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-6);
+}
+
+.blog-list__intro {
+  max-width: 56ch;
+}
+
+.blog-list__tags {
+  margin-block-end: var(--sp-7);
+}
+
+.blog-list__tag {
+  display: inline-block;
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: 999px;
+  font-size: var(--t-sm);
+  text-decoration: none;
+  color: var(--c-ink-70);
+}
+
+.blog-list__tag:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+
+/* Current filter is marked, not only coloured — aria-current carries it to
+   assistive tech and the border carries it to everyone else. */
+.blog-list__tag[aria-current='page'] {
+  border-color: var(--c-ink);
+  color: var(--c-ink);
+  font-weight: var(--f-body-weight-bold);
+}
+
+.blog-list__grid {
+  margin-block-end: var(--sp-7);
+}
+
+
+/* --- Article ------------------------------------------------------------- */
+
+.article {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.article__breadcrumbs {
+  margin-block-end: var(--sp-4);
+}
+
+.article__header {
+  display: grid;
+  gap: var(--sp-4);
+  margin-block-end: var(--sp-6);
+}
+
+.article__title {
+  margin: 0;
+}
+
+.article__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--c-ink-70);
+}
+
+.article__media {
+  margin-block-end: var(--sp-7);
+}
+
+.article__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-5);
+  background-image: var(--seam);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: top left;
+}
+
+.article-comments {
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.article-comments__list {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.article-comments__item {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background-color: var(--c-surface);
+  border-radius: var(--radius);
+}
+
+.article-comments__form {
+  display: grid;
+  gap: var(--sp-4);
+  justify-items: start;
+}
+
+.article-comments__fields {
+  display: grid;
+  gap: var(--sp-4);
+  width: 100%;
+}
+
+@media (min-width: 750px) {
+  .article-comments__fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* --- Page ---------------------------------------------------------------- */
+
+.page-content__header {
+  margin-block-end: var(--sp-6);
+}
+
+.page-next {
+  display: grid;
+  gap: var(--sp-4);
+  justify-items: start;
+}
+
+.page-next__actions {
+  align-items: center;
+}
+
 
 /* --- Search page --------------------------------------------------------
    The input is the page's primary action, so it stays full width on mobile
@@ -2744,13 +2900,16 @@ cart-items[aria-busy] {
   margin-inline: auto;
 }
 
-/* Always present, so a result message cannot shift the page. */
-.newsletter-section__message {
+/* Always present, so a result message cannot shift the page. Belongs to the
+   shared newsletter-form snippet, so it applies wherever capture appears —
+   the section, the footer, the blog list and the article foot. */
+.newsletter-form__message {
+  display: block;
   min-height: 1.4em;
   margin-block-start: var(--sp-2);
 }
 
-.newsletter-section__message .field__hint {
+.newsletter-form__message .field__hint {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);

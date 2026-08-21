@@ -9,12 +9,25 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "blog",
-      "settings": {}
+    "main-blog": {
+      "type": "main-blog",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "description": "Field notes on materials, wear and repair. Written by the people who make the shoes.",
+        "show_tags": true,
+        "columns": 3,
+        "posts_per_page": 9,
+        "show_newsletter": true,
+        "newsletter_color_scheme": "scheme-sand",
+        "newsletter_heading": "Get first access.",
+        "newsletter_text": "New colourways, restocks, and the occasional field note. Two emails a month, no more.",
+        "newsletter_fine_print": "Unsubscribe any time.",
+        "padding_top": 40,
+        "padding_bottom": 64
+      }
     }
   },
   "order": [
-    "main"
+    "main-blog"
   ]
 }

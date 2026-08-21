@@ -9,12 +9,27 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "article",
-      "settings": {}
+    "main-article": {
+      "type": "main-article",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "show_breadcrumbs": true,
+        "show_image": true,
+        "show_tags": true,
+        "show_share": true,
+        "related_heading": "From the article",
+        "related_color_scheme": "scheme-paper",
+        "show_newsletter": true,
+        "newsletter_color_scheme": "scheme-sand",
+        "newsletter_heading": "Get first access.",
+        "newsletter_text": "New colourways, restocks, and the occasional field note. Two emails a month, no more.",
+        "newsletter_fine_print": "Unsubscribe any time.",
+        "padding_top": 40,
+        "padding_bottom": 48
+      }
     }
   },
   "order": [
-    "main"
+    "main-article"
   ]
 }

@@ -1,14 +1,9 @@
 {%- comment -%}
   newsletter.liquid — email capture.
 
-  Uses Shopify's own {% form 'customer' %} so the address lands in the
-  merchant's customer list with no app and no third-party script.
-
-  Success and error states are both handled inline and announced: the result
-  message carries role="status", so a shopper using a screen reader is told
-  the signup worked instead of being left listening to an unchanged page. On
-  error, the input gets aria-invalid and is pointed at the message with
-  aria-describedby.
+  The form itself lives in `newsletter-form.liquid`, shared with the footer,
+  the blog list and the article foot, so every capture point on the store
+  behaves the same way and there is only one place to change it.
 {%- endcomment -%}
 
 <div
@@ -34,59 +29,11 @@
         <p class="text-muted">{{ section.settings.text | escape }}</p>
       {%- endif -%}
 
-      {%- form 'customer', id: 'newsletter-form', class: 'newsletter-section__form' -%}
-        <input type="hidden" name="contact[tags]" value="newsletter">
-
-        <div class="newsletter__field">
-          <label class="visually-hidden" for="newsletter-{{ section.id }}">
-            {{- 'newsletter.label' | t -}}
-          </label>
-          <input
-            class="field__input newsletter__input"
-            id="newsletter-{{ section.id }}"
-            type="email"
-            name="contact[email]"
-            value="{{ form.email }}"
-            placeholder="{{ 'newsletter.placeholder' | t }}"
-            autocomplete="email"
-            required
-            {% if form.errors %}
-              aria-invalid="true"
-              aria-describedby="newsletter-message-{{ section.id }}"
-            {% endif %}
-          >
-          <button
-            class="newsletter__submit icon-button"
-            type="submit"
-            aria-label="{{ 'newsletter.submit' | t }}"
-          >
-            {%- render 'icon', icon: 'arrow-right', size: 18 -%}
-          </button>
-        </div>
-
-        {%- comment -%}
-          The region exists whether or not there is a message, so the height
-          is reserved and submitting does not shift the page.
-        {%- endcomment -%}
-        <p
-          class="newsletter-section__message"
-          id="newsletter-message-{{ section.id }}"
-          role="status"
-        >
-          {%- if form.errors -%}
-            <span class="field__error">{{ form.errors.messages.email }}</span>
-          {%- elsif form.posted_successfully? -%}
-            <span class="field__hint">
-              {%- render 'icon', icon: 'check', size: 14 -%}
-              {{ 'newsletter.success' | t }}
-            </span>
-          {%- endif -%}
-        </p>
-
-        {%- if section.settings.fine_print != blank -%}
-          <p class="field__hint">{{ section.settings.fine_print | escape }}</p>
-        {%- endif -%}
-      {%- endform -%}
+      {%- render 'newsletter-form',
+        id: section.id,
+        class: 'newsletter-section__form',
+        fine_print: section.settings.fine_print
+      -%}
     </div>
   </div>
 </div>

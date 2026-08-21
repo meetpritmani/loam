@@ -54,6 +54,11 @@
   "blog": {
     "title": "Journal",
     "read_more": "Read more",
+    "all_posts": "All posts",
+    "filter_by_tag": "Filter by topic",
+    "empty_heading": "No posts yet",
+    "empty_text": "Nothing written here so far. The shoes are ready though.",
+    "comment_success": "Thanks. Your comment is posted.",
     "article_comments": "Comments",
     "article_metadata_html": "{{ date }} by {{ author }}",
     "comment_form_body": "Comment",
