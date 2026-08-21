@@ -1,0 +1,4 @@
+#!/bin/sh
+# Refuses a commit containing an Admin API token (§12.8).
+# Enable with:  git config core.hooksPath .githooks
+exec node scripts/check-secrets.mjs

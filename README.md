@@ -19,7 +19,7 @@ external CDN. Everything a shopper downloads is in this repository.
 | 2 | Chrome — announcement bar, header, mega menu, footer, cart drawer | Complete |
 | 3 | Homepage — 15 sections | Complete |
 | 4 | Templates — product, collection, search, cart, blog, customers | Complete |
-| 5 | Demo store seeding | Not started |
+| 5 | Demo store seeding | **Scripts built** — awaiting media and a demo store to run against |
 | 6 | Demo content shipped in the repo | Not started |
 | 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | Not started |
 
@@ -326,7 +326,43 @@ shopify theme push --unpublished
 shopify theme package        # build the distributable ZIP
 ```
 
-CI runs `shopify theme check --fail-level error` on every push.
+CI runs `shopify theme check --fail-level error` on every push, and parses the
+seeding scripts.
+
+### Demo store seeding
+
+Not part of the theme you install — `.shopifyignore` and `.theme-check.yml` both
+exclude it. It builds the developer's own demo store and generates the buyer's
+`demo-store-export/` package.
+
+```bash
+cp .env.example .env         # store domain, Admin API token, API version
+npm install
+npm run seed                 # runs all five steps
+node scripts/seed.mjs --from=3   # resume from a step
+```
+
+| Step | Does |
+|---|---|
+| 1 | `demo-media-raw/` → optimised WebP in `demo-media/`, and the licence ledger |
+| 2 | Uploads to the store's Files, writes `media-map.json` |
+| 3 | Products, variants, metafields, collections — and `products.csv` |
+| 4 | Pages, journal, menus — and the copy-ready markdown |
+| 5 | Injects `shopify://shop_images/…` references into the theme JSON |
+
+Every step is idempotent: run twice and nothing duplicates. Step 1 needs images
+in `demo-media-raw/`, which are downloaded by hand from
+[Burst](https://burst.shopify.com) — run it with the directory empty and it
+prints the full list with dimensions and subjects.
+
+Enable the credential guard once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+It refuses any commit containing an Admin API token. A leaked token is write
+access to a store, and git history makes it permanent.
 
 ### Structure
 

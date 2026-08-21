@@ -43,3 +43,40 @@ jobs:
       # progress and a snippet's section has not been written yet.
       - name: Theme Check
         run: shopify theme check --fail-level error
+
+  seed-scripts:
+    name: Seed scripts
+    runs-on: ubuntu-latest
+
+    # The §12 tooling is not part of the theme, so theme-check ignores it. It
+    # still gets checked: these scripts write to a real store, and a syntax
+    # error in one is only discovered at the moment it matters least.
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No install. `node --check` parses .mjs as an ES module, including
+      # top-level await, and needs nothing from node_modules. sharp is a native
+      # module whose download would be the slowest step in this workflow by an
+      # order of magnitude, for no benefit here.
+      - name: Parse every script
+        run: |
+          for file in scripts/*.mjs scripts/lib/*.mjs; do
+            node --check "$file"
+            echo "ok  $file"
+          done
+
+      # scripts/check-secrets.mjs guards the commit, by scanning the staged
+      # index. There is no index in CI, so this scans the checked-out tree
+      # instead — the backstop for a token that reached the branch some other
+      # way, with the hook not installed.
+      - name: No credentials in the tree
+        run: |
+          if git grep -nE 'shpat_[a-fA-F0-9]{32}|shpss_[a-fA-F0-9]{32}|shpca_[a-fA-F0-9]{32}' -- . ':(exclude).github'; then
+            echo "::error::A Shopify API token is present in the repository."
+            exit 1
+          fi
+          echo "No credentials found."

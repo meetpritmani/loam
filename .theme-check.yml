@@ -1,1 +1,14 @@
 extends: theme-check:recommended
+
+# The demo store tooling of §12 is not part of the distributable theme — it
+# seeds the developer's own demo store and builds the buyer's export package.
+# .shopifyignore keeps it out of `theme push` and `theme package`; this keeps
+# it out of `theme check`, which reads its own config rather than that file.
+ignore:
+  - scripts/**
+  - demo-media-raw/**
+  - demo-media/**
+  - demo-store-export/**
+  - node_modules/**
+  - package.json
+  - package-lock.json

@@ -11,3 +11,17 @@
 #
 # Ignore templates and sections with a regular expression:
 #   /(templates|sections)/.*\.json/
+
+# Demo store tooling (§12). None of this is part of the distributable theme —
+# it seeds the developer's own demo store and builds the buyer's export
+# package. Listing it here keeps `shopify theme push` and `shopify theme
+# package` to the theme itself.
+scripts/
+demo-media-raw/
+demo-media/
+demo-store-export/
+node_modules/
+package.json
+package-lock.json
+.env
+.env.example
