@@ -1,0 +1,91 @@
+{%- comment -%}
+  card-article.liquid — one journal post, as a card.
+
+  §9.6: "excerpt is a real excerpt, not truncated body text." So the summary
+  line renders `article.excerpt` and nothing else. The tempting shortcut is
+  `article.excerpt_or_content | strip_html | truncate`, which produces a
+  sentence that stops mid-word and usually reads as the article's first
+  sentence rather than its point. A blank excerpt renders no summary line at
+  all — a card with a heading, a date and a route through is honest; a card
+  with a mangled half-sentence is not.
+
+  Author and date are on by default: §9.5 asks for both, for credibility.
+
+  One tab stop per card, like `card-product`. The title carries a stretched
+  ::after that covers the whole card, and the image link is taken out of the
+  tab order — otherwise every card costs a keyboard user two stops to pass.
+
+  Params:
+    article      (article, required)
+    heading_tag  (string, optional)  — h2/h3/h4, default h3
+    ratio        (string, optional)  — landscape | square | portrait
+    sizes        (string, optional)
+    fallback     (string, optional)  — demo asset filename
+    loading      (string, optional)
+    show_excerpt (boolean, optional) — default true
+    show_meta    (boolean, optional) — default true, author + date
+    class        (string, optional)
+{%- endcomment -%}
+
+{%- liquid
+  assign title_tag = heading_tag | default: 'h3'
+  assign card_ratio = ratio | default: 'landscape'
+  assign card_sizes = sizes | default: '(min-width: 990px) 32vw, (min-width: 750px) 45vw, 92vw'
+  assign card_loading = loading | default: 'lazy'
+
+  assign with_excerpt = show_excerpt | default: true, allow_false: true
+  assign with_meta = show_meta | default: true, allow_false: true
+
+  assign article_date = article.published_at | date: format: 'date'
+-%}
+
+{%- if article != blank -%}
+  <article class="card article-card {{ class }}">
+    <a
+      class="article-card__media media media--{{ card_ratio }}"
+      href="{{ article.url }}"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      {%- render 'image-fallback',
+        image: article.image,
+        fallback: fallback,
+        alt: article.title,
+        widths: '400,600,800,1200,1600',
+        sizes: card_sizes,
+        loading: card_loading
+      -%}
+    </a>
+
+    <div class="card__body article-card__body">
+      {%- if with_meta -%}
+        <p class="article-card__meta caption">
+          <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article_date }}</time>
+          {%- if article.author != blank -%}
+            <span aria-hidden="true">·</span>
+            <span>{{ article.author | escape }}</span>
+          {%- endif -%}
+        </p>
+      {%- endif -%}
+
+      <{{ title_tag }} class="article-card__title h5">
+        <a class="card__link" href="{{ article.url }}">{{ article.title | escape }}</a>
+      </{{ title_tag }}>
+
+      {%- if with_excerpt and article.excerpt != blank -%}
+        <p class="article-card__excerpt text-muted">
+          {{- article.excerpt | strip_html | escape -}}
+        </p>
+      {%- endif -%}
+
+      {%- comment -%}
+        Not a link. The title already is one, covering the whole card; a
+        second anchor to the same place would be a second tab stop reading
+        "Read more" with no context. This is the affordance only.
+      {%- endcomment -%}
+      <span class="article-card__more link-underline" aria-hidden="true">
+        {{- 'blog.read_more' | t -}}
+      </span>
+    </div>
+  </article>
+{%- endif -%}

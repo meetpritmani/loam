@@ -8,14 +8,35 @@
   The list is decorative reassurance next to a purchase action, so it is
   labelled for assistive tech and the individual marks are not announced.
 
+  `payment_type_svg_tag` emits fixed ids — `id="pi-visa"`, and gradient defs
+  like `id="pi-paint0_linear"` referenced by `url(#pi-paint0_linear)`. Render
+  the row twice on one page (the product page trust row and the footer both
+  want it) and every one of those ids is duplicated. That is invalid HTML, it
+  can make the second SVG's gradient resolve against the first, and Lighthouse
+  flags it under "[id] attributes are not unique".
+
+  Shopify's filter offers no way to namespace them, so `id_prefix` rewrites
+  the ids and their references. Two substring replacements cover every case:
+  `"pi-` catches both `id="pi-…"` and `aria-labelledby="pi-…"`, and `(#pi-`
+  catches the `url(#pi-…)` fill references.
+
   Params:
-    class  (string, optional)
+    class      (string, optional)
+    id_prefix  (string, optional) — required on any second row in one document
 {%- endcomment -%}
 
 {%- if shop.enabled_payment_types.size > 0 -%}
   <ul class="payment-icons {{ class }}" aria-label="{{ 'footer.payment_methods' | t }}">
     {%- for type in shop.enabled_payment_types -%}
-      <li>{{ type | payment_type_svg_tag: class: 'payment-icons__icon' }}</li>
+      {%- liquid
+        assign mark = type | payment_type_svg_tag: class: 'payment-icons__icon'
+        if id_prefix != blank
+          assign id_to = '"' | append: id_prefix | append: 'pi-'
+          assign ref_to = '(#' | append: id_prefix | append: 'pi-'
+          assign mark = mark | replace: '"pi-', id_to | replace: '(#pi-', ref_to
+        endif
+      -%}
+      <li>{{ mark }}</li>
     {%- endfor -%}
   </ul>
 {%- endif -%}

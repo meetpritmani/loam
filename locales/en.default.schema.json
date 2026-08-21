@@ -335,10 +335,33 @@
       "name": "Cart"
     },
     "main_collection": {
-      "name": "Product grid"
+      "name": "Product grid",
+      "show_filters": {
+        "label": "Show filters",
+        "info": "Filters come from the Search & Discovery app. With none configured, nothing renders here."
+      },
+      "show_sort": {
+        "label": "Show sort"
+      },
+      "products_per_page": {
+        "label": "Products per page"
+      },
+      "columns": {
+        "label": "Columns on desktop"
+      },
+      "columns_mobile": {
+        "label": "Columns on mobile"
+      }
     },
     "main_list_collections": {
-      "name": "Collections list"
+      "name": "Collections list",
+      "sort": {
+        "label": "Order",
+        "options": {
+          "default": "As set in admin",
+          "alphabetical": "Alphabetical"
+        }
+      }
     },
     "main_page": {
       "name": "Page"
@@ -413,7 +436,26 @@
       }
     },
     "main_search": {
-      "name": "Search results"
+      "name": "Search results",
+      "popular_collection": {
+        "label": "Popular products",
+        "info": "Shown before a shopper has searched, and as the route out of a no-results page. Falls back to your Conversion recovery collection."
+      },
+      "popular_count": {
+        "label": "Popular products shown"
+      },
+      "results_per_page": {
+        "label": "Results per page"
+      },
+      "blocks": {
+        "suggestion": {
+          "name": "Popular search",
+          "term": {
+            "label": "Search term",
+            "info": "Offered on the no-results page. Use words that lead somewhere in your catalogue."
+          }
+        }
+      }
     },
     "announcement_bar": {
       "name": "Announcement bar",
@@ -751,6 +793,17 @@
             "label": "Link label"
           }
         }
+      }
+    },
+    "main_collection_banner": {
+      "name": "Collection banner",
+      "show_description": {
+        "label": "Show description",
+        "info": "Uses the description set on the collection in admin."
+      },
+      "show_image": {
+        "label": "Show collection image",
+        "info": "Off by default so the first row of products stays above the fold on mobile."
       }
     }
   },

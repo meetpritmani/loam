@@ -9,12 +9,50 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "search",
-      "settings": {}
+    "main-search": {
+      "type": "main-search",
+      "blocks": {
+        "suggestion-1": {
+          "type": "suggestion",
+          "settings": {
+            "term": "Merino wool"
+          }
+        },
+        "suggestion-2": {
+          "type": "suggestion",
+          "settings": {
+            "term": "Runners"
+          }
+        },
+        "suggestion-3": {
+          "type": "suggestion",
+          "settings": {
+            "term": "Slip-ons"
+          }
+        },
+        "suggestion-4": {
+          "type": "suggestion",
+          "settings": {
+            "term": "Wool loungers"
+          }
+        }
+      },
+      "block_order": [
+        "suggestion-1",
+        "suggestion-2",
+        "suggestion-3",
+        "suggestion-4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "popular_count": 4,
+        "results_per_page": 24,
+        "padding_top": 40,
+        "padding_bottom": 64
+      }
     }
   },
   "order": [
-    "main"
+    "main-search"
   ]
 }

@@ -78,6 +78,16 @@
     "note_placeholder": "Delivery instructions, gift message, anything else.",
     "free_shipping_progress_html": "You are {{ amount }} away from free shipping.",
     "free_shipping_reached": "You have earned free shipping.",
+    "free_shipping_label": "Progress toward free shipping",
+    "empty_heading": "Your cart is empty",
+    "empty_text": "Nothing in here yet. Start with the pieces people come back for.",
+    "popular_products": "Popular right now",
+    "upsell_title": "Goes well with this",
+    "summary": "Order summary",
+    "item_count": {
+      "one": "{{ count }} item",
+      "other": "{{ count }} items"
+    },
     "item_added": "{{ title }} added to your cart.",
     "item_removed": "{{ title }} removed from your cart.",
     "update_error": "Your cart could not be updated. Please try again.",
@@ -85,7 +95,10 @@
   },
   "collections": {
     "title": "Collections",
-    "empty": "No products found.",
+    "empty": {
+      "heading": "Nothing here yet",
+      "text": "This collection has no products in it at the moment."
+    },
     "product_count": {
       "one": "{{ count }} product",
       "other": "{{ count }} products"
@@ -99,6 +112,31 @@
     "filters_applied": {
       "one": "{{ count }} filter applied",
       "other": "{{ count }} filters applied"
+    },
+    "result_count": {
+      "one": "{{ count }} product",
+      "other": "{{ count }} products"
+    },
+    "filters": {
+      "title": "Filter",
+      "apply": "Apply filters",
+      "remove": "Remove filter",
+      "clear_all": "Clear all",
+      "show_results": {
+        "one": "Show {{ count }} product",
+        "other": "Show {{ count }} products"
+      },
+      "price_from": "Lowest price",
+      "price_to": "Highest price",
+      "error": "Filters could not be applied. Please try again."
+    },
+    "empty_filtered": {
+      "heading": "No products match those filters",
+      "text": "Try removing a filter, or start again with the full range."
+    },
+    "list_empty": {
+      "heading": "No collections yet",
+      "text": "Nothing has been grouped into a collection so far. The full range is still browsable."
     }
   },
   "customers": {
@@ -253,6 +291,11 @@
     "submit": "Search",
     "reset": "Clear search",
     "no_results_html": "No results found for \"{{ terms }}\".",
+    "no_results_text": "Check the spelling, try a shorter or broader word, or browse the full range.",
+    "popular_searches": "Popular searches",
+    "popular_products": "Popular right now",
+    "browse_collections": "Browse collections",
+    "browse_all": "Browse everything",
     "results_for_html": "{{ count }} results for \"{{ terms }}\"",
     "suggestions": "Suggestions",
     "products": "Products",

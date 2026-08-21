@@ -1,0 +1,269 @@
+{%- comment -%}
+  main-cart.liquid — the cart page, for merchants who choose a page over the
+  drawer and for anyone who lands on /cart directly.
+
+  Every line of markup the drawer renders is rendered here from the same
+  snippets — `cart-line`, `free-shipping-bar`, `trust-row`. The drawer and
+  the page are not two implementations of a cart; they are two frames around
+  one.
+
+  Section Rendering API contract
+  -----------------------------
+  The root carries `data-cart-root="<section id>"`, which is how global.js
+  knows to ask Shopify to re-render this section on every cart mutation, and
+  which element to swap the result into. Inside it, `[data-cart-body]` and
+  `[data-cart-footer]` are the only two regions replaced. The root itself is
+  never replaced: on a page the shopper's focus is usually inside it.
+
+  `data-cart-count` on the root is copied across on every swap. It is what
+  lets the layout collapse from two columns to one when the last line is
+  removed, without the wrapper needing to be re-rendered.
+
+  §9.4 / §9.5: the empty state offers popular products and a collection
+  rather than a bare sentence; the tax and shipping note is stated before the
+  checkout button, not after it; and continue-shopping sits alongside
+  checkout so the page is never a one-way door.
+{%- endcomment -%}
+
+{%- liquid
+  assign recovery = settings.cro_empty_cart_collection
+  if recovery == blank
+    assign recovery = collections.all
+  endif
+
+  assign continue_url = recovery.url | default: routes.all_products_collection_url
+  assign upsell_products = settings.cro_cart_upsell_products
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div
+      class="cart-page"
+      data-cart-root="{{ section.id }}"
+      data-cart-count="{{ cart.item_count }}"
+    >
+      <div class="cart-page__header">
+        <h1 class="h2">{{ 'cart.title' | t }}</h1>
+        {%- if cart.item_count > 0 -%}
+          <p class="cart-page__count text-muted">
+            {{- 'cart.item_count' | t: count: cart.item_count -}}
+          </p>
+        {%- endif -%}
+      </div>
+
+      <div class="cart-page__layout">
+        <cart-items class="cart-page__items" data-cart-body>
+          {%- if cart.item_count == 0 -%}
+            <div class="cart-page__empty">
+              {%- assign empty_heading = 'cart.empty_heading' | t -%}
+              {%- assign empty_text = 'cart.empty_text' | t -%}
+              {%- assign continue_label = 'cart.continue_shopping' | t -%}
+              {%- assign search_label = 'search.title' | t -%}
+              {%- render 'empty-state',
+                heading: empty_heading,
+                text: empty_text,
+                link_url: continue_url,
+                link_label: continue_label,
+                link_2_url: routes.search_url,
+                link_2_label: search_label,
+                icon: 'cart'
+              -%}
+
+              {%- comment -%}
+                §9.5: "empty cart shows popular products and a collection
+                link". The cards come from the merchant's recovery collection,
+                so they are real products in the merchant's own order — the
+                theme never picks products at random. A store with nothing in
+                that collection still has the route out above.
+              {%- endcomment -%}
+              {%- if recovery.products.size > 0 -%}
+                <div class="cart-page__recovery">
+                  <h2 class="h6 cart-page__recovery-title">
+                    {{- 'cart.popular_products' | t -}}
+                  </h2>
+                  <ul class="grid" style="--grid-cols: 4; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">
+                    {%- for product in recovery.products limit: 4 -%}
+                      <li>
+                        {%- render 'card-product',
+                          product: product,
+                          heading_tag: 'h3',
+                          sizes: '(min-width: 990px) 22vw, (min-width: 750px) 30vw, 45vw'
+                        -%}
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              {%- endif -%}
+            </div>
+          {%- else -%}
+            {%- render 'free-shipping-bar', class: 'cart-page__shipping-bar' -%}
+
+            <ul class="cart-lines cart-lines--page">
+              {%- for item in cart.items -%}
+                {%- render 'cart-line', item: item, context: 'page' -%}
+              {%- endfor -%}
+            </ul>
+
+            <a class="link-underline cart-page__continue" href="{{ continue_url }}">
+              {{- 'cart.continue_shopping' | t -}}
+            </a>
+
+            {%- comment -%}
+              Merchant-picked products only (§9.4). Nothing here is generated
+              from browsing behaviour or a random collection slice.
+            {%- endcomment -%}
+            {%- if upsell_products.count > 0 -%}
+              <div class="cart-page__upsell">
+                <h2 class="h6">{{ 'cart.upsell_title' | t }}</h2>
+                <ul class="grid" style="--grid-cols: 3; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">
+                  {%- for product in upsell_products limit: 3 -%}
+                    <li>
+                      {%- render 'card-product',
+                        product: product,
+                        heading_tag: 'h3',
+                        show_badges: false,
+                        sizes: '(min-width: 990px) 18vw, (min-width: 750px) 25vw, 45vw'
+                      -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+          {%- endif -%}
+        </cart-items>
+
+        {%- comment -%}
+          Rendered whether or not the cart has items. If this wrapper only
+          existed when the cart was full, adding the first item would have
+          nothing to swap the totals into and they would not appear until a
+          full page load.
+        {%- endcomment -%}
+        <div class="cart-page__summary" data-cart-footer>
+          {%- if cart.item_count > 0 -%}
+            <form action="{{ routes.cart_url }}" method="post" novalidate class="cart-summary">
+              <h2 class="h6 cart-summary__title">{{ 'cart.summary' | t }}</h2>
+
+              {%- if settings.cart_show_note -%}
+                <details class="cart-summary__note">
+                  <summary class="button--tertiary">{{ 'cart.note' | t }}</summary>
+                  <label class="visually-hidden" for="cart-page-note">{{ 'cart.note' | t }}</label>
+                  <textarea
+                    class="field__textarea"
+                    id="cart-page-note"
+                    name="note"
+                    placeholder="{{ 'cart.note_placeholder' | t }}"
+                    data-cart-note
+                  >{{ cart.note }}</textarea>
+                </details>
+              {%- endif -%}
+
+              {%- if cart.cart_level_discount_applications.size > 0 -%}
+                <ul class="cart-summary__discounts">
+                  {%- for discount in cart.cart_level_discount_applications -%}
+                    <li class="cart-summary__row text-body-sm">
+                      <span class="badge">{{ discount.title | escape }}</span>
+                      <span>-{{ discount.total_allocated_amount | money }}</span>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+
+              <div class="cart-summary__row cart-summary__subtotal">
+                <span class="h6">{{ 'cart.subtotal' | t }}</span>
+                <span class="price">
+                  {%- if settings.show_currency_code -%}
+                    {{ cart.total_price | money_with_currency }}
+                  {%- else -%}
+                    {{ cart.total_price | money }}
+                  {%- endif -%}
+                </span>
+              </div>
+
+              {%- comment -%}
+                §9.4: stated before the checkout button, never revealed at
+                checkout. A shopper should know shipping and tax are still to
+                come while they are still deciding.
+              {%- endcomment -%}
+              <p class="field__hint">{{ 'cart.taxes_and_shipping_note' | t }}</p>
+
+              <button class="button button--primary button--full" type="submit" name="checkout">
+                {{ 'cart.checkout' | t }}
+              </button>
+
+              {%- if settings.cro_dynamic_checkout and additional_checkout_buttons -%}
+                <div class="cart-summary__express">
+                  {{ content_for_additional_checkout_buttons }}
+                </div>
+              {%- endif -%}
+            </form>
+
+            {%- comment -%}
+              §9.2 rule 10: trust clustered at the friction point. This row
+              sits directly beneath the checkout button and nowhere else on
+              the page.
+            {%- endcomment -%}
+            {%- render 'trust-row',
+              class: 'cart-page__trust',
+              show_payment: section.settings.show_payment_icons
+            -%}
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when '@app' -%}
+            <div class="cart-page__app" {{ block.shopify_attributes }}>
+              {%- render block -%}
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_cart.name",
+  "tag": "section",
+  "class": "section-main-cart",
+  "blocks": [{ "type": "@app" }],
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "t:labels.show_payment_icons",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}

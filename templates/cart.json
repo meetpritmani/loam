@@ -9,12 +9,17 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "cart",
-      "settings": {}
+    "main-cart": {
+      "type": "main-cart",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "show_payment_icons": true,
+        "padding_top": 40,
+        "padding_bottom": 64
+      }
     }
   },
   "order": [
-    "main"
+    "main-cart"
   ]
 }

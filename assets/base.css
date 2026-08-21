@@ -1577,6 +1577,244 @@ cart-items[aria-busy] {
   transition: width var(--dur-slow) var(--ease);
 }
 
+/* --- Search page --------------------------------------------------------
+   The input is the page's primary action, so it stays full width on mobile
+   and sits beside its button from 750px rather than shrinking to fit. */
+
+.search-page__header {
+  display: grid;
+  gap: var(--sp-5);
+  margin-block-end: var(--sp-7);
+}
+
+.search-page__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  max-width: 640px;
+}
+
+.search-page__field {
+  flex: 1 1 240px;
+}
+
+.search-page__count {
+  margin-block-end: var(--sp-5);
+  color: var(--c-ink-70);
+}
+
+.search-page__group + .search-page__group {
+  margin-block-start: var(--sp-8);
+}
+
+.search-page__group > h2 {
+  margin-block-end: var(--sp-5);
+}
+
+.search-page__pages {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.search-page__empty {
+  display: grid;
+  gap: var(--sp-7);
+  justify-items: center;
+  text-align: center;
+}
+
+.search-page__suggestions {
+  display: grid;
+  gap: var(--sp-4);
+  justify-items: center;
+}
+
+.search-page__chips {
+  justify-content: center;
+}
+
+.search-page__chip {
+  display: inline-block;
+  padding: var(--sp-2) var(--sp-4);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: 999px;
+  font-size: var(--t-sm);
+  text-decoration: none;
+  color: var(--c-ink);
+  background-color: var(--c-surface);
+}
+
+.search-page__chip:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+
+
+/* --- Article card ------------------------------------------------------- */
+
+.article-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--c-ink-70);
+}
+
+.article-card__title {
+  margin: 0;
+}
+
+.article-card__excerpt {
+  font-size: var(--t-sm);
+  /* Two lines, so a grid of cards keeps a level baseline whatever length the
+     merchant's excerpts run to. Clamping beats truncating in Liquid: the full
+     text stays in the DOM for assistive tech and for search engines. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-card__more {
+  margin-block-start: var(--sp-1);
+  font-size: var(--t-sm);
+}
+
+.article-card:hover .article-card__more {
+  color: var(--c-accent);
+}
+
+
+/* --- Cart page -----------------------------------------------------------
+   The page and the drawer share every line-level component; only the frame
+   around them differs. Two columns from 990px with a sticky summary, so the
+   checkout button stays reachable however long the line list runs.
+
+   The single-column state is driven by `data-cart-count="0"` on the root,
+   which global.js copies across on every cart update. Keying off the
+   attribute rather than an :empty summary means the collapse happens on the
+   swap itself, with no re-render of the wrapper and no reliance on
+   whitespace-tolerant :empty — which iOS 15 does not have. */
+
+.cart-page__header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-6);
+}
+
+.cart-page__count {
+  font-size: var(--t-sm);
+}
+
+.cart-page__layout {
+  display: grid;
+  gap: var(--sp-7);
+}
+
+.cart-lines--page {
+  gap: var(--sp-6);
+}
+
+/* Seam divider between lines — the signature dashed hairline, not a solid
+   rule. Applied between rather than below, so the list does not end on a
+   dangling edge above the continue link. */
+.cart-lines--page .cart-line + .cart-line {
+  padding-block-start: var(--sp-6);
+  background-image: var(--seam);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: top left;
+}
+
+.cart-page__continue {
+  display: inline-block;
+  margin-block-start: var(--sp-6);
+}
+
+.cart-page__upsell,
+.cart-page__recovery {
+  margin-block-start: var(--sp-8);
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.cart-page__empty .empty-state {
+  padding-block: var(--sp-6);
+}
+
+.cart-summary {
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  background-color: var(--c-surface);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+}
+
+.cart-summary__title {
+  margin: 0;
+}
+
+.cart-summary__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.cart-summary__discounts {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.cart-summary__subtotal {
+  padding-block-start: var(--sp-3);
+  background-image: var(--seam);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: top left;
+}
+
+.cart-summary__note summary {
+  display: inline-flex;
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+  margin-block-end: var(--sp-2);
+}
+
+.cart-summary__express {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.cart-page__trust {
+  margin-block-start: var(--sp-4);
+}
+
+.cart-page__app:not(:empty) {
+  margin-block-start: var(--sp-7);
+}
+
+@media (min-width: 990px) {
+  .cart-page__layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+
+  .cart-page__summary {
+    position: sticky;
+    top: calc(var(--header-height, 0px) + var(--sp-5));
+  }
+
+  /* Nothing to put beside an empty cart, so the empty state and its
+     recovery products get the full width. */
+  .cart-page[data-cart-count='0'] .cart-page__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
 /* --- Quantity stepper --------------------------------------------------- */
 
 .quantity {
@@ -2924,6 +3162,270 @@ cart-items[aria-busy] {
   .sticky-atc {
     display: none;
   }
+}
+
+
+/* --- Collection banner --------------------------------------------------- */
+
+.collection-banner {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.collection-banner__title {
+  margin: 0;
+}
+
+.collection-banner__description {
+  max-width: 60ch;
+  color: var(--c-ink-70);
+}
+
+/* --- Facets -------------------------------------------------------------
+   One set of controls. On mobile the groups stack as a disclosure list; from
+   750px they become a row of dropdowns. Same DOM either way — nothing is
+   moved on resize, so an open panel cannot be torn out from under a shopper. */
+
+.facets {
+  display: grid;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-5);
+}
+
+.facets__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.facets__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--c-ink-45);
+}
+
+.facets__inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.facets__group {
+  position: relative;
+}
+
+.facets__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding-inline: var(--sp-3);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+  font-size: var(--t-sm);
+  cursor: pointer;
+  list-style: none;
+}
+
+.facets__summary::-webkit-details-marker {
+  display: none;
+}
+
+.facets__group[open] .facets__summary {
+  border-color: var(--c-ink);
+}
+
+.facets__panel {
+  padding-block: var(--sp-3);
+}
+
+.facets__count {
+  margin-inline-start: auto;
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
+}
+
+.facets__sort {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.facets__active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.facets__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 36px;
+  padding-inline: var(--sp-3);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: 100px;
+  font-size: var(--t-xs);
+  text-decoration: none;
+}
+
+.chip:hover {
+  border-color: var(--c-ink);
+}
+
+/* --- Facet controls ------------------------------------------------------ */
+
+.facet-list {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 200px;
+}
+
+.facet-list__item {
+  display: flex;
+  align-items: center;
+}
+
+.facet-list__label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: var(--t-sm);
+}
+
+/* The checkbox stays a real focusable control; the ring is drawn on the label
+   so it wraps the whole row rather than a 16px box. */
+.facet-list__input:focus-visible + .facet-list__label {
+  outline: var(--focus-width) solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.facet-list__input:disabled + .facet-list__label {
+  color: var(--c-ink-45);
+  cursor: not-allowed;
+}
+
+.facet-list__count {
+  margin-inline-start: auto;
+  color: var(--c-ink-45);
+  font-size: var(--t-xs);
+}
+
+.facet-list__swatch {
+  width: 16px;
+  height: 16px;
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: 50%;
+  background-color: var(--swatch, var(--c-sand));
+}
+
+.facet-price {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 220px;
+}
+
+.facet-price__field {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: 1 1 auto;
+  padding-inline: var(--sp-2);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+}
+
+.facet-price__symbol {
+  color: var(--c-ink-45);
+  font-size: var(--t-sm);
+}
+
+.facet-price__input {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.facet-price__input:focus {
+  outline: none;
+}
+
+.facet-price__field:focus-within {
+  outline: var(--focus-width) solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.facet-price__dash {
+  color: var(--c-ink-45);
+}
+
+/* Results are dimmed, never removed, while a refinement is in flight — an
+   empty box mid-request reads as "no results" and is worse than a brief wait. */
+[data-collection-results][aria-busy] {
+  opacity: 0.55;
+  transition: opacity var(--dur) var(--ease);
+}
+
+@media (min-width: 750px) {
+  .facets__panel {
+    position: absolute;
+    z-index: 5;
+    inset-inline-start: 0;
+    top: calc(100% + var(--sp-1));
+    min-width: 220px;
+    padding: var(--sp-3);
+    border: var(--border-hairline) solid var(--c-ink-12);
+    border-radius: var(--radius);
+    background-color: var(--c-surface);
+    box-shadow: 0 12px 32px rgb(var(--c-shadow-rgb) / 0.1);
+  }
+}
+
+@media (min-width: 990px) {
+  .collection-banner--with-image {
+    grid-template-columns: 1fr minmax(0, 40%);
+    align-items: center;
+    gap: var(--sp-6);
+  }
+}
+
+
+/* Form controls sized for a thumb. The sort select measured 25px tall and the
+   quantity stepper 36px — both below the 44px that makes a control reliably
+   hittable on a phone. */
+.select {
+  min-height: 44px;
+}
+
+.quantity__button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.quantity__input {
+  min-height: 44px;
+}
+
+.breadcrumbs__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
 }
 
 /* ==========================================================================

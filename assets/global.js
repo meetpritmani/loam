@@ -620,11 +620,27 @@ if (!customElements.get('quantity-input')) {
    free-shipping threshold.
    ========================================================================== */
 
-const CART_SECTIONS = 'cart-drawer,cart-count';
-
 function cartRoute(path) {
   const root = window.Shopify?.routes?.root || '/';
   return root + path;
+}
+
+/**
+ * The section ids to ask Shopify to re-render, read from the document rather
+ * than hardcoded. The drawer is present on every page; the cart page section
+ * is present only on /cart, and its id is whatever key the merchant's
+ * cart.json uses. Asking for a section that is not on the page returns null
+ * for it, so over-asking is harmless — but under-asking silently leaves half
+ * the cart stale, which is why the DOM is the source of truth here.
+ * @returns {string}
+ */
+function cartSectionIds() {
+  const ids = new Set(['cart-count']);
+  document.querySelectorAll('[data-cart-root]').forEach((node) => {
+    const id = node.getAttribute('data-cart-root');
+    if (id) ids.add(id);
+  });
+  return Array.from(ids).join(',');
 }
 
 const Cart = {
@@ -640,7 +656,7 @@ const Cart = {
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
           ...payload,
-          sections: CART_SECTIONS,
+          sections: cartSectionIds(),
           sections_url: window.location.pathname,
         }),
       });
@@ -666,35 +682,59 @@ const Cart = {
   /**
    * Swap the rendered sections in.
    *
-   * Only the inner regions are replaced. The <loam-drawer> element itself is
-   * left alone: replacing it while open would tear down the focus trap and
-   * the scroll lock mid-interaction.
+   * Each cart section is matched to its own `[data-cart-root]`, and only the
+   * inner regions of that root are replaced. Matching per root matters once
+   * there is more than one cart on the page: on /cart the drawer and the cart
+   * page both exist, both contain a `[data-cart-body]`, and a document-wide
+   * querySelector would put the page's lines inside the drawer.
+   *
+   * The root elements themselves are never replaced. Replacing <loam-drawer>
+   * while it is open would tear down the focus trap and the scroll lock
+   * mid-interaction.
    * @param {Record<string,string>|undefined} sections
    */
   render(sections) {
     if (!sections) return;
     const parser = new DOMParser();
 
-    const drawerHtml = sections['cart-drawer'];
-    if (drawerHtml) {
-      const parsed = parser.parseFromString(drawerHtml, 'text/html');
-      ['[data-cart-body]', '[data-cart-footer]'].forEach((selector) => {
-        const next = parsed.querySelector(selector);
-        const current = document.querySelector(selector);
-        if (next && current) current.innerHTML = next.innerHTML;
-      });
-    }
+    Object.entries(sections).forEach(([id, html]) => {
+      if (!html) return;
+      const parsed = parser.parseFromString(html, 'text/html');
 
-    const countHtml = sections['cart-count'];
-    if (countHtml) {
-      const parsed = parser.parseFromString(countHtml, 'text/html');
-      const next = parsed.querySelector('.cart-count');
-      if (next) {
+      if (id === 'cart-count') {
+        const next = parsed.querySelector('.cart-count');
+        if (!next) return;
         document.querySelectorAll('.cart-count').forEach((node) => {
           node.replaceWith(next.cloneNode(true));
         });
+        return;
       }
-    }
+
+      const current = document.querySelector(`[data-cart-root="${id}"]`);
+      const incoming = parsed.querySelector(`[data-cart-root="${id}"]`);
+      if (!current || !incoming) return;
+
+      // Focus lives inside the region about to be replaced more often than
+      // not — the shopper is usually holding a quantity stepper when this
+      // runs. Remember it by id and put it back afterwards, or every change
+      // dumps a keyboard user back to the top of the document.
+      const active = document.activeElement;
+      const activeId =
+        active instanceof HTMLElement && current.contains(active) ? active.id : '';
+
+      ['[data-cart-body]', '[data-cart-footer]'].forEach((selector) => {
+        const nextRegion = incoming.querySelector(selector);
+        const currentRegion = current.querySelector(selector);
+        if (nextRegion && currentRegion) currentRegion.innerHTML = nextRegion.innerHTML;
+      });
+
+      // Carries the item count onto the live root so layout that depends on
+      // an empty cart can react without the wrapper being re-rendered.
+      const count = incoming.getAttribute('data-cart-count');
+      if (count !== null) current.setAttribute('data-cart-count', count);
+
+      if (activeId) document.getElementById(activeId)?.focus();
+    });
   },
 
   /**
@@ -1606,4 +1646,177 @@ class ShareButton extends HTMLElement {
 
 if (!customElements.get('share-button')) {
   customElements.define('share-button', ShareButton);
+}
+
+/* ==========================================================================
+   COLLECTION
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   <facet-filters>
+   Progressive enhancement over a real GET form. Without this class the form
+   submits, the page reloads, and filtering still works — Shopify's faceted
+   URLs do the work either way. With it, the results are fetched through the
+   Section Rendering API and swapped in place, which is what keeps the
+   shopper's scroll position instead of throwing them back to the top of the
+   collection on every refinement (§9.5, §9.6).
+
+   The query string is always built with FormData from the live form, never
+   assembled by hand. Hand-built filter URLs are where the other applied
+   filters and the chosen sort quietly get dropped.
+   -------------------------------------------------------------------------- */
+
+class FacetFilters extends HTMLElement {
+  connectedCallback() {
+    this.section = this.dataset.section || '';
+    this.resultsSelector = this.dataset.results || '[data-collection-results]';
+    this.form = this.querySelector('[data-facet-form]');
+
+    this.onChange = this.onChange.bind(this);
+    this.onClick = this.onClick.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.onPopState = this.onPopState.bind(this);
+
+    this.addEventListener('change', this.onChange);
+    this.addEventListener('click', this.onClick);
+    this.form?.addEventListener('submit', this.onSubmit);
+    window.addEventListener('popstate', this.onPopState);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('change', this.onChange);
+    this.removeEventListener('click', this.onClick);
+    this.form?.removeEventListener('submit', this.onSubmit);
+    window.removeEventListener('popstate', this.onPopState);
+    this.controller?.abort();
+    window.clearTimeout(this.priceDebounce);
+  }
+
+  /** @returns {string} the query string for the current form state */
+  get query() {
+    if (!this.form) return '';
+    const data = new FormData(this.form);
+
+    // Empty price inputs must not become `filter.v.price.gte=`, which Shopify
+    // reads as a real bound and which then filters everything out.
+    for (const [key, value] of [...data.entries()]) {
+      if (typeof value === 'string' && value.trim() === '') data.delete(key);
+    }
+
+    return new URLSearchParams(data).toString();
+  }
+
+  /** @param {Event} event */
+  onChange(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (!target.closest('[data-facet-form]')) return;
+
+    // Typing in a price field fires on every keystroke; wait for a pause.
+    if (target.matches('.facet-price__input')) {
+      window.clearTimeout(this.priceDebounce);
+      this.priceDebounce = window.setTimeout(() => this.apply(this.query), 500);
+      return;
+    }
+
+    this.apply(this.query);
+  }
+
+  /** @param {MouseEvent} event */
+  onClick(event) {
+    const link = event.target instanceof Element && event.target.closest('[data-facet-link]');
+    if (!link) return;
+
+    // Chips and "clear all" are real links to a Shopify-built URL. Intercept
+    // them so removing a filter behaves like applying one.
+    event.preventDefault();
+    const url = new URL(link.href, window.location.origin);
+    this.apply(url.searchParams.toString());
+  }
+
+  /** @param {SubmitEvent} event */
+  onSubmit(event) {
+    event.preventDefault();
+    this.apply(this.query);
+  }
+
+  /* Back and forward have to re-render, or the URL and the grid disagree. */
+  onPopState() {
+    this.apply(window.location.search.replace(/^\?/, ''), { push: false });
+  }
+
+  /**
+   * @param {string} query
+   * @param {{push?: boolean}} [options]
+   */
+  async apply(query, options = {}) {
+    const push = options.push !== false;
+    if (!this.section) return;
+
+    this.controller?.abort();
+    this.controller = new AbortController();
+    this.setBusy(true);
+
+    try {
+      const url = `${window.location.pathname}?${query}`;
+      const response = await fetch(`${url}${query ? '&' : ''}section_id=${this.section}`, {
+        signal: this.controller.signal,
+      });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      this.swap(parsed);
+
+      if (push) window.history.pushState({ query }, '', url);
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('[Loam] Filters could not be applied:', error);
+      announce(this.dataset.errorMessage || '');
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * Replace the results, the chips and the counts — but NOT the whole form.
+   * Replacing the form would destroy the element the shopper is interacting
+   * with, losing focus and, on a select, closing the dropdown mid-choice.
+   * @param {Document} parsed
+   */
+  swap(parsed) {
+    const nextResults = parsed.querySelector(this.resultsSelector);
+    const currentResults = this.querySelector(this.resultsSelector);
+    if (nextResults && currentResults) currentResults.innerHTML = nextResults.innerHTML;
+
+    ['[data-result-count]', '.facets__active'].forEach((selector) => {
+      const next = parsed.querySelector(selector);
+      const current = this.querySelector(selector);
+      if (next && current) current.innerHTML = next.innerHTML;
+      else if (next && !current) this.querySelector('.facets__bar')?.after(next.cloneNode(true));
+      else if (!next && current) current.remove();
+    });
+
+    // Counts and disabled states change as the result set narrows, so each
+    // group's contents are refreshed — but only for groups the shopper is not
+    // currently inside, so an open dropdown does not collapse under them.
+    parsed.querySelectorAll('[data-facet-group]').forEach((nextGroup, index) => {
+      const currentGroup = this.querySelectorAll('[data-facet-group]')[index];
+      if (!currentGroup || currentGroup.contains(document.activeElement)) return;
+      const nextPanel = nextGroup.querySelector('.facets__panel');
+      const currentPanel = currentGroup.querySelector('.facets__panel');
+      if (nextPanel && currentPanel) currentPanel.innerHTML = nextPanel.innerHTML;
+    });
+
+    const count = this.querySelector('[data-result-count]');
+    if (count) announce(count.textContent.trim());
+  }
+
+  /** @param {boolean} busy */
+  setBusy(busy) {
+    this.querySelector(this.resultsSelector)?.toggleAttribute('aria-busy', busy);
+  }
+}
+
+if (!customElements.get('facet-filters')) {
+  customElements.define('facet-filters', FacetFilters);
 }

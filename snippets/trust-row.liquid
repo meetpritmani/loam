@@ -44,7 +44,11 @@
     {%- endif -%}
 
     {%- if show_marks -%}
-      {%- render 'payment-icons', class: 'trust-row__payment' -%}
+      {%- comment -%}
+        Prefixed because the footer renders this same row further down the
+        page, and Shopify's payment marks carry fixed ids.
+      {%- endcomment -%}
+      {%- render 'payment-icons', class: 'trust-row__payment', id_prefix: 'trust-' -%}
     {%- endif -%}
   </div>
 {%- endif -%}

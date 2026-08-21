@@ -26,10 +26,18 @@
     sizes        (string, optional)
     loading      (string, optional)
     show_badges  (boolean, optional) — default true
+    heading_tag  (string, optional)  — h2/h3/h4, default h3
+
+  `heading_tag` exists so the card does not create a gap in the document
+  outline. On the homepage a card sits under a section <h2>, so <h3> is right.
+  On a collection page the only heading above it is the page <h1>, so the
+  caller passes h2 — otherwise the outline jumps h1 to h3 and a screen-reader
+  user hears a level that was never opened.
 {%- endcomment -%}
 
 {%- liquid
   assign show_card_badges = show_badges | default: true, allow_false: true
+  assign title_tag = heading_tag | default: 'h3'
 
   assign ratio_class = 'media--portrait'
   case settings.card_image_ratio
@@ -98,9 +106,9 @@
     {%- endif -%}
 
     <div class="card__body">
-      <h3 class="card-product__title h5">
+      <{{ title_tag }} class="card-product__title h5">
         <a class="card__link" href="{{ product.url }}">{{ product.title | escape }}</a>
-      </h3>
+      </{{ title_tag }}>
 
       {%- if settings.card_show_material and material != blank -%}
         <p class="material-tag">{{ material | escape }}</p>
@@ -241,7 +249,7 @@
     {%- endif -%}
 
     <div class="card__body">
-      <h3 class="card-product__title h5">{{ demo_name }}</h3>
+      <{{ title_tag }} class="card-product__title h5">{{ demo_name }}</{{ title_tag }}>
 
       {%- if settings.card_show_material -%}
         <p class="material-tag">{{ demo_material }}</p>
