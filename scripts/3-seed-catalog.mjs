@@ -63,11 +63,13 @@ const PRODUCT_SET = `
   }
 `;
 
-const PRODUCT_CREATE_MEDIA = `
-  mutation ProductCreateMedia($productId: ID!, $media: [CreateMediaInput!]!) {
-    productCreateMedia(productId: $productId, media: $media) {
-      media { ... on MediaImage { id } }
-      mediaUserErrors { field message code }
+/* productCreateMedia was removed in 2026-07. productUpdate takes the same
+   CreateMediaInput list as a second argument and appends it to the product. */
+const PRODUCT_ADD_MEDIA = `
+  mutation ProductAddMedia($product: ProductUpdateInput!, $media: [CreateMediaInput!]) {
+    productUpdate(product: $product, media: $media) {
+      product { id media(first: 10) { nodes { id } } }
+      userErrors { field message }
     }
   }
 `;
@@ -100,19 +102,26 @@ const COLLECTION_BY_HANDLE = `
   }
 `;
 
+/* 2026-07 renamed the argument to `collection`, retyped it as
+   CollectionCreateInput, and dropped `code` from its UserError. Smart-collection
+   rules moved off `ruleSet` onto the conditions-source model below. */
 const COLLECTION_CREATE = `
-  mutation CollectionCreate($input: CollectionInput!) {
-    collectionCreate(input: $input) {
+  mutation CollectionCreate($collection: CollectionCreateInput!) {
+    collectionCreate(collection: $collection) {
       collection { id handle title }
-      userErrors { field message code }
+      userErrors { field message }
     }
   }
 `;
 
-const COLLECTION_ADD_PRODUCTS = `
-  mutation CollectionAddProducts($id: ID!, $productIds: [ID!]!) {
-    collectionAddProducts(id: $id, productIds: $productIds) {
-      collection { id }
+/* collectionAddProducts was removed in 2026-07, and neither CollectionCreateInput
+   nor CollectionUpdateInput carries a `products` list. Membership is now set from
+   the product side. collectionsToJoin is additive and a no-op for a product
+   already in the collection, so this keeps the step idempotent. */
+const PRODUCT_JOIN_COLLECTION = `
+  mutation ProductJoinCollection($product: ProductUpdateInput!) {
+    productUpdate(product: $product) {
+      product { id }
       userErrors { field message }
     }
   }
@@ -364,16 +373,16 @@ if (!offline) {
         log.skipped(`  ${product.title}: media already attached`);
       } else {
         await mutate(
-          PRODUCT_CREATE_MEDIA,
+          PRODUCT_ADD_MEDIA,
           {
-            productId: saved.id,
+            product: { id: saved.id },
             media: images.map((file) => ({
               originalSource: mediaMap[file].url,
               mediaContentType: 'IMAGE',
               alt: `${product.title} — ${product.material}`,
             })),
           },
-          'productCreateMedia'
+          'productUpdate'
         );
         // media[1] is what card-product's hover swap reads. A product with one
         // image loses that behaviour silently, so it is worth saying out loud.
@@ -428,17 +437,35 @@ if (!offline) {
           title: collection.title,
           descriptionHtml: `<p>${collection.description}</p>`,
           ...(image ? { image: { src: image, altText: collection.title } } : {}),
+          // A smart collection is now a collection carrying a conditions source.
+          // matchType ALL on a single condition is the same "products tagged X"
+          // rule the old appliedDisjunctively: false ruleSet expressed.
           ...(collection.type === 'smart'
             ? {
-                ruleSet: {
-                  appliedDisjunctively: false,
-                  rules: [{ column: 'TAG', relation: 'EQUALS', condition: collection.tag }],
-                },
+                sources: [
+                  {
+                    source: {
+                      title: collection.title,
+                      inclusion: {
+                        matchType: 'ALL',
+                        conditions: [
+                          {
+                            productTag: {
+                              relation: 'TAGGED_WITH',
+                              values: [collection.tag],
+                              matchType: 'ANY',
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
               }
             : {}),
         };
 
-        const payload = await mutate(COLLECTION_CREATE, { input }, 'collectionCreate');
+        const payload = await mutate(COLLECTION_CREATE, { collection: input }, 'collectionCreate');
         id = payload.collection.id;
         log.created(`${collection.title} (${collection.type})`);
         appendLog('collection', collection.handle, id);
@@ -448,18 +475,25 @@ if (!offline) {
         }
       }
 
-      // Manual collections get their members every run. collectionAddProducts is
-      // additive and ignores products already in the collection, so this is safe
-      // to repeat and it repairs a collection someone emptied by hand.
+      // Manual collections get their members every run. collectionsToJoin is
+      // additive and ignores a product already in the collection, so this is safe
+      // to repeat and it repairs a collection someone emptied by hand. One call
+      // per product rather than one per collection — the batch form went away
+      // with collectionAddProducts.
       if (collection.type === 'manual') {
         const ids = collection.productHandles
           .map((handle) => productIds.get(handle))
           .filter(Boolean);
 
-        if (ids.length > 0) {
-          await mutate(COLLECTION_ADD_PRODUCTS, { id, productIds: ids }, 'collectionAddProducts');
-          log.info(`  ${ids.length} products`);
+        for (const productId of ids) {
+          await mutate(
+            PRODUCT_JOIN_COLLECTION,
+            { product: { id: productId, collectionsToJoin: [id] } },
+            'productUpdate'
+          );
         }
+
+        if (ids.length > 0) log.info(`  ${ids.length} products`);
       }
     }
   });
