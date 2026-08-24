@@ -21,6 +21,19 @@
   background, never with `opacity` on text — opacity would also fade any
   child element and breaks sub-pixel antialiasing on dark schemes.
 
+  Which tint carries text is fixed, not a matter of taste:
+
+    --c-ink-70  the only muted TEXT tint. 6.3:1 on paper, 5.7:1 on sand, so
+                it clears WCAG AA everywhere a scheme can put it.
+    --c-ink-45  never text. A 45% mix measures 2.9:1 on paper and cannot be
+                made to pass, so it is reserved for the cases 1.4.3 and
+                1.4.11 exempt: disabled controls, decorative icons, and
+                separator glyphs.
+    --c-ink-12  hairlines and borders only.
+
+  `node scripts/check-contrast.mjs` measures every pair in every scheme of
+  every shipped preset and exits non-zero on a failure.
+
   The RGB triplets (--c-ink-rgb etc.) exist purely for legitimate alpha
   surfaces — hero scrims, drawer overlays — not for text.
 {%- endcomment -%}

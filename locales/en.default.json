@@ -144,6 +144,14 @@
       "text": "Nothing has been grouped into a collection so far. The full range is still browsable."
     }
   },
+  "contact": {
+    "name": "Name",
+    "email": "Email address",
+    "phone": "Phone number",
+    "message": "Message",
+    "error_heading": "Your message was not sent",
+    "send_another": "Send another message"
+  },
   "customers": {
     "account": {
       "title": "Account",

@@ -1,0 +1,119 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "contact-form": {
+      "type": "contact-form",
+      "blocks": {
+        "email": {
+          "type": "route",
+          "settings": {
+            "icon": "email",
+            "label": "Email",
+            "value": "help@fernway.example",
+            "link": "mailto:help@fernway.example"
+          }
+        },
+        "hours": {
+          "type": "route",
+          "settings": {
+            "icon": "clock",
+            "label": "Hours",
+            "value": "Monday to Friday, 9am to 5pm GMT"
+          }
+        },
+        "returns": {
+          "type": "route",
+          "settings": {
+            "icon": "return",
+            "label": "Returns and exchanges",
+            "value": "Start a return",
+            "link": "/pages/shipping-and-returns"
+          }
+        },
+        "sizing": {
+          "type": "route",
+          "settings": {
+            "icon": "truck",
+            "label": "Where is my order",
+            "value": "Shipping times and tracking",
+            "link": "/pages/shipping-and-returns"
+          }
+        }
+      },
+      "block_order": [
+        "email",
+        "hours",
+        "returns",
+        "sizing"
+      ],
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "eyebrow": "Contact",
+        "heading": "Talk to us",
+        "intro": "Sizing, an order, a return, or a question about the materials. This reaches a person, not a queue.",
+        "response_time": "We reply within one working day, Monday to Friday.",
+        "button_label": "Send message",
+        "show_phone": false,
+        "show_page_content": true,
+        "routes_heading": "Other ways to reach us",
+        "success_heading": "Message sent",
+        "success_text": "It is with our team. You will have a reply within one working day.",
+        "success_label": "Keep shopping",
+        "success_link": "/collections/best-sellers",
+        "padding_top": 48,
+        "padding_bottom": 72
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "sizing": {
+          "type": "question",
+          "settings": {
+            "question": "I am between sizes. Which way should I go?",
+            "answer": "<p>Size down. The merino upper gives about half a size after the first week, and the knit collar holds the heel without needing the extra room. If you have a wide foot, stay at your usual size.</p>"
+          }
+        },
+        "delivery": {
+          "type": "question",
+          "settings": {
+            "question": "How long does delivery take?",
+            "answer": "<p>Two to four working days in the UK and mainland Europe, five to eight elsewhere. Every order ships carbon neutral and you get a tracking link the moment it leaves the warehouse.</p>"
+          }
+        },
+        "returns": {
+          "type": "question",
+          "settings": {
+            "question": "What if they do not fit?",
+            "answer": "<p>Wear them for thirty days. Walk in them, run in them, wash them. If they are not right, send them back for a full refund and we pay the postage.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "sizing",
+        "delivery",
+        "returns"
+      ],
+      "settings": {
+        "color_scheme": "scheme-sand",
+        "eyebrow": "Before you write",
+        "heading": "Answered already",
+        "text": "<p>The full list lives on the <a href=\"/pages/faq\">FAQ page</a>.</p>",
+        "padding_top": 64,
+        "padding_bottom": 72
+      }
+    }
+  },
+  "order": [
+    "contact-form",
+    "faq"
+  ]
+}

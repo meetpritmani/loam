@@ -1,0 +1,176 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main-page": {
+      "type": "main-page",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "show_next_step": false,
+        "next_color_scheme": "scheme-sand",
+        "next_heading": "Anything else?",
+        "next_text": "If this did not answer it, we read every message and reply within one working day.",
+        "next_label": "Shop the range",
+        "contact_label": "Contact us",
+        "contact_url": "/pages/contact",
+        "padding_top": 48,
+        "padding_bottom": 40
+      }
+    },
+    "materials": {
+      "type": "image-with-text",
+      "blocks": {
+        "wool": {
+          "type": "feature",
+          "settings": {
+            "tag": "Merino wool",
+            "heading": "Uppers",
+            "text": "Regulates temperature, resists odour, and needs washing about a third as often as cotton."
+          }
+        },
+        "tree": {
+          "type": "feature",
+          "settings": {
+            "tag": "Eucalyptus fibre",
+            "heading": "Knits",
+            "text": "Uses 95% less water than conventional cotton knit and breathes in humid heat."
+          }
+        },
+        "foam": {
+          "type": "feature",
+          "settings": {
+            "tag": "Sugarcane foam",
+            "heading": "Soles",
+            "text": "A carbon-negative sole that stays springy past 500 miles."
+          }
+        }
+      },
+      "block_order": [
+        "wool",
+        "tree",
+        "foam"
+      ],
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "media_position": "end",
+        "image_ratio": "portrait",
+        "eyebrow": "What we make",
+        "heading": "Three materials. That's the whole shoe.",
+        "text": "<p>We started with a question that had nothing to do with fashion: what would a shoe look like if every part of it grew back? Eight years later the answer is three materials, sourced from farms we can name, and a factory we visit.</p>",
+        "button_label": "Shop the range",
+        "button_link": "/collections/best-sellers",
+        "padding_top": 40,
+        "padding_bottom": 72
+      }
+    },
+    "impact-stats": {
+      "type": "impact-stats",
+      "blocks": {
+        "pairs": {
+          "type": "stat",
+          "settings": {
+            "value": "2.1",
+            "suffix": "M",
+            "text": "Pairs made from renewable materials"
+          }
+        },
+        "water": {
+          "type": "stat",
+          "settings": {
+            "value": "95",
+            "suffix": "%",
+            "text": "Less water in every knit upper"
+          }
+        },
+        "carbon": {
+          "type": "stat",
+          "settings": {
+            "value": "100",
+            "suffix": "%",
+            "text": "Carbon neutral shipping, no offsets bought after the fact"
+          }
+        },
+        "reviews": {
+          "type": "stat",
+          "settings": {
+            "value": "12,400",
+            "text": "Reviews averaging 4.8"
+          }
+        }
+      },
+      "block_order": [
+        "pairs",
+        "water",
+        "carbon",
+        "reviews"
+      ],
+      "settings": {
+        "color_scheme": "scheme-ink",
+        "eyebrow": "Where we are",
+        "heading": "Eight years, counted honestly.",
+        "center": true,
+        "padding_top": 80,
+        "padding_bottom": 80
+      }
+    },
+    "closing": {
+      "type": "rich-text",
+      "blocks": {
+        "caption": {
+          "type": "caption",
+          "settings": {
+            "text": "Wear them"
+          }
+        },
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "text": "The rest of it is easier to feel than to read.",
+            "level": "h2",
+            "size": "h2"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Thirty days on your own feet, on your own pavement. Keep them or send them back at our cost — either way you will know more about the shoe than this page can tell you.</p>"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "label": "Shop all shoes",
+            "link": "/collections/best-sellers",
+            "style": "primary"
+          }
+        }
+      },
+      "block_order": [
+        "caption",
+        "heading",
+        "text",
+        "button"
+      ],
+      "settings": {
+        "color_scheme": "scheme-sand",
+        "width": "medium",
+        "alignment": "center",
+        "padding_top": 72,
+        "padding_bottom": 88
+      }
+    }
+  },
+  "order": [
+    "main-page",
+    "materials",
+    "impact-stats",
+    "closing"
+  ]
+}

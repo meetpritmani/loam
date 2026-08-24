@@ -726,7 +726,7 @@ dialog {
 }
 
 .price__compare {
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
   text-decoration: line-through;
 }
 
@@ -770,7 +770,7 @@ dialog {
 
 .field__input::placeholder,
 .field__textarea::placeholder {
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
 }
 
 .field__input:hover,
@@ -1449,7 +1449,7 @@ loam-drawer {
 }
 
 .search-drawer__input::placeholder {
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
 }
 
 /* --- Cart drawer -------------------------------------------------------- */
@@ -2170,6 +2170,182 @@ recently-viewed {
 
 .page-next__actions {
   align-items: center;
+}
+
+
+/* --- Contact page --------------------------------------------------------
+   Two columns from 990px, form first in both source and visual order. The
+   aside carries the routes and the page body, so neither can push the
+   fields below the fold on a phone (§9.5). */
+
+.contact {
+  display: grid;
+  gap: var(--sp-7);
+}
+
+.contact--single {
+  max-width: 46rem;
+}
+
+.contact__main,
+.contact__aside {
+  display: grid;
+  gap: var(--sp-6);
+  align-content: start;
+}
+
+.contact__header {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.contact__intro {
+  max-width: 56ch;
+  color: var(--c-ink-70);
+}
+
+/* The response time. Icon in accent, text at body weight — it is a promise,
+   not fine print, so it is not shrunk into the muted scale. */
+.contact__response {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--t-sm);
+}
+
+.contact__response .icon {
+  color: var(--c-accent);
+  flex: none;
+}
+
+.contact__form {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.contact__fields {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+/* Full-width on mobile so the send button sits in the thumb zone as a whole
+   target (§9.2 rule 8); intrinsic width once there is room beside it. */
+.contact__submit {
+  width: 100%;
+}
+
+.contact__errors {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border: var(--border-hairline) solid var(--c-signal);
+  border-radius: var(--radius);
+}
+
+.contact__errors-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--t-sm);
+  color: var(--c-signal);
+}
+
+.contact__errors-heading .icon {
+  color: var(--c-signal);
+  flex: none;
+}
+
+.contact__errors-list {
+  display: grid;
+  gap: var(--sp-1);
+  padding-inline-start: var(--sp-6);
+  list-style: disc;
+}
+
+.contact__success {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
+  max-width: 46ch;
+  padding: var(--sp-6);
+  background-color: var(--c-surface);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+}
+
+.contact__success-icon .icon {
+  color: var(--c-accent);
+}
+
+.contact__success-actions {
+  margin-block-start: var(--sp-2);
+}
+
+.contact__routes {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.contact__routes-list {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.contact__route {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.contact__route-icon {
+  color: var(--c-accent);
+  flex: none;
+  margin-block-start: 2px;
+}
+
+.contact__route-text {
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+}
+
+.contact__route-label {
+  font-size: var(--t-xs);
+  letter-spacing: var(--caption-tracking);
+  text-transform: uppercase;
+  color: var(--c-ink-70);
+}
+
+@media (min-width: 750px) {
+  .contact__fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contact__field--wide {
+    grid-column: 1 / -1;
+  }
+
+  .contact__submit {
+    width: auto;
+    justify-self: start;
+  }
+}
+
+@media (min-width: 990px) {
+  .contact {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: var(--sp-8);
+    align-items: start;
+  }
+
+  .contact--single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The aside is secondary, so it starts level with the first field rather
+     than with the heading. */
+  .contact__aside {
+    padding-block-start: var(--sp-2);
+  }
 }
 
 
@@ -3456,7 +3632,7 @@ recently-viewed {
 }
 
 .product__vendor {
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
 }
 
 .product__title {
@@ -3539,7 +3715,7 @@ recently-viewed {
 /* Unavailable is MARKED, never hidden (§9.7). The strike-through carries the
    meaning visually; the label text carries it for assistive tech. */
 .variant-picker__value--unavailable {
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
   text-decoration: line-through;
 }
 
@@ -3671,7 +3847,7 @@ recently-viewed {
   align-items: center;
   gap: var(--sp-2);
   font-size: var(--t-xs);
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
 }
 
 .breadcrumbs__item + .breadcrumbs__item::before {
@@ -3802,7 +3978,7 @@ recently-viewed {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
 }
 
 .facets__inline {
@@ -3918,7 +4094,7 @@ recently-viewed {
 
 .facet-list__count {
   margin-inline-start: auto;
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
   font-size: var(--t-xs);
 }
 
@@ -3948,7 +4124,7 @@ recently-viewed {
 }
 
 .facet-price__symbol {
-  color: var(--c-ink-45);
+  color: var(--c-ink-70);
   font-size: var(--t-sm);
 }
 

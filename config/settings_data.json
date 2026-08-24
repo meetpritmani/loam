@@ -34,7 +34,7 @@
           "text": "#101A16",
           "accent": "#2E6B4F",
           "sand": "#D6CFBD",
-          "signal": "#B23A2F",
+          "signal": "#A83428",
           "button": "#101A16",
           "button_label": "#F5F4F0",
           "shadow": "#101A16"
@@ -100,5 +100,211 @@
     "cro_trust_shipping": "Carbon neutral shipping on every order",
     "cro_datalayer": false,
     "card_quick_add": true
+  },
+  "presets": {
+    "Fernway": {
+      "color_schemes": {
+        "scheme-paper": {
+          "settings": {
+            "background": "#F5F4F0",
+            "surface": "#FFFFFF",
+            "text": "#101A16",
+            "accent": "#2E6B4F",
+            "sand": "#E3DED1",
+            "signal": "#B23A2F",
+            "button": "#101A16",
+            "button_label": "#F5F4F0",
+            "shadow": "#101A16"
+          }
+        },
+        "scheme-surface": {
+          "settings": {
+            "background": "#FFFFFF",
+            "surface": "#F5F4F0",
+            "text": "#101A16",
+            "accent": "#2E6B4F",
+            "sand": "#E3DED1",
+            "signal": "#B23A2F",
+            "button": "#101A16",
+            "button_label": "#F5F4F0",
+            "shadow": "#101A16"
+          }
+        },
+        "scheme-sand": {
+          "settings": {
+            "background": "#E3DED1",
+            "surface": "#F5F4F0",
+            "text": "#101A16",
+            "accent": "#2E6B4F",
+            "sand": "#D6CFBD",
+            "signal": "#A83428",
+            "button": "#101A16",
+            "button_label": "#F5F4F0",
+            "shadow": "#101A16"
+          }
+        },
+        "scheme-ink": {
+          "settings": {
+            "background": "#101A16",
+            "surface": "#1A2620",
+            "text": "#F5F4F0",
+            "accent": "#8FBFA4",
+            "sand": "#3A463F",
+            "signal": "#E08C82",
+            "button": "#F5F4F0",
+            "button_label": "#101A16",
+            "shadow": "#000000"
+          }
+        }
+      },
+      "heading_font": "archivo_n7",
+      "heading_scale": 100,
+      "heading_letter_spacing": 0,
+      "heading_uppercase": false,
+      "body_font": "assistant_n4",
+      "body_scale": 100,
+      "caption_letter_spacing": 1,
+      "page_width": 1440,
+      "page_gutter": 24,
+      "grid_gap": 24,
+      "corner_radius": 4,
+      "show_seam_dividers": true,
+      "enable_reveal": true,
+      "enable_image_zoom": true,
+      "card_image_ratio": "portrait",
+      "card_hover_image": true,
+      "card_show_material": true,
+      "card_show_swatches": true,
+      "card_show_sale_badge": true,
+      "card_show_sold_out_badge": true,
+      "card_show_new_badge": true,
+      "cart_type": "drawer",
+      "cart_show_note": true,
+      "cart_show_free_shipping_bar": true,
+      "cart_free_shipping_threshold": 75,
+      "predictive_search_enabled": true,
+      "predictive_search_show_price": true,
+      "show_currency_code": false,
+      "logo_width": 120,
+      "brand_description": "Fernway makes everyday shoes from merino wool, eucalyptus fibre, and sugarcane foam.",
+      "social_instagram_link": "",
+      "social_facebook_link": "",
+      "social_youtube_link": "",
+      "social_tiktok_link": "",
+      "social_pinterest_link": "",
+      "social_x_link": "",
+      "social_linkedin_link": "",
+      "demo_images": true,
+      "cro_sticky_atc": true,
+      "cro_dynamic_checkout": true,
+      "cro_show_payment_icons_pdp": true,
+      "cro_low_stock_threshold": 10,
+      "cro_trust_returns": "Free returns for 30 days",
+      "cro_trust_shipping": "Carbon neutral shipping on every order",
+      "cro_datalayer": false,
+      "card_quick_add": true
+    },
+    "Fernway Night": {
+      "color_schemes": {
+        "scheme-paper": {
+          "settings": {
+            "background": "#0E1512",
+            "surface": "#17211C",
+            "text": "#EDEFEA",
+            "accent": "#8FBFA4",
+            "sand": "#2A342E",
+            "signal": "#E08C82",
+            "button": "#EDEFEA",
+            "button_label": "#0E1512",
+            "shadow": "#000000"
+          }
+        },
+        "scheme-surface": {
+          "settings": {
+            "background": "#17211C",
+            "surface": "#0E1512",
+            "text": "#EDEFEA",
+            "accent": "#8FBFA4",
+            "sand": "#2A342E",
+            "signal": "#E08C82",
+            "button": "#EDEFEA",
+            "button_label": "#0E1512",
+            "shadow": "#000000"
+          }
+        },
+        "scheme-sand": {
+          "settings": {
+            "background": "#2A342E",
+            "surface": "#17211C",
+            "text": "#EDEFEA",
+            "accent": "#8FBFA4",
+            "sand": "#364039",
+            "signal": "#E08C82",
+            "button": "#EDEFEA",
+            "button_label": "#0E1512",
+            "shadow": "#000000"
+          }
+        },
+        "scheme-ink": {
+          "settings": {
+            "background": "#F5F4F0",
+            "surface": "#FFFFFF",
+            "text": "#101A16",
+            "accent": "#2E6B4F",
+            "sand": "#E3DED1",
+            "signal": "#B23A2F",
+            "button": "#101A16",
+            "button_label": "#F5F4F0",
+            "shadow": "#101A16"
+          }
+        }
+      },
+      "heading_font": "archivo_n7",
+      "heading_scale": 100,
+      "heading_letter_spacing": 0,
+      "heading_uppercase": false,
+      "body_font": "assistant_n4",
+      "body_scale": 100,
+      "caption_letter_spacing": 1,
+      "page_width": 1440,
+      "page_gutter": 24,
+      "grid_gap": 24,
+      "corner_radius": 4,
+      "show_seam_dividers": true,
+      "enable_reveal": true,
+      "enable_image_zoom": true,
+      "card_image_ratio": "portrait",
+      "card_hover_image": true,
+      "card_show_material": true,
+      "card_show_swatches": true,
+      "card_show_sale_badge": true,
+      "card_show_sold_out_badge": true,
+      "card_show_new_badge": true,
+      "cart_type": "drawer",
+      "cart_show_note": true,
+      "cart_show_free_shipping_bar": true,
+      "cart_free_shipping_threshold": 75,
+      "predictive_search_enabled": true,
+      "predictive_search_show_price": true,
+      "show_currency_code": false,
+      "logo_width": 120,
+      "brand_description": "Fernway makes everyday shoes from merino wool, eucalyptus fibre, and sugarcane foam.",
+      "social_instagram_link": "",
+      "social_facebook_link": "",
+      "social_youtube_link": "",
+      "social_tiktok_link": "",
+      "social_pinterest_link": "",
+      "social_x_link": "",
+      "social_linkedin_link": "",
+      "demo_images": true,
+      "cro_sticky_atc": true,
+      "cro_dynamic_checkout": true,
+      "cro_show_payment_icons_pdp": true,
+      "cro_low_stock_threshold": 10,
+      "cro_trust_returns": "Free returns for 30 days",
+      "cro_trust_shipping": "Carbon neutral shipping on every order",
+      "cro_datalayer": false,
+      "card_quick_add": true
+    }
   }
 }

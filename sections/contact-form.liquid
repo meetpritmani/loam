@@ -1,0 +1,467 @@
+{%- comment -%}
+  contact-form.liquid — the contact page's primary action.
+
+  §9.5 gives page.contact three obligations: the form above the fold, the
+  expected response time stated, and an alternative contact route visible
+  without submitting. All three are structural here rather than optional, so
+  a merchant cannot configure the page into a dead end:
+
+  - The section renders the page's own <h1> and owns the first viewport. It
+    is used *instead of* main-page on page.contact.json, not below it — a
+    400-word policy preamble above the fields is the usual reason a contact
+    form is never seen on a phone.
+  - The response line sits between the heading and the first field, so it is
+    read before the visitor decides whether to bother.
+  - The route blocks (email, hours, returns) render in the second column,
+    always present, never behind a submit.
+
+  The page body still renders, under the routes, when the merchant has
+  written one. Second column, so it never pushes the form down on mobile.
+
+  On success the form is replaced by a panel carrying a primary CTA back
+  into the store (§9.5: "success state routes onward, never to a dead
+  confirmation page"). On error the summary is the first thing in the form,
+  carries role="alert", and every offending field gets aria-invalid.
+
+  Blocks: route (max 4). Renders correctly with zero — the second column
+  collapses and the form takes the full width.
+{%- endcomment -%}
+
+{%- liquid
+  assign heading = page.title | default: section.settings.heading
+
+  assign name_id = 'contact-name-' | append: section.id
+  assign email_id = 'contact-email-' | append: section.id
+  assign phone_id = 'contact-phone-' | append: section.id
+  assign body_id = 'contact-body-' | append: section.id
+  assign errors_id = 'contact-errors-' | append: section.id
+  assign response_id = 'contact-response-' | append: section.id
+
+  assign success_url = section.settings.success_link
+  if success_url == blank
+    assign recovery = settings.cro_empty_cart_collection
+    assign success_url = recovery.url | default: routes.all_products_collection_url
+  endif
+
+  assign show_body = false
+  if section.settings.show_page_content and page.content != blank
+    assign show_body = true
+  endif
+
+  assign has_aside = false
+  if section.blocks.size > 0 or show_body
+    assign has_aside = true
+  endif
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    <div class="contact{% unless has_aside %} contact--single{% endunless %}">
+      <div class="contact__main">
+        <header class="contact__header">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+
+          <h1 class="h2">{{ heading | escape }}</h1>
+
+          {%- if section.settings.intro != blank -%}
+            <p class="contact__intro">{{ section.settings.intro | escape }}</p>
+          {%- endif -%}
+
+          {%- comment -%}
+            The response time (§9.5). Stated before the fields, not after
+            the button, and wired to the submit as its description so it is
+            read out rather than only seen.
+          {%- endcomment -%}
+          {%- if section.settings.response_time != blank -%}
+            <p class="contact__response" id="{{ response_id }}">
+              {%- render 'icon', icon: 'clock', size: 15 -%}
+              {{ section.settings.response_time | escape }}
+            </p>
+          {%- endif -%}
+        </header>
+
+        {%- form 'contact', class: 'contact__form' -%}
+          {%- comment -%}
+            `form` only exists inside this tag, so the error bookkeeping
+            cannot live in the section's top liquid block with the rest of
+            the logic. `form.errors` lists the field names that failed;
+            `form.errors.messages[field]` still gives the sentence, and the
+            summary is what each failed field is described by.
+          {%- endcomment -%}
+          {%- liquid
+            assign email_invalid = false
+            assign body_invalid = false
+            if form.errors
+              if form.errors contains 'email'
+                assign email_invalid = true
+              endif
+              if form.errors contains 'body'
+                assign body_invalid = true
+              endif
+            endif
+          -%}
+
+          {%- if form.posted_successfully? -%}
+            <div class="contact__success" role="status">
+              <p class="contact__success-icon">{%- render 'icon', icon: 'check', size: 20 -%}</p>
+
+              {%- if section.settings.success_heading != blank -%}
+                <h2 class="h4">{{ section.settings.success_heading | escape }}</h2>
+              {%- endif -%}
+
+              {%- if section.settings.success_text != blank -%}
+                <p class="text-muted">{{ section.settings.success_text | escape }}</p>
+              {%- endif -%}
+
+              <div class="cluster contact__success-actions">
+                {%- if section.settings.success_label != blank -%}
+                  <a class="button button--primary" href="{{ success_url }}">
+                    {{- section.settings.success_label | escape -}}
+                  </a>
+                {%- endif -%}
+
+                {%- if page.url != blank -%}
+                  <a class="link-underline" href="{{ page.url }}">{{ 'contact.send_another' | t }}</a>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- else -%}
+            {%- if form.errors -%}
+              <div class="contact__errors" id="{{ errors_id }}" role="alert" tabindex="-1">
+                <p class="contact__errors-heading">
+                  {%- render 'icon', icon: 'alert', size: 16 -%}
+                  {{ 'contact.error_heading' | t }}
+                </p>
+                <ul class="contact__errors-list" role="list">
+                  {%- for field in form.errors -%}
+                    <li class="field__error">
+                      {{- form.errors.translated_fields[field] | capitalize }}
+                      {{ form.errors.messages[field] -}}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+            <div class="contact__fields">
+              <div class="field">
+                <label class="field__label" for="{{ name_id }}">{{ 'contact.name' | t }}</label>
+                <input
+                  class="field__input"
+                  id="{{ name_id }}"
+                  type="text"
+                  name="contact[name]"
+                  value="{{ form.name }}"
+                  autocomplete="name"
+                >
+              </div>
+
+              <div class="field">
+                <label class="field__label" for="{{ email_id }}">{{ 'contact.email' | t }}</label>
+                <input
+                  class="field__input"
+                  id="{{ email_id }}"
+                  type="email"
+                  name="contact[email]"
+                  value="{{ form.email }}"
+                  autocomplete="email"
+                  required
+                  {% if email_invalid %}
+                    aria-invalid="true"
+                    aria-describedby="{{ errors_id }}"
+                  {% endif %}
+                >
+              </div>
+
+              {%- if section.settings.show_phone -%}
+                <div class="field">
+                  <label class="field__label" for="{{ phone_id }}">{{ 'contact.phone' | t }}</label>
+                  <input
+                    class="field__input"
+                    id="{{ phone_id }}"
+                    type="tel"
+                    name="contact[phone]"
+                    value="{{ form.phone }}"
+                    autocomplete="tel"
+                  >
+                </div>
+              {%- endif -%}
+
+              <div class="field contact__field--wide">
+                <label class="field__label" for="{{ body_id }}">{{ 'contact.message' | t }}</label>
+                <textarea
+                  class="field__textarea"
+                  id="{{ body_id }}"
+                  name="contact[body]"
+                  rows="6"
+                  required
+                  {% if body_invalid %}
+                    aria-invalid="true"
+                    aria-describedby="{{ errors_id }}"
+                  {% endif %}
+                >{{ form.body }}</textarea>
+              </div>
+            </div>
+
+            {%- comment -%}
+              One primary action (§9.2 rule 1). No reset button, no second
+              filled button — the only thing to do on this page is send.
+            {%- endcomment -%}
+            <button
+              class="button button--primary contact__submit"
+              type="submit"
+              {% if section.settings.response_time != blank %}
+                aria-describedby="{{ response_id }}"
+              {% endif %}
+            >
+              {{- section.settings.button_label | escape -}}
+            </button>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+
+      {%- if has_aside -%}
+        <aside class="contact__aside">
+          {%- if section.blocks.size > 0 -%}
+            <div class="contact__routes">
+              {%- if section.settings.routes_heading != blank -%}
+                <h2 class="h5">{{ section.settings.routes_heading | escape }}</h2>
+              {%- endif -%}
+
+              <ul class="contact__routes-list" role="list">
+                {%- for block in section.blocks -%}
+                  <li class="contact__route" {{ block.shopify_attributes }}>
+                    {%- render 'icon', icon: block.settings.icon, class: 'contact__route-icon' -%}
+
+                    <div class="contact__route-text">
+                      {%- if block.settings.label != blank -%}
+                        <p class="contact__route-label">{{ block.settings.label | escape }}</p>
+                      {%- endif -%}
+
+                      {%- if block.settings.value != blank -%}
+                        {%- if block.settings.link != blank -%}
+                          <a class="link-underline" href="{{ block.settings.link }}">
+                            {{- block.settings.value | escape -}}
+                          </a>
+                        {%- else -%}
+                          <p class="contact__route-value">{{ block.settings.value | escape }}</p>
+                        {%- endif -%}
+                      {%- endif -%}
+                    </div>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+
+          {%- if show_body -%}
+            <div class="contact__body rte">
+              {{ page.content }}
+            </div>
+          {%- endif -%}
+        </aside>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.contact_form.name",
+  "tag": "section",
+  "class": "section-contact-form",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.contact_form.paragraph"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.contact_form.eyebrow.label",
+      "default": "Contact"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "info": "t:sections.contact_form.heading.info",
+      "default": "Talk to us"
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "label": "t:labels.text",
+      "default": "Sizing, an order, a return, or a question about the materials. This reaches a person, not a queue."
+    },
+    {
+      "type": "text",
+      "id": "response_time",
+      "label": "t:sections.contact_form.response_time.label",
+      "info": "t:sections.contact_form.response_time.info",
+      "default": "We reply within one working day, Monday to Friday."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.contact_form.button_label.label",
+      "default": "Send message"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "t:sections.contact_form.show_phone.label",
+      "info": "t:sections.contact_form.show_phone.info",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_page_content",
+      "label": "t:sections.contact_form.show_page_content.label",
+      "info": "t:sections.contact_form.show_page_content.info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "routes_heading",
+      "label": "t:sections.contact_form.routes_heading.label",
+      "default": "Other ways to reach us"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.contact_form.headers.success"
+    },
+    {
+      "type": "text",
+      "id": "success_heading",
+      "label": "t:labels.heading",
+      "default": "Message sent"
+    },
+    {
+      "type": "textarea",
+      "id": "success_text",
+      "label": "t:labels.text",
+      "default": "It is with our team. You will have a reply within one working day."
+    },
+    {
+      "type": "text",
+      "id": "success_label",
+      "label": "t:sections.contact_form.success_label.label",
+      "default": "Keep shopping"
+    },
+    {
+      "type": "url",
+      "id": "success_link",
+      "label": "t:labels.link",
+      "info": "t:sections.contact_form.success_link.info"
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "route",
+      "name": "t:sections.contact_form.blocks.route.name",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "t:options.icon.name",
+          "options": [
+            { "value": "email", "label": "t:options.icon.email" },
+            { "value": "phone", "label": "t:options.icon.phone" },
+            { "value": "clock", "label": "t:options.icon.clock" },
+            { "value": "globe", "label": "t:options.icon.globe" },
+            { "value": "return", "label": "t:options.icon.return" },
+            { "value": "truck", "label": "t:options.icon.truck" }
+          ],
+          "default": "email"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:labels.heading",
+          "default": "Email"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "t:labels.text",
+          "default": "help@fernway.example"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:labels.link",
+          "info": "t:sections.contact_form.blocks.route.link.info"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.contact_form.name",
+      "blocks": [
+        {
+          "type": "route",
+          "settings": {
+            "icon": "email",
+            "label": "Email",
+            "value": "help@fernway.example"
+          }
+        },
+        {
+          "type": "route",
+          "settings": {
+            "icon": "clock",
+            "label": "Hours",
+            "value": "Monday to Friday, 9am to 5pm GMT"
+          }
+        },
+        {
+          "type": "route",
+          "settings": {
+            "icon": "return",
+            "label": "Returns",
+            "value": "Start a return"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

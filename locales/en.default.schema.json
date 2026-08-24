@@ -419,6 +419,51 @@
         "next_step": "Next step"
       }
     },
+    "contact_form": {
+      "name": "Contact form",
+      "paragraph": "Add this to your contact page instead of the Page section. It uses the page title and body, and keeps the form in the first screen.",
+      "eyebrow": {
+        "label": "Eyebrow"
+      },
+      "heading": {
+        "info": "Used only when this section is on a template with no page assigned."
+      },
+      "response_time": {
+        "label": "Response time",
+        "info": "How soon you reply. Shown above the fields, so a visitor reads it before deciding to write."
+      },
+      "button_label": {
+        "label": "Button label"
+      },
+      "show_phone": {
+        "label": "Ask for a phone number",
+        "info": "Off by default. Every extra field costs completed forms."
+      },
+      "show_page_content": {
+        "label": "Show the page body",
+        "info": "Renders beside the form, never above it."
+      },
+      "routes_heading": {
+        "label": "Routes heading"
+      },
+      "headers": {
+        "success": "After sending"
+      },
+      "success_label": {
+        "label": "Button label"
+      },
+      "success_link": {
+        "info": "Where the button goes after a message is sent. Defaults to your recovery collection."
+      },
+      "blocks": {
+        "route": {
+          "name": "Contact route",
+          "link": {
+            "info": "Optional. Use mailto: for an address or tel: for a phone number."
+          }
+        }
+      }
+    },
     "main_password": {
       "name": "Password",
       "text": {
@@ -988,6 +1033,9 @@
       "sun": "Sun",
       "check": "Check",
       "return": "Returns",
+      "email": "Email",
+      "phone": "Phone",
+      "clock": "Clock",
       "name": "Icon"
     },
     "span": {

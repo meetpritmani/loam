@@ -14,7 +14,8 @@
     "seed:catalog": "node scripts/3-seed-catalog.mjs",
     "seed:content": "node scripts/4-seed-content.mjs",
     "seed:theme": "node scripts/5-write-theme-json.mjs",
-    "check:secrets": "node scripts/check-secrets.mjs"
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "sharp": "^0.34.4"
