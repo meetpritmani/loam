@@ -183,6 +183,24 @@
           {%- endcomment -%}
           {%- render 'trust-row', class: 'cart-drawer__trust', show_payment: false -%}
         {%- endif -%}
+
+        {%- comment -%}
+          App block support in the drawer is a Theme Store requirement (§10),
+          and the drawer is the default cart — an app placed only on the cart
+          page would never be seen on a default install.
+
+          Last in the footer, below the trust row, so an app can never insert
+          itself between the shopper and the checkout button. The CSS collapses
+          the wrapper when the block renders nothing.
+        {%- endcomment -%}
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when '@app' -%}
+              <div class="cart-drawer__app" {{ block.shopify_attributes }}>
+                {%- render block -%}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
       </div>
     </div>
   </div>
@@ -191,6 +209,11 @@
 {% schema %}
 {
   "name": "t:sections.cart_drawer.name",
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
   "settings": [
     {
       "type": "color_scheme",

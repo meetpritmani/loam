@@ -364,6 +364,7 @@ shopify theme push --unpublished
 shopify theme package        # build the distributable ZIP
 
 npm run check:contrast       # WCAG audit of every scheme in every theme style
+npm run check:sections       # audits every section against the per-section checklist
 npm run check:secrets        # refuses a commit carrying an Admin API token
 ```
 

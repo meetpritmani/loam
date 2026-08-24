@@ -1580,6 +1580,10 @@ cart-items[aria-busy] {
   font-size: var(--t-xs);
 }
 
+.cart-drawer__app:not(:empty) {
+  margin-block-start: var(--sp-4);
+}
+
 .drawer__footer > * + * {
   margin-block-start: var(--sp-3);
 }
