@@ -80,3 +80,30 @@ jobs:
             exit 1
           fi
           echo "No credentials found."
+
+  spec-checks:
+    name: Spec checks
+    runs-on: ubuntu-latest
+
+    # Three audits of things theme-check has no opinion about, because they
+    # come from CLAUDE.md rather than from Shopify: WCAG contrast across every
+    # colour scheme in every shipped theme style (§8), the §14 per-section
+    # checklist, and drift between the translated locales and English (§3).
+    #
+    # All three are pure Node reading files in the repo. No install step, so
+    # they add seconds rather than minutes.
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Colour contrast
+        run: node scripts/check-contrast.mjs
+
+      - name: Section checklist
+        run: node scripts/check-sections.mjs
+
+      - name: Locale drift
+        run: node scripts/check-locales.mjs
