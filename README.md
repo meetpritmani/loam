@@ -349,6 +349,22 @@ everywhere except the hero, fonts preloaded from Shopify's library with
 
 ---
 
+## Languages
+
+Storefront strings ship in seven languages: English, French, German, Spanish,
+Italian, Japanese and European Portuguese. Editor labels — the settings a
+merchant sees in the customizer — are English only.
+
+Shopify serves whichever of these matches the shopper's chosen language and
+falls back to English for anything else, so adding a language is a matter of
+copying `locales/en.default.json` and translating it. `npm run check:locales`
+then verifies the new file against English: every key present, no dead keys
+left over, and every `{{ placeholder }}` intact. Plural categories follow CLDR
+rather than English — Japanese has one, which is why `ja.json` carries only the
+`other` form of each plural group and that is correct rather than incomplete.
+
+---
+
 ## Browser support
 
 Last two versions of Chrome, Safari, Firefox and Edge. iOS 15 and later.
@@ -365,6 +381,7 @@ shopify theme package        # build the distributable ZIP
 
 npm run check:contrast       # WCAG audit of every scheme in every theme style
 npm run check:sections       # audits every section against the per-section checklist
+npm run check:locales        # translated locales against en.default.json
 npm run check:secrets        # refuses a commit carrying an Admin API token
 ```
 
@@ -414,7 +431,8 @@ access to a store, and git history makes it permanent.
 assets/      base.css and global.js — the only two files a shopper downloads
 config/      settings_schema.json, settings_data.json
 layout/      theme.liquid, password.liquid
-locales/     en.default.json (storefront), en.default.schema.json (editor)
+locales/     en.default.json (storefront), en.default.schema.json (editor),
+             plus fr de es it ja pt-PT (storefront strings)
 sections/    30 sections plus header-group.json and footer-group.json
 snippets/    24 snippets
 templates/   JSON templates

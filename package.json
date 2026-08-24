@@ -16,7 +16,8 @@
     "seed:theme": "node scripts/5-write-theme-json.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
-    "check:sections": "node scripts/check-sections.mjs"
+    "check:sections": "node scripts/check-sections.mjs",
+    "check:locales": "node scripts/check-locales.mjs"
   },
   "dependencies": {
     "sharp": "^0.34.4"
