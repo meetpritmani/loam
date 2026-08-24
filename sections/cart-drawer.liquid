@@ -19,6 +19,15 @@
   do not move state onto the element that surrounds them.
 {%- endcomment -%}
 
+{%- liquid
+  assign upsell_products = settings.cro_cart_upsell_products
+
+  assign show_express = false
+  if settings.cro_dynamic_checkout and additional_checkout_buttons and template.name != 'cart'
+    assign show_express = true
+  endif
+-%}
+
 <loam-drawer id="cart-drawer" data-cart-root="{{ section.id }}" data-cart-count="{{ cart.item_count }}">
   <div
     class="drawer"
@@ -63,6 +72,33 @@
               {%- render 'cart-line', item: item, context: 'drawer' -%}
             {%- endfor -%}
           </ul>
+
+          {%- comment -%}
+            Merchant-picked products only (§9.4). Nothing here comes from
+            browsing behaviour or a random collection slice, and nothing is
+            ever pre-ticked. Two up rather than the cart page's three — a
+            drawer column is roughly half the width.
+
+            It sits inside the scrolling body, below the lines, so it can
+            never push the checkout button out of view.
+          {%- endcomment -%}
+          {%- if upsell_products.size > 0 -%}
+            <div class="cart-drawer__upsell">
+              <h3 class="h6">{{ 'cart.upsell_title' | t }}</h3>
+              <ul class="grid" style="--grid-cols: 2; --grid-cols-tablet: 2; --grid-cols-mobile: 2;">
+                {%- for product in upsell_products limit: 2 -%}
+                  <li>
+                    {%- render 'card-product',
+                      product: product,
+                      heading_tag: 'h4',
+                      show_badges: false,
+                      sizes: '160px'
+                    -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
         {%- endif -%}
       </cart-items>
 
@@ -116,11 +152,36 @@
             <button class="button button--primary button--full" type="submit" name="checkout">
               {{ 'cart.checkout' | t }}
             </button>
+
+            {%- comment -%}
+              §9.4 wants express checkout in the drawer, but
+              `content_for_additional_checkout_buttons` may only be output
+              once per page. On /cart the cart page section owns it, and the
+              drawer is rendered there too — so the drawer stands down
+              rather than emitting it twice, which breaks the buttons
+              outright rather than merely duplicating them.
+            {%- endcomment -%}
+            {%- if show_express -%}
+              <div class="cart-drawer__express">
+                {{ content_for_additional_checkout_buttons }}
+              </div>
+            {%- endif -%}
           </form>
 
           <a class="button button--tertiary cart-drawer__view" href="{{ routes.cart_url }}">
             {{ 'cart.view_cart' | t }}
           </a>
+
+          {%- comment -%}
+            §9.2 rule 10: trust clustered at the friction point. The drawer
+            is the default cart, so without this the returns window and the
+            shipping promise never appear next to a checkout button on a
+            default install.
+
+            Payment marks are left to the cart page and the PDP: three rows
+            of icons inside a drawer footer costs more height than it buys.
+          {%- endcomment -%}
+          {%- render 'trust-row', class: 'cart-drawer__trust', show_payment: false -%}
         {%- endif -%}
       </div>
     </div>

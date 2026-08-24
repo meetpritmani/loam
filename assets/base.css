@@ -1556,6 +1556,30 @@ cart-items[aria-busy] {
   text-align: center;
 }
 
+/* Merchant-picked upsell, inside the scrolling body so it can never push the
+   checkout button out of the footer. The seam divider separates it from the
+   lines above without adding a solid rule to an already busy panel. */
+.cart-drawer__upsell {
+  display: grid;
+  gap: var(--sp-4);
+  margin-block-start: var(--sp-6);
+  padding-block-start: var(--sp-5);
+  background-image: var(--seam);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: top left;
+}
+
+.cart-drawer__express {
+  display: grid;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-3);
+}
+
+.cart-drawer__trust {
+  font-size: var(--t-xs);
+}
+
 .drawer__footer > * + * {
   margin-block-start: var(--sp-3);
 }

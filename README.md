@@ -20,7 +20,7 @@ external CDN. Everything a shopper downloads is in this repository.
 | 3 | Homepage — 15 sections | Complete |
 | 4 | Templates — product, collection, search, cart, blog, customers | Complete |
 | 5 | Demo store seeding | **Scripts built, buyer export generated** — the store-facing half awaits media and a demo store |
-| 6 | Demo content shipped in the repo | Not started |
+| 6 | Demo content shipped in the repo | **In progress** — theme presets and the contact/about templates ship; the populated demo JSON awaits media |
 | 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | Not started |
 
 Nothing in this file describes behaviour that does not exist today. Phases 5
@@ -91,8 +91,30 @@ bespoke overrides.
 `color_mix` against each scheme's own background, so muted text stays legible
 whether the scheme is light or dark. Text is never faded with `opacity`.
 
-All four default schemes meet WCAG 2.1 AA. If you edit them, re-check contrast
-— the accent on the sand scheme has the least headroom at 4.69:1.
+Which tint carries text is fixed rather than a matter of taste. `--c-ink-70` is
+the only muted **text** tint — it clears AA on every scheme. `--c-ink-45` is
+never text: a 45% mix measures 2.87:1 on the paper ground and cannot be made to
+pass, so it is reserved for the cases WCAG exempts — disabled controls,
+decorative icons, separator glyphs. `--c-ink-12` is hairlines only.
+
+All four schemes meet WCAG 2.1 AA in both shipped theme styles. If you edit
+them, re-measure: `npm run check:contrast` checks every rendered pair in every
+scheme of every style and exits non-zero on a failure. The tightest pair as
+shipped is the accent on the sand scheme at 4.69:1.
+
+### Theme styles
+
+Two presets ship, switchable from the top of the theme editor:
+
+| Style | Ground |
+|---|---|
+| **Fernway** | Light. Paper `#F5F4F0`, ink `#101A16`, accent `#2E6B4F` |
+| **Fernway Night** | Dark. Paper `#0E1512`, text `#EDEFEA`, accent lifted to `#8FBFA4` |
+
+In Fernway Night the `scheme-ink` scheme is *inverted* rather than darkened
+further, so the sections that break up the page in daylight still break it up
+at night. Switching style replaces your colour settings — it does not merge
+with them.
 
 ---
 
@@ -102,6 +124,10 @@ Loam treats conversion as a first-class requirement. What a theme can actually
 supply is *surface*: clarity, speed, friction removal, honest signals, and
 measurement. Whether that lifts your conversion rate is something you prove by
 testing on your own traffic.
+
+**[CRO-CHECKLIST.md](CRO-CHECKLIST.md)** is the setup order — which setting to
+configure, in what order, what each one does, and what to test first. Start
+there; this section is the reference.
 
 | Setting | Default | Effect |
 |---|---|---|
@@ -203,6 +229,8 @@ Behaviour worth knowing:
 | Blog | `main-blog` | Topic filter, signup at the foot of the list |
 | Article | `main-article` | Related products from an article metafield, share, comments |
 | Page | `main-page` | Ends in a next step and a contact route |
+| Contact page | `contact-form`, `faq` | Form owns the first screen, response time stated above the fields, alternative routes always visible. Use `page.contact` on the page |
+| About page | `main-page`, `image-with-text`, `impact-stats`, `rich-text` | Story then numbers then a shop CTA. Use `page.about` on the page |
 | 404 | `main-404` | Search box, your chosen collections, and a home link |
 | Password | `main-password` | Email capture is the primary action; store login sits below it |
 | Customer accounts | `main-login`, `main-register`, `main-account`, `main-order`, `main-addresses`, `main-reset-password`, `main-activate-account` | All seven templates |
@@ -307,7 +335,8 @@ everywhere except the hero, fonts preloaded from Shopify's library with
 
 ## Accessibility
 
-- WCAG 2.1 AA contrast on every default colour combination
+- WCAG 2.1 AA contrast on every default colour combination, in both theme
+  styles, measured by `npm run check:contrast` rather than asserted
 - Visible focus ring on every interactive element
 - Drawers are `role="dialog"` with `aria-modal`, trapped focus, Escape to
   close, and focus returned to whatever opened them
@@ -333,6 +362,9 @@ shopify theme dev            # local server with hot reload
 shopify theme check          # must be clean before any commit
 shopify theme push --unpublished
 shopify theme package        # build the distributable ZIP
+
+npm run check:contrast       # WCAG audit of every scheme in every theme style
+npm run check:secrets        # refuses a commit carrying an Admin API token
 ```
 
 CI runs `shopify theme check --fail-level error` on every push, and parses the
