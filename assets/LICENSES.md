@@ -17,12 +17,16 @@ is two rows long.
 There are deliberately **no image or video files here**, and none will be
 added.
 
-Burst — Shopify's free stock library, and the only source this project uses —
-ships photos under two licences. CC0 photos carry no redistribution
-restriction. Photos under the **Burst Licence** are free for commercial use but
-may not be sold "as digital photo files or in any other form", and a paid theme
-zip is arguably exactly that. Neither licence grants a model release, so any
-photo with an identifiable face is demo-store-only regardless.
+Demo photography comes from two sources (§6, decided 2026-08-26): AI
+generation, per the prompts in `demo-media-raw/PROMPTS.md`, and Burst,
+Shopify's free stock library. Burst ships photos under two licences — CC0
+carries no redistribution restriction, and the **Burst Licence** is free for
+commercial use but may not be sold "as digital photo files or in any other
+form", and a paid theme zip is arguably exactly that. AI-generated files are
+recorded with the generating model/tool and treated the same as Burst-Licence
+files unless that tool's own terms are checked and say otherwise. No source
+here grants a release for a real person's likeness, so anything depicting, or
+closely resembling, an identifiable real person is demo-store-only regardless.
 
 Rather than sort the demo set into bundleable and non-bundleable halves and
 hope the line was drawn correctly, no photograph is bundled at all. The theme's

@@ -43,6 +43,7 @@
         "color_scheme": "scheme-ink",
         "height": "large",
         "scrim_opacity": 35,
+        "image": "shopify://shop_images/demo-hero.webp",
         "eyebrow": "New in — Autumn",
         "heading": "Built from things that grow.",
         "text": "Merino wool uppers, eucalyptus fibre knits, and soles pressed from sugarcane. Shoes that feel like nothing and leave close to it.",
@@ -157,6 +158,7 @@
         "color_scheme": "scheme-paper",
         "media_position": "end",
         "image_ratio": "portrait",
+        "image": "shopify://shop_images/demo-material-wool.webp",
         "eyebrow": "Materials",
         "heading": "Three materials. That's the whole shoe.",
         "text": "<p>No mystery blends, no filler. Every Fernway is built from three things that grow back.</p>",
@@ -171,6 +173,7 @@
         "c1": {
           "type": "category",
           "settings": {
+            "image": "shopify://shop_images/demo-collection-mens.webp",
             "heading": "Men",
             "text": "Everyday and trail"
           }
@@ -178,6 +181,7 @@
         "c2": {
           "type": "category",
           "settings": {
+            "image": "shopify://shop_images/demo-collection-womens.webp",
             "heading": "Women",
             "text": "Everyday and trail"
           }
@@ -185,6 +189,7 @@
         "c3": {
           "type": "category",
           "settings": {
+            "image": "shopify://shop_images/demo-collection-active.webp",
             "heading": "Active",
             "text": "Runners and mids"
           }
@@ -192,6 +197,7 @@
         "c4": {
           "type": "category",
           "settings": {
+            "image": "shopify://shop_images/demo-collection-lounge.webp",
             "heading": "Lounge",
             "text": "Wool, indoors"
           }
@@ -220,6 +226,7 @@
           "type": "shot",
           "settings": {
             "span": "large",
+            "image": "shopify://shop_images/demo-lookbook-5.webp",
             "caption": "Coastline Runner in Fog"
           }
         },
@@ -227,6 +234,7 @@
           "type": "shot",
           "settings": {
             "span": "normal",
+            "image": "shopify://shop_images/demo-lookbook-2.webp",
             "caption": "Ridge Lounger in Oat"
           }
         },
@@ -234,6 +242,7 @@
           "type": "shot",
           "settings": {
             "span": "normal",
+            "image": "shopify://shop_images/demo-lookbook-4.webp",
             "caption": "Harbour Slip-On in Slate"
           }
         },
@@ -364,6 +373,7 @@
       "type": "video-section",
       "settings": {
         "color_scheme": "scheme-paper",
+        "poster": "shopify://shop_images/demo-hero-poster.webp",
         "eyebrow": "Field notes",
         "heading": "How a shoe gets made.",
         "text": "Four minutes inside the workshop, from raw fleece to finished pair.",
@@ -382,6 +392,7 @@
             "quote": "Wore them through a wet week in Lisbon and they dried overnight. Sizing runs a touch long, so I sized down and they are perfect.",
             "name": "Priya, Bristol",
             "detail": "Verified buyer — Coastline Runner",
+            "image": "shopify://shop_images/demo-avatar-1.webp",
             "avatar_fallback": "demo-avatar-1.webp"
           }
         },
@@ -392,6 +403,7 @@
             "quote": "Washed them three times now. They come out looking new, which I did not expect from wool. My only gripe is I want more colours.",
             "name": "Tom, Leeds",
             "detail": "Verified buyer — Ridge Lounger",
+            "image": "shopify://shop_images/demo-avatar-2.webp",
             "avatar_fallback": "demo-avatar-2.webp"
           }
         },
@@ -402,6 +414,7 @@
             "quote": "Took a week to soften up and I nearly sent them back. Glad I did not. Two months on they are the only thing I reach for.",
             "name": "Ana, Porto",
             "detail": "Verified buyer — Harbour Slip-On",
+            "image": "shopify://shop_images/demo-avatar-3.webp",
             "avatar_fallback": "demo-avatar-3.webp"
           }
         },
@@ -412,6 +425,7 @@
             "quote": "I stand twelve hours a shift. These are the first pair that did not leave my feet aching by hour eight.",
             "name": "Marcus, Glasgow",
             "detail": "Verified buyer — Meadow Low",
+            "image": "shopify://shop_images/demo-avatar-4.webp",
             "avatar_fallback": "demo-avatar-4.webp"
           }
         }

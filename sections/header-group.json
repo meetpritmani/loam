@@ -7,18 +7,28 @@
       "blocks": {
         "announcement-1": {
           "type": "announcement",
-          "settings": { "text": "Free shipping over $75. Free returns for 30 days." }
+          "settings": {
+            "text": "Free shipping over $75. Free returns for 30 days."
+          }
         },
         "announcement-2": {
           "type": "announcement",
-          "settings": { "text": "Carbon neutral shipping on every order." }
+          "settings": {
+            "text": "Carbon neutral shipping on every order."
+          }
         },
         "announcement-3": {
           "type": "announcement",
-          "settings": { "text": "Machine washable. Wear them everywhere." }
+          "settings": {
+            "text": "Machine washable. Wear them everywhere."
+          }
         }
       },
-      "block_order": ["announcement-1", "announcement-2", "announcement-3"],
+      "block_order": [
+        "announcement-1",
+        "announcement-2",
+        "announcement-3"
+      ],
       "settings": {
         "color_scheme": "scheme-ink",
         "padding": 10,
@@ -35,12 +45,15 @@
           "type": "menu_promo",
           "settings": {
             "menu_item": "Shop",
+            "image": "shopify://shop_images/demo-mega-feature.webp",
             "heading": "New in — Autumn",
             "text": "Wool loungers, back in three new colourways."
           }
         }
       },
-      "block_order": ["menu-promo"],
+      "block_order": [
+        "menu-promo"
+      ],
       "settings": {
         "menu": "main-menu",
         "color_scheme": "scheme-paper",
@@ -49,5 +62,8 @@
       }
     }
   },
-  "order": ["announcement-bar", "header"]
+  "order": [
+    "announcement-bar",
+    "header"
+  ]
 }

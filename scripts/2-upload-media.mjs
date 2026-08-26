@@ -365,10 +365,19 @@ if (toUpload.length === 0) {
       const payload = await mutate(
         FILE_CREATE,
         {
+          // Video's staged resourceUrl carries no filename at all — it comes
+          // back as `https://.../core-originals?external_video_id=NNN`, unlike
+          // an image's, which ends in the actual filename. fileCreate validates
+          // that a `filename` extension matches something derivable from
+          // `originalSource`, so demo-hero.mp4 against that query-string-only
+          // URL fails with MISMATCHED_FILENAME_AND_ORIGINAL_SOURCE — for every
+          // video, unconditionally, not just a bad file. Dropping the extension
+          // for VIDEO satisfies the check; the extension is only needed for
+          // findRaw()'s local matching, not for anything Shopify stores.
           files: staged.map(({ file, resourceUrl, alt }) => ({
             originalSource: resourceUrl,
             contentType: contentTypeOf(file),
-            filename: file,
+            filename: contentTypeOf(file) === 'VIDEO' ? file.replace(/\.[^.]+$/, '') : file,
             alt,
           })),
         },

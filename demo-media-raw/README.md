@@ -1,18 +1,22 @@
 # Raw demo media goes here
 
-This directory is gitignored. It holds the unprocessed downloads;
+This directory is gitignored. It holds the unprocessed files;
 `scripts/1-process-media.mjs` resizes, crops and encodes them into
 `demo-media/`.
 
 ## Where the images come from
 
-[Burst](https://burst.shopify.com), Shopify's free stock library. Also reachable
-in the theme editor through "Explore free images" on any image picker.
+Per §6 (decided 2026-08-26), either of two paths, per file:
 
-Burst has **no public API** and the build spec forbids scraping it, so
-downloading is manual. Nothing in this pipeline generates photographs.
+- **AI-generated** — house style, negative prompt, and a per-file prompt for
+  all 47 files are in [PROMPTS.md](PROMPTS.md). This is the primary path for
+  this build.
+- **[Burst](https://burst.shopify.com)**, Shopify's free stock library, also
+  reachable in the theme editor through "Explore free images" on any image
+  picker. It has **no public API** and the build spec forbids scraping it, so
+  downloading from it is manual.
 
-## What to download
+## What to produce
 
 Run the script for the current list:
 
@@ -21,8 +25,8 @@ node scripts/1-process-media.mjs
 ```
 
 With this directory empty it prints all 47 files with their target dimensions
-and a one-line description of the subject to search Burst for. As files arrive
-it prints only what is still missing.
+and a one-line description of the subject (also usable as a Burst search). As
+files arrive it prints only what is still missing.
 
 ## Naming
 
@@ -47,11 +51,22 @@ all three silently — the image simply stops appearing.
 ## Licences
 
 The script writes `licenses.json` here the first time it finds files. Fill it
-in as you download:
+in as you go — for a generated file:
 
 ```json
 {
   "demo-hero.webp": {
+    "license": "AI-GENERATED",
+    "source": "Midjourney v6"
+  }
+}
+```
+
+or for a Burst file:
+
+```json
+{
+  "demo-avatar-1.webp": {
     "license": "CC0",
     "source": "https://burst.shopify.com/photos/...",
     "photographer": "Name"
@@ -59,16 +74,22 @@ in as you download:
 }
 ```
 
-Burst shows the licence on each photo's page. The distinction is not cosmetic:
+The distinction is not cosmetic:
 
-- **CC0** — no redistribution restriction. May be bundled inside `assets/`, and
-  therefore inside the theme zip that gets sold.
-- **Burst Licence** — free commercial use, but the photo may not be sold "as
-  digital photo files or in any other form". A paid theme zip is arguably
-  exactly that. Demo store and export package only.
+- **CC0** (Burst only) — no redistribution restriction. May be bundled inside
+  `assets/`, and therefore inside the theme zip that gets sold.
+- **Burst Licence** (Burst only) — free commercial use, but the photo may not
+  be sold "as digital photo files or in any other form". A paid theme zip is
+  arguably exactly that. Demo store and export package only.
+- **AI-GENERATED** — demo store and export package only, by default. Record
+  the generating model/tool in `source`. Only treat a file as bundle-eligible
+  after checking that specific tool's terms for the plan actually used —
+  "commercial use" in a generator's terms is not the same grant as "resale
+  inside a paid product."
 
-Anything with no entry is treated as Burst Licence, which is the safe direction
-to be wrong in.
+Anything with no entry is treated as the most restrictive category — demo-
+store-only — which is the safe direction to be wrong in.
 
-Neither licence grants a model release, so a photo with an identifiable face
-stays demo-store-only whatever its licence says. That covers all four avatars.
+No licence here grants a release for a real person's likeness, so anything
+depicting, or closely resembling, an identifiable real person stays demo-
+store-only whatever its licence says. That covers all four avatars.

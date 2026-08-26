@@ -8,19 +8,25 @@
  *
  * So: do not rename, do not pluralise, do not add a hash.
  *
- * On sourcing: no step in this pipeline produces a photograph. Images are
- * human-sourced from Burst (burst.shopify.com), downloaded by hand — Burst has
- * no public API and §6 forbids scraping it. This module only resizes what is
- * already in demo-media-raw/.
+ * On sourcing (§6, decided 2026-08-26): demo photography may be AI-generated
+ * or downloaded by hand from Burst (burst.shopify.com), per file. Prompts,
+ * house style and tiering for the generated path live in
+ * demo-media-raw/PROMPTS.md. Burst has no public API and §6 forbids scraping
+ * it either way. This module only resizes what is already in demo-media-raw/
+ * — it does not care which path a given file took to get there.
  *
- * On licensing (§6): Burst ships photos under two licences.
+ * On licensing (§6): every file declares one of three licences.
  *
- *   CC0            — no redistribution restriction.
- *   Burst Licence  — free commercial use, but the photos may not be sold "as
- *                    digital photo files or in any other form".
+ *   CC0            — Burst only. No redistribution restriction.
+ *   Burst Licence  — Burst only. Free commercial use, but the photos may not
+ *                    be sold "as digital photo files or in any other form".
+ *   AI-GENERATED   — store-only by default. Record the generating model/tool;
+ *                    only mark bundle-eligible after checking that tool's own
+ *                    terms for the plan actually used.
  *
- * Neither grants a model release, so anything with an identifiable face is
- * demo-store-only whatever its licence says. That covers all four avatars.
+ * None of the three grants a release for a real person's likeness, so
+ * anything with an identifiable (or closely resembling) face is demo-store-
+ * only whatever its licence says. That covers all four avatars.
  *
  * **No photography ships inside the theme.** That is a product decision, not
  * an oversight: assets/ stays free of stock imagery, so the ZIP carries no
@@ -311,16 +317,19 @@ export const VIDEO_CEILING = 4 * 1024 * 1024;
 
 /** Extensions accepted as a source, per output kind. */
 const SOURCE_EXTENSIONS = {
-  image: ['.jpg', '.jpeg', '.png', '.webp', '.tif', '.tiff', '.avif'],
+  // .jfif is plain JPEG data under a different extension — Windows/Edge names
+  // downloaded JPEGs that way. sharp reads it fine; it just has to be on this
+  // list or findRaw() below never sees the file.
+  image: ['.jpg', '.jpeg', '.jfif', '.png', '.webp', '.tif', '.tiff', '.avif'],
   video: ['.mp4', '.mov', '.m4v', '.webm'],
 };
 
 /**
  * Find the raw file for a manifest entry, whatever extension it arrived with.
  *
- * Burst hands out .jpg mostly, but a download might be .jpeg, .png or already
- * .webp. Matching on the basename lets the operator drop files in without
- * renaming extensions.
+ * Burst hands out .jpg mostly, but a download might be .jpeg, .jfif, .png or
+ * already .webp. Matching on the basename lets the operator drop files in
+ * without renaming extensions.
  *
  * The `kind` filter is not cosmetic. `demo-hero.webp` and `demo-hero.mp4` are
  * two different manifest entries with the same basename, so matching on the

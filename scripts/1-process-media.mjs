@@ -1,17 +1,19 @@
 /**
  * 1-process-media.mjs — demo-media-raw/ -> optimised WebP in demo-media/
  *
- * The one step in this pipeline that needs a human first. No script here
- * produces a photograph: images are downloaded by hand from Burst
- * (burst.shopify.com), which has no public API and which §6 forbids scraping.
+ * The one step in this pipeline that needs a human first, either way. Per §6
+ * (decided 2026-08-26), each file gets there by one of two paths: generated
+ * from the prompts in demo-media-raw/PROMPTS.md, or downloaded by hand from
+ * Burst (burst.shopify.com — no public API, and §6 forbids scraping it).
  *
- * Drop the raw downloads into demo-media-raw/, named for their manifest entry
- * — `demo-hero.jpg`, `demo-product-1.png`, whatever extension they arrived
- * with — and this resizes, crops and encodes them.
+ * Drop the resulting files into demo-media-raw/, named for their manifest
+ * entry — `demo-hero.jpg`, `demo-product-1.png`, whatever extension they
+ * arrived with — and this resizes, crops and encodes them.
  *
- * Also writes the licence ledger. §6 requires a licence recorded per file,
- * because Burst's two licences differ in exactly the way that matters: CC0 can
- * be bundled into a theme we sell, and a Burst-Licence photo cannot.
+ * Also writes the licence ledger. §6 requires a licence recorded per file:
+ * CC0 and AI-GENERATED can be candidates for bundling into a theme we sell
+ * (AI-GENERATED only after checking the specific tool's terms); Burst
+ * Licence and anything undeclared cannot.
  *
  * Run: node scripts/1-process-media.mjs [--force]
  *   --force  re-encode files that are already up to date
@@ -45,13 +47,16 @@ const LEDGER_PATH = path.join(PATHS.raw, 'licenses.json');
  * Keyed by output filename:
  *
  *   {
- *     "demo-hero.webp": { "license": "CC0", "source": "https://burst.shopify.com/photos/...", "photographer": "..." }
+ *     "demo-hero.webp": { "license": "AI-GENERATED", "source": "Midjourney v6" },
+ *     "demo-avatar-1.webp": { "license": "CC0", "source": "https://burst.shopify.com/photos/...", "photographer": "..." }
  *   }
  *
- * A file with no entry is treated as Burst Licence — the restrictive one.
- * Defaulting the other way would let an undeclared photo end up inside a theme
- * zip we sell, which is the one mistake in this whole pipeline with a legal
- * consequence attached.
+ * A file with no entry, or an unrecognised license value, is treated as the
+ * most restrictive category — demo-store-only. Defaulting the other way would
+ * let an undeclared file end up inside a theme zip we sell, which is the one
+ * mistake in this whole pipeline with a legal consequence attached. It is also
+ * never assumed to be Burst-sourced just because that used to be the only
+ * path — an undeclared file might be a generated one nobody labelled.
  *
  * @returns {Record<string, {license: string, source?: string, photographer?: string}>}
  */
@@ -61,11 +66,15 @@ function readLedger() {
     return JSON.parse(readFileSync(LEDGER_PATH, 'utf8'));
   } catch (error) {
     fail(`demo-media-raw/licenses.json is not valid JSON: ${error.message}`, [
-      'It maps each output filename to its Burst licence. See the template',
+      'It maps each output filename to its licence: CC0 or BURST (Burst only),',
+      'or AI-GENERATED (record the model/tool in "source"). See the template',
       'this script writes when the file is missing.',
     ]);
   }
 }
+
+/** The three recognised licence values. Anything else is UNDECLARED. */
+const KNOWN_LICENSES = new Set(['CC0', 'BURST', 'AI-GENERATED']);
 
 /** Write a starter ledger so the operator has something to fill in. */
 function writeLedgerTemplate(present) {
@@ -73,9 +82,8 @@ function writeLedgerTemplate(present) {
 
   present.forEach((entry) => {
     template[entry.file] = {
-      license: 'BURST',
+      license: 'AI-GENERATED',
       source: '',
-      photographer: '',
     };
   });
 
@@ -86,8 +94,9 @@ function writeLedgerTemplate(present) {
   );
 
   log.warn('Wrote a licence template to demo-media-raw/licenses.json.');
-  log.info('Set "license" to "CC0" only for photos Burst shows as CC0.');
-  log.info('Anything left as "BURST" stays demo-store-only and never reaches assets/.');
+  log.info('For a generated file, set "source" to the model/tool name (e.g. "Midjourney v6").');
+  log.info('For a Burst file, set "license" to "CC0" or "BURST" and "source" to its URL.');
+  log.info('Anything left undeclared stays demo-store-only and never reaches assets/.');
 }
 
 /* --------------------------------------------------------------------------
@@ -99,8 +108,9 @@ log.banner('1 / 5  Process media');
 if (!existsSync(PATHS.raw)) {
   ensureDir(PATHS.raw);
   fail('demo-media-raw/ was empty, so it has just been created.', [
-    'Images cannot be generated. Download them by hand from burst.shopify.com',
-    'and drop them in, named for their manifest entry:',
+    'Generate each file per demo-media-raw/PROMPTS.md, or download by hand',
+    'from burst.shopify.com, and drop the result in, named for its manifest',
+    'entry:',
     '',
     '  demo-hero.jpg, demo-product-1.jpg, demo-material-wool.jpg, ...',
     '',
@@ -192,22 +202,29 @@ await log.group('Copying to demo-store-export/media/', async () => {
 /* --- Licence ledger ------------------------------------------------------ */
 
 const cc0 = [];
+const aiGenerated = [];
 const burst = [];
+const undeclared = [];
 
 results.forEach(({ entry }) => {
   const record = ledger[entry.file];
-  const license = (record?.license || 'BURST').toUpperCase();
-  (license === 'CC0' ? cc0 : burst).push({ entry, record });
+  const license = record?.license?.toUpperCase();
+  if (license === 'CC0') cc0.push({ entry, record });
+  else if (license === 'AI-GENERATED') aiGenerated.push({ entry, record });
+  else if (license === 'BURST') burst.push({ entry, record });
+  else undeclared.push({ entry, record });
 });
 
 /**
  * @param {{entry: object, record: object}[]} rows
+ * @param {string} sourceLabel column header for the "source" field —
+ *   "Source" for a Burst URL, "Model / tool" for a generated file
  * @returns {string}
  */
-function ledgerTable(rows) {
+function ledgerTable(rows, sourceLabel = 'Source') {
   if (rows.length === 0) return '_None._\n';
   const lines = [
-    '| File | Subject | Source | Photographer |',
+    `| File | Subject | ${sourceLabel} | Photographer |`,
     '|---|---|---|---|',
     ...rows.map(
       ({ entry, record }) =>
@@ -219,27 +236,41 @@ function ledgerTable(rows) {
 
 const licensesMd = `# Demo media licences
 
-Every file here was downloaded by hand from [Burst](https://burst.shopify.com),
-Shopify's free stock library. Nothing in this pipeline generates photographs.
+Every file here was either AI-generated (per \`demo-media-raw/PROMPTS.md\`) or
+downloaded by hand from [Burst](https://burst.shopify.com), Shopify's free
+stock library — §6, decided 2026-08-26.
 
-Burst ships photos under two licences and the difference matters:
+Three licences appear here, and the difference matters:
 
-- **CC0** — no redistribution restriction. Safe to bundle inside a theme that
-  is sold.
-- **Burst Licence** — free commercial use, but the photos may not be sold "as
-  digital photo files or in any other form". A paid theme zip is arguably
-  exactly that, so these stay on the demo store and in this export package,
-  and never inside \`assets/\`.
+- **CC0** (Burst only) — no redistribution restriction. Safe to bundle inside
+  a theme that is sold.
+- **Burst Licence** (Burst only) — free commercial use, but the photos may not
+  be sold "as digital photo files or in any other form". A paid theme zip is
+  arguably exactly that, so these stay on the demo store and in this export
+  package, and never inside \`assets/\`.
+- **AI-GENERATED** — store-only by default. The generating model/tool is
+  recorded per file; only treat one as bundle-eligible after checking that
+  tool's own terms for the plan actually used.
+- **Undeclared** — no licence was recorded for this file. Treated as the most
+  restrictive category until someone declares it in
+  \`demo-media-raw/licenses.json\`.
 
-Neither licence grants a model release. Any photo with an identifiable face
-stays demo-store-only whatever its licence says.
+None of the above grants a release for a real person's likeness. Anything
+depicting, or closely resembling, an identifiable real person stays
+demo-store-only whatever its licence says.
 
 ## CC0
 
 ${ledgerTable(cc0)}
+## AI-generated — demo store only
+
+${ledgerTable(aiGenerated, 'Model / tool')}
 ## Burst Licence — demo store only
 
 ${ledgerTable(burst)}
+## Undeclared — demo store only, needs a licence
+
+${ledgerTable(undeclared)}
 ---
 
 Generated by \`scripts/1-process-media.mjs\` from
@@ -309,9 +340,10 @@ if (missing.length > 0) {
     '',
     `${MEDIA_MANIFEST.length} files. ${results.length} done, ${missing.length} to go.`,
     '',
-    'Downloaded by hand from [Burst](https://burst.shopify.com). It has no public',
-    'API and the build spec forbids scraping it, so this is the one manual step in',
-    'the pipeline — nothing here generates photographs.',
+    'Two ways to get each file, per §6: generate it — prompts, house style and',
+    'a negative prompt are in `demo-media-raw/PROMPTS.md` — or download it by',
+    'hand from [Burst](https://burst.shopify.com), which has no public API and',
+    'which the build spec forbids scraping.',
     '',
     'Save each file into `demo-media-raw/` named for its manifest entry, keeping',
     'whatever extension it arrived with: `demo-hero.jpg` is fine for',
@@ -322,26 +354,30 @@ if (missing.length > 0) {
     'which resizes, crops and encodes them, and rewrites this file with the boxes',
     'ticked.',
     '',
-    '**Record the licence as you go**, in `demo-media-raw/licenses.json`. Burst',
-    "shows it on each photo's page. CC0 carries no redistribution restriction; the",
-    'Burst Licence does not permit selling the photo "as digital photo files or in',
-    'any other form", which matters because `demo-store-export/` ships with the',
-    'paid download. Anything undeclared is treated as Burst Licence.',
+    '**Record the licence as you go**, in `demo-media-raw/licenses.json`. For a',
+    'generated file, set `"license": "AI-GENERATED"` and `"source"` to the',
+    'model/tool name. For a Burst file, use the licence Burst shows on the',
+    "photo's page — CC0 carries no redistribution restriction; the Burst",
+    'Licence does not permit selling the photo "as digital photo files or in',
+    'any other form", which matters because `demo-store-export/` ships with',
+    'the paid download. Anything undeclared is treated as the most restrictive',
+    'category, demo-store-only.',
     '',
-    'Photos with an identifiable face are demo-store-only whatever the licence',
-    'says — Burst grants no model release. That covers all four avatars.',
+    'Anything depicting, or closely resembling, an identifiable real person is',
+    'demo-store-only whatever its licence says — no licence here grants a',
+    'release for a real likeness. That covers all four avatars.',
     '',
     '---',
     '',
     checklistSection(`Start here — ${tierOne.length} files for a finished homepage`, tierOne),
     checklistSection(`Everything else — ${rest.length} files`, rest),
-    checklistSection(`Video — ${videos.length} files, and NOT from Burst`, videos),
+    checklistSection(`Video — ${videos.length} files`, videos),
     videos.length > 0
       ? [
-          '> **Burst is photographs only.** It has no video library, so the two',
-          '> clips above have to come from somewhere else — Pexels, Coverr and',
-          '> Mixkit all offer free commercial-use video. Check each licence',
-          "> yourself; they are not Burst's and they are not all the same.",
+          '> **Burst is photographs only.** It has no video library. Use a video',
+          '> model (Veo, Runway, Kling, Sora) per `PROMPTS.md`, or source from',
+          '> Pexels, Coverr or Mixkit, which all offer free commercial-use video',
+          '> — check each licence yourself, they are not all the same.',
           '>',
           '> Both are optional. The hero shows its poster image when no video is',
           '> set, and video-section is click-to-play from a poster that carries',
@@ -359,14 +395,13 @@ if (missing.length > 0) {
   writeFileSync(path.join(PATHS.raw, 'CHECKLIST.md'), checklist, 'utf8');
 
   log.info('');
-  log.info('Wrote demo-media-raw/CHECKLIST.md — every file, with a Burst search link.');
+  log.info('Wrote demo-media-raw/CHECKLIST.md.');
 }
 
-const undeclared = results.filter(({ entry }) => !ledger[entry.file]);
 if (undeclared.length > 0) {
   log.warn(
     `${undeclared.length} files have no licence declared and are being treated ` +
-      `as Burst Licence.`
+      `as the most restrictive category (demo-store-only).`
   );
   log.info('Declare them in demo-media-raw/licenses.json.');
 }
@@ -385,8 +420,8 @@ if (burst.length > 0) {
 }
 
 log.success(
-  `${results.length} processed, ${cc0.length} CC0, ${burst.length} Burst Licence, ` +
-    `${missing.length} still missing.`
+  `${results.length} processed — ${cc0.length} CC0, ${aiGenerated.length} AI-generated, ` +
+    `${burst.length} Burst Licence, ${undeclared.length} undeclared, ${missing.length} still missing.`
 );
 
 if (missing.length > 0) {
