@@ -3687,7 +3687,131 @@
       "city": "مدينة",
       "country": "البلد/المنطقة",
       "province": "مقاطعة",
-      "zip": "الرمز البريدي"
+      "zip": "الرمز البريدي",
+      "phone": "هاتف",
+      "submit": "حفظ",
+      "cancel": "إلغاء",
+      "empty": "لم يتم حفظ أي عناوين حتى الآن. أضف عنواناً وستتم تعبئة تفاصيل الدفع تلقائياً في المرة القادمة."
+    },
+    "login": {
+      "title": "تسجيل الدخول",
+      "email": "بريد إلكتروني",
+      "password": "كلمة المرور",
+      "forgot_password": "هل نسيت كلمة المرور؟",
+      "submit": "تسجيل الدخول",
+      "create_account": "إنشاء حساب",
+      "guest_title": "المتابعة كضيف",
+      "guest_continue": "استمر/استمروا",
+      "no_account": "لا تمتلك حسابًا بعد؟",
+      "guest_text": "لست بحاجة إلى حساب للشراء. يمكنك إتمام عملية الشراء دون الحاجة لحساب، وبإمكانك إنشاء حساب لاحقًا من خلال رسالة تأكيد الطلب."
+    },
+    "order": {
+      "title": "اطلب {{ name }}",
+      "date_html": "وضعت بتاريخ {{ date }}",
+      "product": "المنتج",
+      "sku": "رمز التخزين التعريفي",
+      "price": "السعر",
+      "quantity": "الكمية",
+      "total": "الإجمالي",
+      "subtotal": "المجموع الفرعي",
+      "shipping": "الشحن",
+      "tax": "ضريبة",
+      "billing_address": "عنوان الفواتير",
+      "shipping_address": "عنوان الشحن",
+      "payment_status": "حالة الدفع",
+      "fulfillment_status": "حالة الإنجاز",
+      "track_shipment": "تتبع الشحنة",
+      "date_label": "تاريخ",
+      "shop_again": "تسوق مرة أخرى",
+      "need_help": "هل هناك خطأ ما في هذا الطلب؟"
+    },
+    "recover_password": {
+      "title": "إعادة تعيين كلمة المرور الخاصة بك",
+      "subtext": "سوف نرسل لك بريدًا إلكترونيًا لإعادة تعيين كلمة المرور الخاصة بك.",
+      "submit": "إرسال",
+      "cancel": "إلغاء",
+      "success": "لقد أرسلنا إليك رسالة بريد إلكتروني تحتوي على رابط لتحديث كلمة المرور الخاصة بك."
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "first_name": "الاسم الأول",
+      "last_name": "اسم العائلة",
+      "email": "بريد إلكتروني",
+      "password": "كلمة المرور",
+      "submit": "إنشاء حساب",
+      "password_hint": "خمسة أحرف على الأقل.",
+      "have_account": "هل لديك حساب بالفعل؟"
+    },
+    "reset_password": {
+      "title": "إعادة تعيين كلمة مرور الحساب",
+      "subtext": "أدخل كلمة مرور جديدة.",
+      "password": "كلمة المرور",
+      "password_confirm": "تأكيد كلمة المرور",
+      "submit": "إعادة تعيين كلمة المرور"
     }
+  },
+  "gift_card": {
+    "add_to_apple_wallet": "أضف إلى Apple Wallet",
+    "card": "بطاقة هدية",
+    "expired": "انتهت صلاحية بطاقة الهدايا هذه",
+    "expires_on": "تنتهي صلاحيته في {{ expires_on }}",
+    "use_at_checkout": "استخدم بطاقة الهدايا هذه عند الدفع",
+    "print": "طباعة",
+    "copy_code": "رمز النسخ",
+    "code_copied": "تم نسخ الرمز"
+  },
+  "newsletter": {
+    "label": "بريد إلكتروني",
+    "placeholder": "أنت@مثال.كوم",
+    "submit": "سجل",
+    "success": "شكرًا. تحقق من بريدك الوارد للتأكيد."
+  },
+  "password": {
+    "title": "هذا المتجر خاص",
+    "subtext": "أدخل كلمة مرور المتجر للمتابعة.",
+    "password": "كلمة المرور",
+    "enter": "إدخال",
+    "opening_soon": "قريبًا",
+    "powered_by": "مدعوم بواسطة Shopify"
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "أضف إلى عربة التسوق",
+      "added_to_cart": "تمت الإضافة إلى سلة مشترياتك.",
+      "carbon_footprint_html": "{{ amount }} كجم مكافئ ثاني أكسيد الكربون لكل زوج",
+      "choose_options": "اختر الخيارات",
+      "choose_options_label": "اختر الخيارات لـ {{ title }}",
+      "choose_variant": "اختر خيارًا",
+      "decrease_quantity": "خفض الكمية",
+      "increase_quantity": "زيادة الكمية",
+      "low_stock": "فقط {{ count }} متبقٍ",
+      "material": "المواد",
+      "media_gallery": "وسائط المنتج",
+      "new": "جديد",
+      "on_sale": "مبيع",
+      "price": {
+        "from": "من {{ price }}",
+        "sale_price": "سعر البيع",
+        "regular_price": "السعر الاعتيادي",
+        "unit_price": "سعر الوحدة",
+        "savings_percent": "وفّر {{ percent }}%"
+      },
+      "quantity": "الكمية",
+      "quick_add_label": "أضف {{ title }} إلى سلة التسوق",
+      "share": "مشاركة",
+      "size_guide": "دليل المقاسات",
+      "sku": "رمز التخزين التعريفي",
+      "sold_out": "نفد المخزون",
+      "unavailable": "غير متاح",
+      "variant_sold_out": "{{ option }} — نفدت الكمية",
+      "vendor": "البائع",
+      "view_details": "عرض التفاصيل",
+      "view_larger": "عرض صورة أكبر"
+    }
+  },
+  "search": {
+    "title": "بحث",
+    "placeholder": "ابحث عن المنتجات والمقالات والصفحات",
+    "submit": "بحث"
   }
 }
