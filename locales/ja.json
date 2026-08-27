@@ -301,7 +301,8 @@
       "unavailable": "お取り扱いなし",
       "variant_sold_out": "{{ option }} — 売り切れ",
       "vendor": "ブランド",
-      "view_details": "詳細を見る"
+      "view_details": "詳細を見る",
+      "view_larger": "画像を拡大表示"
     }
   },
   "search": {

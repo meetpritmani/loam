@@ -439,13 +439,25 @@ dialog {
 }
 
 .media > img,
-.media > video,
-.media > svg {
+.media > video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* placeholder_svg_tag ships fixed illustration colors that ignore theme
+   tinting, so it's contained and muted rather than stretched edge-to-edge —
+   a quiet empty state instead of a mismatched cartoon. */
+.media > svg {
+  position: absolute;
+  inset: 22%;
+  width: 56%;
+  height: 56%;
+  object-fit: contain;
+  opacity: 0.32;
+  filter: grayscale(1);
 }
 
 .media--portrait {
@@ -652,13 +664,16 @@ dialog {
 
 /* --- Material tag -------------------------------------------------------
    Loam's first signature element: a small uppercase caption preceded by a
-   hollow dot. Driven by product.metafields.custom.material. The dot is a
-   pseudo-element so the tag stays a single text node for screen readers. */
+   hollow dot. Driven by product.metafields.custom.material, which is
+   merchant-editable and can run long — truncated to one line so a longer
+   material name never pushes the rest of a product card down and knocks a
+   grid row out of alignment with its neighbours. */
 
 .material-tag {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--sp-2);
+  max-width: 100%;
   font-size: var(--t-xs);
   line-height: 1.4;
   letter-spacing: var(--caption-tracking);
@@ -673,6 +688,13 @@ dialog {
   flex: 0 0 auto;
   border: 1px solid currentColor;
   border-radius: 50%;
+}
+
+.material-tag__text {
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* --- Badges ------------------------------------------------------------- */
@@ -933,6 +955,76 @@ dialog {
 
 [dir='rtl'] .drawer[open] .drawer__panel {
   transform: translateX(0);
+}
+
+/* The PDP lightbox: a centred, scale-and-fade panel rather than the
+   side-slide every other drawer uses. Every property that conflicts with
+   the base `.drawer__panel` rule is restated here — same selector
+   specificity, so only source order decides, and this block has to come
+   after it to win. RTL is a no-op for a centred panel, so there is no
+   mirrored variant to add.
+
+   `pointer-events: none` on the panel, re-enabled only on its direct
+   children (the close button and the image), is what makes "click outside
+   the image closes it" work: the panel's own box still spans the full
+   viewport (it has to, to centre the image), but a click landing in its
+   empty padding now falls straight through to `.drawer__overlay`
+   underneath, which is the element `data-drawer-close` is actually on. A
+   click on the image itself still lands on `.drawer__lightbox-media`, an
+   `auto` island, and does nothing — closing only from outside the image is
+   the point. */
+.drawer__panel--lightbox {
+  position: absolute;
+  inset: 0;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  padding: var(--sp-6);
+  pointer-events: none;
+  transform: scale(0.85);
+  opacity: 0;
+  transition: transform var(--dur-slow) var(--ease), opacity var(--dur-slow) var(--ease);
+}
+
+.drawer__panel--lightbox > * {
+  pointer-events: auto;
+}
+
+.drawer[open] .drawer__panel--lightbox {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* A photo lightbox reads as a dedicated viewer, not a panel over the page —
+   darker than every other drawer's scrim on purpose, close to opaque black,
+   so the image is the only thing left to look at. */
+.drawer__overlay--lightbox {
+  background-color: rgb(0 0 0 / 0.92);
+}
+
+.drawer__lightbox-close {
+  position: absolute;
+  inset-block-start: var(--sp-4);
+  inset-inline-end: var(--sp-4);
+  background-color: rgb(var(--c-paper-rgb) / 0.9);
+}
+
+.drawer__lightbox-media {
+  display: flex;
+  max-width: min(90vw, 1100px);
+  max-height: 85vh;
+}
+
+.drawer__lightbox-img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: var(--radius);
 }
 
 /* --- Accordion ---------------------------------------------------------- */
@@ -2659,6 +2751,25 @@ recently-viewed {
   }
 }
 
+/* Matches `.button:disabled`'s muted treatment (§9.6: a disabled control
+   has to read as inactive, not just fail silently on click) — there is no
+   quantity to set when there is nothing to buy. A class rather than
+   `:has(:disabled)`: the theme's browser matrix includes iOS 15, and
+   `:has()` did not ship until Safari 15.4. */
+.quantity--disabled {
+  border-color: var(--c-ink-12);
+  background-color: var(--c-ink-12);
+}
+
+.quantity__button:disabled {
+  cursor: not-allowed;
+  color: var(--c-ink-45);
+}
+
+.quantity__input:disabled {
+  color: var(--c-ink-45);
+}
+
 /* --- Newsletter --------------------------------------------------------- */
 
 .newsletter__field {
@@ -2795,14 +2906,24 @@ recently-viewed {
 }
 
 @media (min-width: 750px) {
-  .footer__column--newsletter {
-    grid-column: auto / span 2;
-  }
-
   .footer__bottom {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+}
+
+/* The 2-column span below is sized for the 4-track row this footer's default
+   blocks produce (text, menu, menu, newsletter). `auto-fit` only reaches 4
+   tracks once the container is wide enough for four 220px+ columns — below
+   that (tablet widths, chiefly) it settles on 3, the first three blocks fill
+   the row, and a span of 2 leaves the newsletter block stranded on its own
+   row covering two of the three tracks instead of all of them. Stay full
+   width (the base, mobile-first rule) until there's actually a fourth track
+   for it to share the row with. */
+@media (min-width: 1100px) {
+  .footer__column--newsletter {
+    grid-column: auto / span 2;
   }
 }
 
@@ -2940,6 +3061,18 @@ recently-viewed {
   .hero__stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--sp-6);
+  }
+
+  /* Above 750px the desktop image (a wide landscape crop) takes over from
+     the portrait mobile image, but --hero-height is a vh value with no
+     regard for viewport width. On a narrow-but-tall viewport — a portrait
+     tablet, chiefly — that produces a near-square box that cover-crops a
+     wide photo down to a tight, zoomed-in sliver. Capping against vw too
+     keeps the box within a landscape-friendly aspect on any screen this
+     narrow, while leaving wide desktop viewports (where the vh value is
+     already the smaller number) untouched. */
+  .hero {
+    min-height: min(var(--hero-height, 70vh), 72vw);
   }
 }
 
@@ -3627,30 +3760,68 @@ recently-viewed {
   margin-block-end: var(--sp-4);
 }
 
-.product__media-main {
-  position: relative;
+.product__gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap);
 }
 
-.product__thumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-  margin-block-start: var(--sp-3);
-}
-
-.product__thumb {
+.product__gallery-trigger {
   display: block;
-  width: 64px;
+  position: relative;
+  width: 100%;
+  height: 100%;
   padding: 0;
-  border: var(--border-hairline) solid transparent;
-  border-radius: var(--radius);
+  border: 0;
   background: none;
   cursor: pointer;
-  overflow: hidden;
 }
 
-.product__thumb.is-active {
-  border-color: var(--c-ink);
+/* `.media > img` (direct child) is how every other media box positions its
+   image, but the gallery trigger button sits between `.media` and the
+   image here, so that selector cannot reach it — restated explicitly
+   rather than loosening the shared rule to a descendant selector every
+   other `.media` box would also pick up. */
+.product__gallery-trigger > .image-fallback__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A quiet, always-present hint that the image opens larger — not
+   hover-gated, since a touch visitor has no hover state to reveal it and
+   tapping works identically either way (§8: visible without hover on
+   touch). It just brightens on hover/focus for polish. */
+.product__gallery-zoom {
+  position: absolute;
+  inset-block-end: var(--sp-3);
+  inset-inline-end: var(--sp-3);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgb(var(--c-paper-rgb) / 0.85);
+  color: var(--c-ink);
+  opacity: 0.85;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.product__gallery-trigger:hover .product__gallery-zoom,
+.product__gallery-trigger:focus-visible .product__gallery-zoom {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* The theme-wide focus ring draws outside the element by default
+   (`--focus-offset` is positive), but this button fills its `.media`
+   parent exactly and that parent clips overflow — an outside ring would
+   be cut off on every edge at once, not just the corners, and effectively
+   invisible. Drawn inset instead, which no ancestor's overflow can clip. */
+.product__gallery-trigger:focus-visible {
+  outline-offset: -3px;
 }
 
 .product__info-inner {
@@ -3757,6 +3928,14 @@ recently-viewed {
 .buy-buttons {
   display: grid;
   gap: var(--sp-3);
+}
+
+/* Grid's default `justify-items: stretch` would otherwise pull the
+   compact stepper out to the column's full width — the same width as the
+   Add to Cart button beneath it — even though `.quantity` is its own
+   `inline-flex` box sized to its own content. */
+.buy-buttons > .quantity {
+  justify-self: start;
 }
 
 .buy-buttons__express {

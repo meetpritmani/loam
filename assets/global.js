@@ -1357,54 +1357,22 @@ if (!customElements.get('video-player')) {
 
 /* --------------------------------------------------------------------------
    <product-gallery>
-   Thumbnail switching. Every media item is in the DOM from the start and
-   toggled with `hidden`, rather than swapping one <img>'s src — swapping src
-   re-downloads on every click and flashes an empty box on a slow connection.
+   Every image is in the DOM and visible at once — a stacked grid, not a
+   single stage with thumbnails — so there is nothing to show or hide here.
+   The one job left is variant sync: when the picker selects a variant with
+   its own featured media, scroll that image into view rather than swap
+   anything. Lightbox open/close is handled entirely by <loam-drawer>, one
+   per image; this element does not intercept clicks at all.
    -------------------------------------------------------------------------- */
 
 class ProductGallery extends HTMLElement {
-  connectedCallback() {
-    this.onClick = this.onClick.bind(this);
-    this.addEventListener('click', this.onClick);
-  }
-
-  disconnectedCallback() {
-    this.removeEventListener('click', this.onClick);
-  }
-
   /** @param {string|number} mediaId */
   show(mediaId) {
-    const id = String(mediaId);
-    let matched = false;
-
-    this.querySelectorAll('[data-media-id]').forEach((item) => {
-      const isTarget = item.getAttribute('data-media-id') === id;
-      item.toggleAttribute('hidden', !isTarget);
-      if (isTarget) matched = true;
+    const target = this.querySelector(`[data-media-id="${CSS.escape(String(mediaId))}"]`);
+    target?.scrollIntoView({
+      behavior: PREFERS_REDUCED_MOTION.matches ? 'auto' : 'smooth',
+      block: 'nearest',
     });
-
-    // A variant can point at media that is not in this gallery, or at none at
-    // all. Leaving every item hidden would blank the gallery, so fall back to
-    // the first item instead of showing nothing.
-    if (!matched) {
-      this.querySelector('[data-media-id]')?.removeAttribute('hidden');
-      return;
-    }
-
-    this.querySelectorAll('[data-media-target]').forEach((thumb) => {
-      const isTarget = thumb.getAttribute('data-media-target') === id;
-      thumb.classList.toggle('is-active', isTarget);
-      if (isTarget) thumb.setAttribute('aria-current', 'true');
-      else thumb.removeAttribute('aria-current');
-    });
-  }
-
-  /** @param {MouseEvent} event */
-  onClick(event) {
-    const thumb = event.target instanceof Element && event.target.closest('[data-media-target]');
-    if (!thumb) return;
-    event.preventDefault();
-    this.show(thumb.getAttribute('data-media-target'));
   }
 }
 

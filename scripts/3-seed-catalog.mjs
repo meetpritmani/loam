@@ -44,7 +44,12 @@ const PRODUCT_BY_HANDLE = `
       id
       handle
       title
-      media(first: 10) { nodes { id } }
+      media(first: 10) {
+        nodes {
+          id
+          ... on MediaImage { image { url } }
+        }
+      }
     }
   }
 `;
@@ -362,21 +367,39 @@ if (!offline) {
       appendLog('product', product.handle, saved.id);
 
       /* Media. Attached separately from productSet, which does not take media
-         for an existing product without replacing the whole set. Skipped when
-         the product already has media, so a re-run does not stack duplicates. */
-      const alreadyHasMedia = (found?.media?.nodes?.length || 0) > 0;
+         for an existing product without replacing the whole set. Checked per
+         file, not just "has any media" — a product seeded with only its
+         studio shot (§6's alt photos commonly sourced later, in a separate
+         pass) would otherwise have that first image mistaken for "fully
+         done" forever, and the alt could never be attached by re-running
+         this script.
+
+         Matched by filename, not by GID. `mediaMap[file].gid` is the Files
+         library's GID for the upload; attaching that same source to a
+         product creates a SEPARATE MediaImage resource with its own GID, so
+         comparing GIDs is always a miss — confirmed the hard way, producing
+         duplicate images on all eight products the first time this ran with
+         a GID check. A product's own media CDN URL still carries the
+         original filename before Shopify's `_<uuid>` suffix and query
+         string, which is what's actually stable to match on. */
+      const existingFilenames = new Set(
+        (found?.media?.nodes || [])
+          .map((node) => node.image?.url?.split('/').pop()?.split('?')[0] || '')
+          .map((name) => name.replace(/_[0-9a-f-]{36}\.webp$/i, '.webp'))
+      );
       const images = productImages(index).filter((file) => mediaMap[file]?.url);
+      const missingImages = images.filter((file) => !existingFilenames.has(file));
 
       if (images.length === 0) {
         log.warn(`  ${product.title}: no media in the map, skipping images`);
-      } else if (alreadyHasMedia) {
-        log.skipped(`  ${product.title}: media already attached`);
+      } else if (missingImages.length === 0) {
+        log.skipped(`  ${product.title}: all ${images.length} images already attached`);
       } else {
         await mutate(
           PRODUCT_ADD_MEDIA,
           {
             product: { id: saved.id },
-            media: images.map((file) => ({
+            media: missingImages.map((file) => ({
               originalSource: mediaMap[file].url,
               mediaContentType: 'IMAGE',
               alt: `${product.title} — ${product.material}`,
@@ -384,9 +407,14 @@ if (!offline) {
           },
           'productUpdate'
         );
-        // media[1] is what card-product's hover swap reads. A product with one
-        // image loses that behaviour silently, so it is worth saying out loud.
-        log.created(`  ${product.title}: ${images.length} images${images.length < 2 ? ' (no hover image)' : ''}`);
+        // media[1] is what card-product's hover swap reads. A product left
+        // with only one image loses that behaviour silently, so it is worth
+        // saying out loud.
+        const totalAfter = existingFilenames.size + missingImages.length;
+        log.created(
+          `  ${product.title}: +${missingImages.length} image${missingImages.length === 1 ? '' : 's'}` +
+            ` (${totalAfter} total)${totalAfter < 2 ? ' — no hover image' : ''}`
+        );
       }
 
       /* Metafields. */

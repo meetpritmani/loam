@@ -57,8 +57,14 @@
       if current.inventory_management != blank and current.inventory_policy != 'continue'
         assign qty_max = current.inventory_quantity
       endif
+
+      # There is nothing to set a quantity on when there is nothing to buy.
+      assign qty_disabled = false
+      unless can_buy
+        assign qty_disabled = true
+      endunless
     -%}
-    {%- render 'quantity-input', id: qty_id, value: 1, min: 1, max: qty_max -%}
+    {%- render 'quantity-input', id: qty_id, value: 1, min: 1, max: qty_max, disabled: qty_disabled -%}
   {%- endif -%}
 
   {%- comment -%}

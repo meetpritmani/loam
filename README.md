@@ -19,14 +19,11 @@ external CDN. Everything a shopper downloads is in this repository.
 | 2 | Chrome — announcement bar, header, mega menu, footer, cart drawer | Complete |
 | 3 | Homepage — 15 sections | Complete |
 | 4 | Templates — product, collection, search, cart, blog, customers | Complete |
-| 5 | Demo store seeding | **Scripts built, buyer export generated** — the store-facing half awaits media and a demo store |
-| 6 | Demo content shipped in the repo | **In progress** — theme presets and the contact/about templates ship; the populated demo JSON awaits media |
-| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | Not started |
+| 5 | Demo store seeding | **Complete** — 48 of 48 demo photos sourced, licensed and uploaded; catalogue, collections and content seeded |
+| 6 | Demo content shipped in the repo | **Complete** — theme JSON fully wired to the seeded media, both presets ship, `assets/` correctly bundles no photography |
+| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | **In progress** — theme check, contrast, section and locale audits automated and passing; JSON-LD validated on every template; Lighthouse, a VoiceOver pass, an RTL spot-check and a fresh-install test are still open |
 
-Nothing in this file describes behaviour that does not exist today. Phases 5
-to 7 add the demo store, the demo content shipped in the repo, and the release
-hardening pass — the theme is complete and functional without them, but it
-installs onto an empty store showing placeholder imagery until phase 6.
+Nothing in this file describes behaviour that does not exist today.
 
 ---
 
@@ -320,8 +317,8 @@ Budgets are enforced, not aspirational:
 
 | Budget | Limit | Current |
 |---|---|---|
-| CSS, gzipped | 60KB | 14.0KB |
-| JavaScript, gzipped | 40KB | 14.5KB |
+| CSS, gzipped | 60KB | 19.8KB |
+| JavaScript, gzipped | 40KB | 21.2KB |
 | Stylesheets | 1 | 1 |
 | Scripts | 1 | 1 |
 | External requests | 0 | 0 |
@@ -472,9 +469,13 @@ tracker.
 
 ## Credits and licence
 
-Demo photography is sourced from [Burst](https://burst.shopify.com), Shopify's
-free stock library. Only CC0-licensed images are bundled with the theme;
-per-file licensing is recorded in `assets/LICENSES.md`.
+Demo photography is AI-generated (per-file model and prompt recorded in
+`demo-media-raw/PROMPTS.md`) or sourced from [Burst](https://burst.shopify.com),
+Shopify's free stock library — see [Images](#images). Only a CC0-licensed
+Burst photo would ever be bundled with the theme itself, and none of the
+demo set qualifies: every file this build ships is AI-generated, store-only
+by default. `assets/LICENSES.md` records the decision and the per-file
+licence ledger lives in `demo-store-export/LICENSES.md`.
 
 Loam is original work. No Liquid, CSS, JavaScript, class names, schema or copy
 has been taken from any other commercial theme.

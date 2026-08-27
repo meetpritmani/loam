@@ -56,9 +56,9 @@
             assign has_hotspot = true
           endif
 
-          assign demo_index = forloop.index | modulo: 5
+          assign demo_index = forloop.index | modulo: 6
           if demo_index == 0
-            assign demo_index = 5
+            assign demo_index = 6
           endif
           assign demo_file = 'demo-lookbook-' | append: demo_index | append: '.webp'
         -%}

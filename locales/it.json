@@ -307,7 +307,8 @@
       "unavailable": "Non disponibile",
       "variant_sold_out": "{{ option }} — esaurito",
       "vendor": "Marca",
-      "view_details": "Vedi i dettagli"
+      "view_details": "Vedi i dettagli",
+      "view_larger": "Ingrandisci immagine"
     }
   },
   "search": {

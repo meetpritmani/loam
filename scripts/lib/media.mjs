@@ -181,6 +181,7 @@ export const MEDIA_MANIFEST = [
   { file: 'demo-lookbook-3.webp', width: 1200, height: 1200, kind: 'image', subject: 'Editorial, square detail' },
   { file: 'demo-lookbook-4.webp', width: 1200, height: 1600, kind: 'image', subject: 'Editorial, portrait' },
   { file: 'demo-lookbook-5.webp', width: 1600, height: 1067, kind: 'image', subject: 'Editorial, landscape' },
+  { file: 'demo-lookbook-6.webp', width: 2000, height: 760, kind: 'image', subject: 'Editorial, panoramic' },
 
   // Faces. Burst grants no model release, so these are the files with the
   // sharpest restriction: demo store and screenshots only.
