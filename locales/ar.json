@@ -135,13 +135,19 @@
         "express_checkout_free_order": "لن يتم محاسبتك على طلب مجاني",
         "pending_payment": {
           "multibanco": {
-            "find_nearest_atm": "البحث عن أقرب صراف آلي"
+            "find_nearest_atm": "البحث عن أقرب صراف آلي",
+            "buyer_action_info": "دفعك المستحق هو %{amount_due}.",
+            "instruction_html": "قم بالدفع في Multibanco أو عبر الإنترنت باستخدام التفاصيل أدناه. للأسئلة أو لتحديث تفاصيل الدفع، %{contact_us}.",
+            "entity": "كيان",
+            "reference": "مرجع",
+            "amount": "المبلغ"
           },
           "oxxo": {
             "reference_number": "الرقم المرجعي:",
             "pay": "ادفع %{amount}",
             "expiry_date_time": "بتاريخ %{date} في تمام الساعة %{time}"
-          }
+          },
+          "due_notice": "المبلغ المستحق للدفع هو %{amount_due}، وموعد استحقاقه هو %{due_date}."
         },
         "update_payment_method": "تحديث طريقة الدفع",
         "order_covered_by_store_credit_notice": "طلبك مغطى برصيد المتجر الخاص بك.",
@@ -276,7 +282,113 @@
         },
         "gift_card_store_credit": {
           "add_label": "أضف بطاقة هدية أو رصيد متجر"
-        }
+        },
+        "order_covered_by_gift_cards_notice": {
+          "one": "تمت تغطية طلبك بواسطة بطاقة الهدايا الخاصة بك.",
+          "other": "طلبك مغطى ببطاقات الهدايا الخاصة بك."
+        },
+        "offsite_gateway_redirect_hint": "سيتم إعادة توجيهك إلى %{gateway_label} لإتمام عملية الشراء.",
+        "offsite_gateway_review_page_redirect_hint": "بعد مراجعة طلبك، ستتم إعادة توجيهك إلى %{gateway_label} لإتمام عملية الشراء.",
+        "offsite_gateway_redirect_hint_multi_currency_html": "إجمالي %{total_shop_price} على %{gateway_label}",
+        "offsite_gateway_redirect_hint_no_button_label": "سيتم إعادة توجيهك إلى %{gateway_label} لإتمام عملية الشراء.",
+        "receiver_payment_experience_hint": "بعد تقديم طلبك، ستتلقى تفاصيل الدفع. قم بالدفع في Multibanco أو عبر الإنترنت خلال %{due_days} يوم.",
+        "billing_address_title": "عنوان الفواتير",
+        "billing_address_rollup_accessibility_label": "خيارات عنوان الفوترة",
+        "billing_address_description": "اختر العنوان الذي يطابق بطاقتك أو طريقة الدفع الخاصة بك.",
+        "billing_address_description_no_shipping_address": "أدخل العنوان المطابق لبطاقتك أو وسيلة الدفع الخاصة بك.",
+        "no_js_credit_card_fields_redirect_hint": "سيتم إعادة توجيهك لإضافة معلومات الدفع الخاصة بك.",
+        "card_fields_container_prefix": "حاوية الحقل لـ:",
+        "card_fields_unavailable_html": {
+          "one": "مدفوعات بطاقات الائتمان والخصم غير متاحة حاليًا.<br><a href=\"%{current_url}\">تحديث هذه الصفحة</a> أو أعد المحاولة لاحقًا.",
+          "other": "عمليات الدفع ببطاقات الائتمان والخصم غير متاحة في الوقت الحالي.<br><a href=\"%{current_url}\">حدث هذه الصفحة</a> أو جرب طريقة دفع مختلفة."
+        },
+        "card_fields_processing_error": "حدثت مشكلة في معالجة الدفع. حاول تحديث هذه الصفحة أو تحقق من اتصالك بالإنترنت.",
+        "technical_error": "لا يمكن معالجة الدفعات الآن بسبب مشكلة فنية. يُرجى إعادة المحاولة بعد بضع دقائق.",
+        "no_method_error": "لا يمكن لهذا المتجر قبول الدفعات في الوقت الحالي.",
+        "not_configured_error": "لا يمكن لهذا المتجر قبول الدفعات في الوقت الحالي.",
+        "missing_credit_card_error": "أدخل تفاصيل بطاقتك لإتمام عملية الدفع",
+        "shop_pay_ideal_unavailable_error": "iDEAL | Wero غير متاح لهذا الطلب. يُرجى اختيار طريقة دفع أخرى.",
+        "payment_method_not_available_for_shipping_address_error": "طريقة الدفع غير متاحة لعنوان الشحن المحدد. يرجى اختيار طريقة دفع أخرى.",
+        "payment_method_unavailable_error": "طريقة الدفع هذه غير متاحة حالياً. يُرجى اختيار طريقة دفع أخرى.",
+        "payment_method_loading_error": "طريقة الدفع هذه لا تزال قيد التحميل. حاول مرة أخرى في غضون ثوانٍ قليلة.",
+        "bank_payment_method_label": "طريقة الدفع البنكي",
+        "billing_address_not_supported_for_payment_method_error": "طريقة الدفع هذه غير متاحة لعنوان الفواتير والعملة الخاصين بك. يُرجى تجربة طريقة دفع مختلفة.",
+        "generic_incorrect_card_info": "تعذرت مطابقة بيانات الدفع الخاصة بك. يرجى التحقق من تفاصيل بطاقتك والمحاولة مرة أخرى.",
+        "sofort_label": "تحويل مصرفي فوري",
+        "paypal_label": "باي بال",
+        "paypal_wallet_label": "محفظة PayPal",
+        "shop_pay_installments_label": "تقسيط Shop Pay",
+        "default": "افتراضي",
+        "set_as_default_card": "تعيين كبطاقة افتراضية",
+        "continue_to_guest_checkout": "الاستمرار في الدفع كضيف",
+        "paypal_modal": {
+          "order_contains_subscriptions": "اشتراك",
+          "order_contains_fixed_selling_plans": "قد لا يشمل الإجمالي الضرائب وتكاليف الشحن والرسوم المؤجلة وبعض الخصومات. انتقل إلى صفحة الدفع لمعرفة المبلغ المستحق اليوم."
+        },
+        "klarna_label": "كلارنا",
+        "klarna_pay_later_label": "ادفع لاحقًا مع Klarna",
+        "klarna_pay_now_label": "ادفع الآن باستخدام Klarna",
+        "bancontact_label": "بانكونت",
+        "giropay_label": "جيروباي",
+        "multibanco_label": "ملتيبانكو",
+        "mb_way_label": "MB WAY",
+        "bizum_label": "بيزوم",
+        "eps_label": "تحويل eps",
+        "klarna_slice_it_label": "التمويل مع كلارنا",
+        "ideal_label": "iDEAL | Wero",
+        "bank_picker_label": "البنك",
+        "afterpay_label": "خدمة الدفع الآجل Afterpay",
+        "cashapppay_label": "الدفع عبر Cash App",
+        "przelewy24_label": "برزيليوي 24",
+        "blik_label": "بليك",
+        "twint_label": "توينت",
+        "mobilepay_label": "الدفع عبر الهاتف المحمول",
+        "swish_label": "سويش",
+        "vipps_label": "فيبس",
+        "grabpay_label": "غراب باي",
+        "kcp_creditcard_label": "بطاقة ائتمان KCP",
+        "alipay_label": "أليباي",
+        "wechat_pay_label": "الدفع عبر وي شات",
+        "wechat_app_label": "وي شات",
+        "oxxo_label": "أوكسو",
+        "satispay_label": "ساتسباي",
+        "usdc_label": "USDC",
+        "usdc_cashback_title": "استرداد نقدي بقيمة %{incentive_percentage}٪",
+        "usdc_cashback_additional_info": "ادفع باستخدام USDC على Base واسترد %{incentive_percentage}% في محفظتك خلال 30 يومًا.",
+        "usdc_cashback_terms": "تطبق الشروط والحدود",
+        "purchase_options_card_update_agreement_label_html": "بتحديثك طريقة الدفع، فإنك تفوض بالدفعات لأي عملية شراء متكررة أو مؤجلة وفقًا <a class=\"link--small\" data-modal=\"true\" data-title-text=\"%{cancellation_policy}\" href=\"%{policy_href}\">لسياسة الإلغاء</a> الخاصة بهذا المتجر.",
+        "subscription_card_update_agreement_label": "سيؤدي تغيير طريقة الدفع إلى تحديث اشتراكك والدفعات المتكررة المستقبلية.",
+        "subscription_agreement_label": "توجد سلعة أو أكثر في سلة مشترياتك في هيئة شراء مؤجل أو شراء باشتراك. باستمرارك في عملية الدفع، فإنك توافق على خصم قيمة الدفعة تلقائياً من طريقة الدفع الخاصة بك بالسعر والتكرار الموضحين في هذه الصفحة حتى انتهاء صلاحيتها أو إلغائها. تخضع جميع الإلغاءات إلى %{cancelled}.",
+        "subscription_agreement_cancelled": "سياسة الإلغاء",
+        "subscription_heading": "اتفاقية الاشتراك",
+        "subscription_agreement_label_html": "أفهم أنني أوافق على اشتراك. سيتم تجديده بالسعر والوتيرة المذكورين حتى ينتهي أو يتم \n<a class=\"link--small\" data-modal=\"true\" data-title-text=\"%{subscription_policy}\" href=\"%{policy_href}\">إلغاؤه</a>.\n",
+        "purchase_options_agreement_label": "عنصر واحد أو أكثر في سلة التسوق الخاصة بك هو عملية شراء مؤجلة أو متكررة. من خلال متابعة الدفع، فإنك توافق على أنه سيتم خصم المبلغ تلقائيًا من طريقة الدفع الخاصة بك بالسعر والتكرار المدرجين في هذه الصفحة حتى تنتهي أو تقوم بالإلغاء. جميع الإلغاءات تخضع لـ %{cancellation_policy_label}.",
+        "purchase_options_agreement_label_html": "أتفهم أن منتجًا واحدًا أو أكثر في عربة التسوق الخاصة بي هو عملية شراء مؤجلة أو متكررة. من خلال المتابعة، أوافق على\n<a class=\"link--small\" data-modal=\"true\" data-title-text=\"%{subscription_policy}\" href=\"%{policy_href}\">سياسة الإلغاء</a>\nوآذن لكم بتحصيل رسوم من طريقة الدفع الخاصة بي بالأسعار والتكرار والتواريخ المذكورة في هذه الصفحة حتى يتم\nتنفيذ طلبي أو إلغائه، إذا سمح بذلك.\n",
+        "purchase_options_agreement_label_wallets": "بالمتابعة مع عملية الدفع الخاصة بك، فإنك توافق على الرسوم المستقبلية المذكورة في هذه الصفحة وعلى سياسة الإلغاء.",
+        "purchase_options_subscription_agreement_label": "تحتوي سلة مشترياتك على اشتراك يتجدد تلقائيًا. بالنقر على \"%{button_label}\"، %{consent_text} %{cancellation_instructions}",
+        "purchase_options_subscription_consent_text": "أنت توافق صراحة وتأكيدًا على أنه سيتم تلقائيًا تحصيل المبلغ (المبالغ) المتكرر الموضح في سلة التسوق الخاصة بك (بالإضافة إلى رسوم الشحن والضرائب) حتى انتهاء الاشتراك (الاشتراكات) أو إلغائه.",
+        "purchase_options_subscription_cancellation_instructions": "%{cancel_text} يرجى الاطلاع على %{cancellation_policy_label}.",
+        "purchase_options_subscription_cancel_text": "يمكنك الإلغاء في أي وقت بالانتقال إلى حسابك أو الاتصال بالمتجر.",
+        "change_currency_section_description": "اختر خيار عملة",
+        "no_real_orders_dev_store": "لا يستطيع هذا المتجر قبول الطلبات أو المدفوعات الحقيقية.",
+        "loading": "جارٍ تحميل الدفعة...",
+        "waiting_on_payment_methods": "جاري جلب طرق الدفع المتاحة...",
+        "apple_pay_payment_error": "تعذر إكمال دفعتك. يرجى إعادة المحاولة أو استخدام طريقة دفع مختلفة.",
+        "taxes_not_included": "الضرائب غير مشمولة",
+        "no_taxes_banner_content": "لن يتم فرض ضرائب على هذا الطلب. بمجرد تحصيل الدفعة، لا يمكن إضافة الضرائب بعد الآن.",
+        "paypal": {
+          "connect": "انقر لربط حسابك في PayPal"
+        },
+        "apple": {
+          "connect": "انقر لربط حسابك في Apple Pay",
+          "not_available": "Apple Pay غير متاح في هذا المتصفح. لربط حساب Apple Pay الخاص بك، ستحتاج إلى استخدام Safari على جهاز Apple."
+        },
+        "google": {
+          "connect": "انقر للاتصال بحسابك في Google Pay",
+          "error_authorizing": "خطأ في تفويض الدفع"
+        },
+        "account_connected": "تم ربط الحساب.",
+        "mor_disclaimer_html": "بالنقر أدناه وإتمام طلبك، فإنك توافق على شراء منتجك (منتجاتك) من Global-e بصفتها التاجر المسجل\nلهذه المعاملة، وذلك وفقًا لـ <a class=\"link--small\" data-modal=\"true\" data-title-text=\"%{mor_terms}\" href=\"%{terms_href}\">الشروط والأحكام</a>\nو<a class=\"link--small\" data-modal=\"true\" data-title-text=\"%{privacy_policy}\" href=\"%{policy_href}\">سياسة الخصوصية</a> الخاصة بـ Global-e. Global-e هي مزود خدمة تنفيذ دولي\nلـ %{shop_name}\n"
       },
       "remote_merchandise_only": {
         "single_shop_transition": "جارٍ إعادة توجيهك إلى %{advertiser} لإكمال عملية الشراء.",
