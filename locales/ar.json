@@ -3555,5 +3555,139 @@
         "sign_in": "تسجيل الدخول"
       }
     }
+  },
+  "blog": {
+    "comment_success": "شكرًا. تم نشر تعليقك.",
+    "article_comments": "تعليقات",
+    "comment_form_body": "تعليق",
+    "comment_form_email": "بريد إلكتروني",
+    "comment_form_name": "الاسم",
+    "comment_form_submit": "منشور",
+    "comment_form_title": "أضف تعليقًا",
+    "share": "مشاركة",
+    "back_to_blog": "العودة إلى {{ title }}"
+  },
+  "cart": {
+    "title": "عربة التسوق",
+    "empty": "عربة التسوق الخاصة بك فارغة.",
+    "continue_shopping": "مواصلة التسوق",
+    "checkout": "الدفع",
+    "update": "تحديث",
+    "remove": "إزالة",
+    "subtotal": "المجموع الفرعي",
+    "taxes_and_shipping_note": "تُحسب الضرائب وتكاليف الشحن عند الدفع.",
+    "quantity": "الكمية",
+    "note": "مذكرة الطلب",
+    "note_placeholder": "تعليمات التسليم، رسالة الهدية، أي شيء آخر.",
+    "free_shipping_progress_html": "أنت على بُعد {{ amount }} من الشحن المجاني.",
+    "free_shipping_reached": "لقد حصلت على شحن مجاني.",
+    "free_shipping_label": "قيمة الطلب المتبقية للشحن المجاني",
+    "empty_heading": "سلة التسوق فارغة",
+    "empty_text": "لا يوجد شيء هنا بعد. ابدأ بالقطع التي يعود الناس لشرائها.",
+    "popular_products": "شائع حالياً",
+    "upsell_title": "يتماشى جيداً مع هذا",
+    "summary": "ملخص الطلب",
+    "item_count": {
+      "one": "{{ count }} عنصر",
+      "other": "{{ count }} عنصر"
+    },
+    "item_added": "{{ title }} أضيفت إلى سلة التسوق.",
+    "item_removed": "{{ title }} أزيل من سلة مشترياتك.",
+    "update_error": "تعذر تحديث عربة التسوق. الرجاء المحاولة مرة أخرى.",
+    "view_cart": "عرض سلة التسوق"
+  },
+  "collections": {
+    "title": "المجموعات",
+    "empty": {
+      "heading": "لا شيء هنا بعد",
+      "text": "هذه المجموعة لا تحتوي على أي منتجات في الوقت الحالي."
+    },
+    "product_count": {
+      "one": "{{ count }} منتج",
+      "other": "{{ count }} منتجات"
+    },
+    "sort_by": "الترتيب حسب",
+    "filter": "عامل تصفية",
+    "filter_and_sort": "تصفية وفرز",
+    "clear": "واضح",
+    "clear_all": "مسح الكل",
+    "apply": "تقديم",
+    "filters_applied": {
+      "one": "{{ count }} فلتر مطبق",
+      "other": "{{ count }} عوامل تصفية مطبقة"
+    },
+    "result_count": {
+      "one": "{{ count }} منتج",
+      "other": "{{ count }} منتجات"
+    },
+    "filters": {
+      "title": "عامل تصفية",
+      "apply": "تطبيق عوامل التصفية",
+      "remove": "إزالة الفلتر",
+      "clear_all": "مسح الكل",
+      "show_results": {
+        "one": "عرض {{ count }} منتج",
+        "other": "عرض {{ count }} منتجات"
+      },
+      "price_from": "أقل سعر",
+      "price_to": "أعلى سعر",
+      "error": "تعذر تطبيق عوامل التصفية. يرجى المحاولة مرة أخرى."
+    },
+    "empty_filtered": {
+      "heading": "لا توجد منتجات مطابقة لهذه الفلاتر",
+      "text": "حاول إزالة عامل تصفية، أو ابدأ من جديد مع النطاق الكامل."
+    },
+    "list_empty": {
+      "heading": "لا توجد مجموعات حتى الآن",
+      "text": "لم يتم تجميع أي شيء في مجموعة حتى الآن. لا يزال النطاق الكامل قابلاً للتصفح."
+    }
+  },
+  "contact": {
+    "name": "الاسم",
+    "email": "عنوان البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "message": "رسالة",
+    "error_heading": "لم يتم إرسال رسالتك",
+    "send_another": "أرسل رسالة أخرى"
+  },
+  "customers": {
+    "account": {
+      "title": "حساب",
+      "details": "تفاصيل الحساب",
+      "view_addresses": "عرض العناوين",
+      "order_history": "سجل الطلبات",
+      "no_orders": "لم تقم بأي طلبات بعد.",
+      "logout": "تسجيل الخروج",
+      "menu": "حساب",
+      "order_number": "أمر",
+      "empty_heading": "لا توجد طلبات بعد",
+      "reorder_title": "اطلبه مرة أخرى"
+    },
+    "activate_account": {
+      "title": "تفعيل الحساب",
+      "subtext": "أنشئ كلمة مرور لتفعيل حسابك.",
+      "password": "كلمة المرور",
+      "password_confirm": "تأكيد كلمة المرور",
+      "submit": "تفعيل الحساب",
+      "cancel": "رفض الدعوة"
+    },
+    "addresses": {
+      "title": "العناوين",
+      "add_new": "إضافة عنوان جديد",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "delete_confirm": "هل أنت متأكد من أنك تريد حذف هذا العنوان؟",
+      "default": "العنوان الافتراضي",
+      "set_default": "تعيين كعنوان افتراضي",
+      "first_name": "الاسم الأول",
+      "last_name": "اسم العائلة",
+      "company": "شركة",
+      "address1": "العنوان",
+      "address2": "شقة، جناح، إلخ.",
+      "city": "مدينة",
+      "country": "البلد/المنطقة",
+      "province": "مقاطعة",
+      "zip": "الرمز البريدي"
+    }
   }
 }
