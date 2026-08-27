@@ -3257,7 +3257,131 @@
       },
       "pay_pal": {
         "iframe_title_accessibility_label": "أضف طريقة دفع PayPal",
-        "loading_accessibility_message": "جارٍ تحميل PayPal"
+        "loading_accessibility_message": "جارٍ تحميل PayPal",
+        "errors": {
+          "generic": "حدثت مشكلة في PayPal. الرجاء المحاولة مرة أخرى أو استخدام طريقة دفع مختلفة."
+        }
+      },
+      "apple_pay": {
+        "loading": "جارٍ تحميل Apple Pay",
+        "errors": {
+          "generic": "حدثت مشكلة في Apple Pay. يُرجى إعادة المحاولة أو استخدام طريقة دفع مختلفة.",
+          "not_available": "Apple Pay غير متوفر على هذا الجهاز.",
+          "missing_billing_address": "يتطلب Apple Pay عنوان فوترة. يرجى إضافته إلى حسابك."
+        }
+      },
+      "store_credit": {
+        "label": "رصيد المتجر",
+        "accessibility_label": "رصيد المتجر - {{formattedBalance}}",
+        "expirable_amounts_button": "عرض المبالغ القابلة للانتهاء",
+        "expirable_amounts_label": "المبالغ التي توشك على الانتهاء",
+        "details_modal": {
+          "load_error": "تعذر تحميل رصيد المتجر.",
+          "title": "رصيد متجر ينتهي مفعوله",
+          "balance_label": "الرصيد",
+          "expiration_date_label": "تاريخ انتهاء الصلاحية",
+          "amount_label": "المبلغ",
+          "date_label": "تاريخ",
+          "event_label": "حدث",
+          "events": {
+            "adjustment": "تعديل",
+            "order_payment": "الدفع مقابل الطلب",
+            "order_refund": "استرداد طلب",
+            "payment_failure": "فشل الدفع",
+            "payment_returned": "تم إرجاع الدفعة",
+            "order_cancellation": "إلغاء الطلب",
+            "tax_finalization": "تسوية ضريبية"
+          },
+          "expirable_balance_info": "جزء من رصيدك سينتهي في تاريخ لاحق",
+          "expirable_amount_label": "إجمالي المبلغ القابل للانتهاء",
+          "expirable_amounts_info": "المبالغ التي تنتهي صلاحيتها في وقت أقرب يتم تطبيقها أولاً عند الدفع",
+          "expirable_amounts_button": "عرض",
+          "expired_amounts_button": "عرض المبالغ المنتهية الصلاحية",
+          "pagination": {
+            "expirable_transactions_loading": "جاري تحميل المزيد من الكميات القابلة للانتهاء",
+            "transactions_loading": "جارٍ تحميل المزيد من المعاملات",
+            "load_more_label": "أظهر المزيد",
+            "load_more_accessibility_label": "إظهار المزيد من المبالغ القابلة للانتهاء",
+            "load_more_transactions_accessibility_label": "إظهار المزيد من المعاملات",
+            "expirable_transactions_loaded": "تم تحميل كميات أكبر قابلة للانتهاء",
+            "transactions_loaded": "تم تحميل المزيد من المعاملات"
+          },
+          "expirable_indicator": "{{formattedAmount}} ستنتهي صلاحيته",
+          "expirable_indicator_accessibility_label": "{{formattedAmount}} ستنتهي صلاحيته. عرض المبالغ القابلة للانتهاء.",
+          "expirable_indicator_with_date_accessibility_label": "{{formattedAmount}} تنتهي صلاحيتها في {{date}}. عرض المبالغ القابلة للانتهاء.",
+          "expires_at": "ينتهي في {{date}}",
+          "expirable_transactions_list_accessibility_label": "معاملات رصيد المتجر القابلة للانتهاء",
+          "loading_accessibility_message": "جارٍ تحميل تفاصيل رصيد المتجر",
+          "transactions_list_accessibility_label": "معاملات رصيد المتجر",
+          "transaction_types": {
+            "credit": "تمت الإضافة",
+            "debit": "أنفقت",
+            "debit_revert": "تم رد الأموال",
+            "expiration": "انتهت صلاحيته"
+          }
+        }
+      },
+      "payment_details": {
+        "title": "تفاصيل طريقة الدفع",
+        "credit_card_details_accessibility_label": "ينتهي بـ {{lastDigits}}",
+        "billing_title": "عنوان الفواتير",
+        "card_info_title": "معلومات البطاقة",
+        "payment_method_expiring_on": "ينتهي في {{expiryDate}}",
+        "payment_method_expired_on": "انتهت صلاحيته في {{expiryDate}}",
+        "preauthorized_payments": "المدفوعات المفوضة مسبقًا",
+        "close_payment_modal": "إغلاق",
+        "close_payment_modal_accessibility_label": "إغلاق نافذة تفاصيل طريقة الدفع المنبثقة",
+        "payment_method_not_found_error": "تعذر العثور على طريقة دفع",
+        "payment_details_loading": "جارٍ تحميل تفاصيل طريقة الدفع",
+        "pre_authorized_payments": "المدفوعات المفوترة مسبقًا",
+        "total_amount_of_subscription_line_items_left": "و {{total}} أخرى",
+        "total_amount_of_subscription_line_items_left_accessibility_label": "{{totalItems}} إجمالي عدد العناصر، يتم عرض {{totalItemsToDisplay}} عنصرًا.",
+        "next_payment_due": "تاريخ الاستحقاق التالي للدفع {{dueDateInMonthDayYear}}",
+        "edit_payment_method_button": "تعديل",
+        "edit_payment_method_button_accessibility_label": "تعديل طريقة الدفع المنتهية بـ {{lastDigits}}",
+        "loading_shop_pay": "جارٍ تحميل Shop Pay",
+        "invalid_payment_method": "وسيلة دفع غير صالحة",
+        "invalid_payment_method_message": "استخدم بطاقة ائتمان جديدة لمواصلة تلقي الطلبات القادمة.",
+        "replace_payment_method": "استبدال طريقة الدفع",
+        "checkout_card_banner": "لا يمكن استخدام طريقة الدفع هذه إلا للمدفوعات المفوترَة مسبقًا. ولن تظهر عند الدفع إذا كنت مسجلاً دخولك إلى هذا المتجر.",
+        "default_checkbox": "تعيين كإعداد افتراضي",
+        "default_checkbox_accessibility_label": "تعيين طريقة الدفع هذه كخيار افتراضي",
+        "replace_payment_method_button": "استبدال"
+      },
+      "edit_payment_method": {
+        "title": "تعديل طريقة الدفع",
+        "save_payment_method_button": "حفظ",
+        "cancel_edit_payment_method_button": "إلغاء",
+        "payment_method_updated_toast": "تم تحديث طريقة الدفع",
+        "billing_address": "عنوان الفواتير",
+        "billing_address_add_new": "إضافة جديد",
+        "billing_address_choose_from_list": "اختر من القائمة",
+        "future_purchases_notice": "سيتم حفظ طريقة الدفع هذه للمشتريات المستقبلية.",
+        "generic_error": "حدثت مشكلة أثناء التحديث. الرجاء المحاولة مرة أخرى."
+      },
+      "update_payment_method": {
+        "title": "تحديث طريقة الدفع",
+        "button_title": "تحديث",
+        "billing_address": "عنوان الفواتير",
+        "disclaimer": "سيتم حفظ طريقة الدفع هذه للمشتريات المستقبلية، وقد تُستخدم لأي عملية شراء متكررة أو مؤجلة.",
+        "error_message": "تعذر تحديث طريقة الدفع",
+        "current": "الحالي",
+        "subscriptions_title": "الاشتراكات",
+        "subscriptions_list_accessibility_label": "قائمة المنتجات المشمولة بالاشتراك",
+        "pre_orders_title": "القادم",
+        "pre_orders_list_accessibility_label": "قائمة المنتجات تحت الطلب",
+        "resources_list_accessibility_label": "منتجات الاشتراك ومنتجات الطلبات المعلقة باستخدام طريقة الدفع هذه",
+        "resources_card_scroll": "مرر للمزيد من العناصر",
+        "resources_card_show_more": "أظهر المزيد",
+        "resources_card_show_less": "عرض أقل",
+        "loading_form_accessibility_message": "جارٍ تحميل نموذج تحديث طريقة الدفع",
+        "loading_current_payment_method": "جارٍ تحميل طريقة الدفع الحالية",
+        "loading_digital_wallets": "جارٍ تحميل خيارات المحفظة الرقمية",
+        "loading_card_fields": "جارٍ تحميل حقول بطاقة الائتمان",
+        "loading_resources": "جارٍ تحميل الاشتراكات والطلبات القادمة"
+      },
+      "link_expired": {
+        "message": "انتهت صلاحية رابط تحديث طريقة الدفع هذه."
       }
     },
     "orders": {
