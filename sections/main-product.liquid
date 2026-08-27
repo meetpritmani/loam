@@ -63,7 +63,7 @@
                     class="product__gallery-trigger"
                     data-drawer-toggle
                     aria-controls="pdp-lightbox-{{ section_id }}-{{ forloop.index }}"
-                    aria-label="{{ 'products.product.view_larger' | t }}"
+                    aria-label="{{ 'products.product.view_larger' | t }} {{ forloop.index }}"
                   >
                     {%- render 'image-fallback',
                       image: media,

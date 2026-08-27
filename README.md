@@ -204,6 +204,11 @@ collapsible rows, share, and `@app` for app blocks.
 
 Behaviour worth knowing:
 
+- **The gallery is a stacked two-column grid**, not a single stage with a
+  thumbnail strip — every image is visible at once. Clicking one opens it
+  in a centred lightbox with a scale-and-fade animation; click outside the
+  image, the close button, or Escape all dismiss it, and focus returns to
+  the thumbnail that opened it.
 - **Variant switching** updates the price, availability, media, button state
   and the URL. Price is re-rendered by Shopify through the Section Rendering
   API rather than formatted in JavaScript, so currency symbol, separator and
@@ -214,6 +219,9 @@ Behaviour worth knowing:
   variant id.
 - **The sticky bar forwards to the real Add to Cart** rather than owning a
   second form, so there is one variant id and one source of truth.
+- **The quantity stepper disables itself** along with Add to Cart when
+  there is no purchasable variant — sold out or unavailable never leaves
+  an active-looking control with nothing to submit.
 
 ### Other templates
 
