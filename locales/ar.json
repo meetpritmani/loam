@@ -2059,6 +2059,144 @@
       "emirate": "إمارة",
       "governorate": "محافظة",
       "confirm": "هل أنت متأكد من أنك ترغب في حذف هذا العنوان؟"
+    },
+    "collections": {
+      "sorting": {
+        "manual": "مميز",
+        "best_selling": "الأكثر مبيعاً",
+        "az": "أبجديًا، أ-ي",
+        "za": "أبجدياً، من ي-أ",
+        "price_ascending": "السعر، من الأقل للأعلى",
+        "price_descending": "السعر، من الأعلى إلى الأقل",
+        "date_ascending": "التاريخ، من الأقدم إلى الأحدث",
+        "date_descending": "تاريخ، من الأحدث إلى الأقدم",
+        "most_relevant": "الأكثر صلة"
+      }
+    },
+    "errors": {
+      "blank": "لا يمكن أن يكون فارغًا",
+      "blocked_address": "هذا الموقع غير مدعوم",
+      "credit_card_session_expired": "انتهت صلاحية تفويض بطاقة الائتمان، يرجى إعادة إدخال معلومات الدفع الخاصة بك. لم يتم خصم أي مبلغ من بطاقتك.",
+      "empty": "لا يمكن أن يكون فارغاً",
+      "invalid_email": "يجب أن يكون عنوان بريد إلكتروني صالحًا",
+      "discount_disabled": "تم تعطيل هذا الخصم",
+      "discount_expired": "هذا الخصم لم يعد صالحًا.",
+      "discount_limit_reached": "لقد وصل هذا الخصم إلى حد الاستخدام الأقصى",
+      "discount_not_found": "تعذر العثور على خصم صالح يطابق الرمز الذي أدخلته",
+      "customer_already_used_once_per_customer_discount_notice": "لقد وصل هذا الخصم إلى حد الاستخدام الأقصى",
+      "gift_card_already_applied": "تم تطبيق الرمز بالفعل على سلة مشترياتك",
+      "gift_card_code_invalid": "الرمز غير صالح",
+      "gift_card_currency_mismatch": "لا يمكن استخدام بطاقة الهدايا هذه لإتمام عملية الشراء. يُرجى الاتصال بـ %{shop_name} لإعادة إصدارها.",
+      "gift_card_depleted": "لا توجد أموال متبقية على بطاقة الهدايا هذه",
+      "gift_card_disabled": "بطاقة الهدايا معطلة",
+      "gift_card_expired": "البطاقة هدية منتهية الصلاحية",
+      "invalid": "غير صالح",
+      "bad_domain": "يحتوي على اسم نطاق غير صالح",
+      "taken": "تم الاستيلاء عليها بالفعل",
+      "contains_html_tags": "لا يمكن أن تحتوي على وسوم HTML",
+      "too_short": "أقصر مما يجب (الحد الأدنى هو %{count} من الأحرف)",
+      "too_long": "طويل جدًا (الحد الأقصى هو %{count} حرفًا)",
+      "password_mismatch": "يجب أن تطابق كلمة المرور المقدمة",
+      "contains_spaces": "يبدأ أو ينتهي بمسافات.",
+      "invalid_for_country": "غير صالح لـ %{country}",
+      "invalid_for_country_and_province": "غير صالح لـ %{province} و %{country}",
+      "invalid_province_in_country": "ليست مقاطعة صالحة في %{country}",
+      "invalid_state_in_country": "ليست ولاية صالحة في %{country}",
+      "invalid_region_in_country": "ليس منطقة صالحة في %{country}",
+      "less_than_or_equal_to": "يجب أن يكون أقل من أو يساوي %{count}",
+      "not_supported": "غير مدعوم",
+      "full_name_required": "أدخل الاسم الأول واسم العائلة",
+      "invalid_for_card_type": "غير صالح",
+      "invalid_type": "عذراً، لا نقبل بطاقات من هذا النوع.",
+      "invalid_format": "الصيغة غير صالحة",
+      "expired": "انتهت صلاحيته",
+      "invalid_start_date_or_issue_number_for_debit": "تاريخ بدء أو رقم إصدار صالح مطلوب.",
+      "invalid_expiry_year": "ليس سنة انتهاء صلاحية صالحة",
+      "reset_password_html": "عنوان البريد الإلكتروني هذا مرتبط بحساب بالفعل. إذا كان هذا الحساب يخصك، يمكنك <a href=\"/account/login#recover\">إعادة تعيين كلمة المرور الخاصة بك</a>",
+      "verify_email": "لقد أرسلنا بريدًا إلكترونيًا إلى %{customer_email}، يرجى النقر على الرابط المتضمن للتحقق من عنوان بريدك الإلكتروني.",
+      "product_not_available": "المنتج غير منشور لهذا العميل.",
+      "shop_404": {
+        "title": "أنشئ موقعًا للتجارة الإلكترونية وابدأ البيع عبر الإنترنت! برنامج التجارة الإلكترونية من Shopify",
+        "title_unavailable": "المتجر غير متاح",
+        "heros": {
+          "store_will_be_right_back": "سيعود هذا المتجر حالاً",
+          "store_unavailable": "هذا المتجر غير متاح حاليًا.",
+          "store_not_exist": "هذا المتجر غير موجود.",
+          "no_storefront": "هذا المتجر ليس لديه موقع إلكتروني بعد."
+        },
+        "subtitles": {
+          "store_will_be_right_back": "تعمل Shopify على إعادته للعمل في أقرب وقت ممكن."
+        },
+        "links": {
+          "refresh_page": "حدّث الصفحة",
+          "explore_other_stores": "استكشاف متاجر أخرى",
+          "start_free_trial": "ابدأ تجربة مجانية"
+        },
+        "status_card": {
+          "eyebrow": "مساعدة أصحاب المتاجر",
+          "header": "التحقق من حالة شوبيفاي",
+          "caption": "اكتشف ما إذا كان هناك انقطاع يؤثر على أكثر من هذا المتجر في Shopify.",
+          "link_text": "عرض حالة أنظمة Shopify"
+        },
+        "owner_ctas": {
+          "header": "هل أنت صاحب المتجر؟",
+          "fix_domain": "لإنهاء إعداد عنوان الويب الجديد الخاص بك، انتقل إلى %{domain_settings_link}. انقر فوق \"ربط النطاق\" وأدخل: %{domain}.<br>إذا كنت تواجه مشكلة في الدخول إلى متجرك، فجرّب صفحة %{forgot_your_store_link}.",
+          "fix_domain_link_text": "إعدادات النطاق الخاصة بك",
+          "forgot_your_store_link_text": "هل نسيت متجرك",
+          "add_storefront": "يمكنك إعداد موقعك عن طريق إضافة قناة المتجر عبر الإنترنت في %{admin_link}. إذا كنت تواجه مشكلة في الدخول إلى متجرك، فجرّب صفحة %{forgot_your_store_link}.",
+          "admin_link_text": "مسؤول"
+        },
+        "ctas": {
+          "sell_in_person": {
+            "header": "البيع شخصيًا",
+            "caption": "احصل على الميزات التي تحتاجها لإدارة متجرك، سواء كنت بدأت للتو أو كنت في طور التوسع.",
+            "link_text": "ابدأ التجربة المجانية"
+          },
+          "open_a_store": {
+            "header": "افتح متجر Shopify جديداً",
+            "caption": "ابدأ تجربة مجانية لمدة 3 أيام، ثم استمر بدفع 1 دولار شهريًا للأشهر الثلاثة التالية.",
+            "link_text": "سجل الآن"
+          },
+          "editions": {
+            "header": "اطلع على إصدارات Shopify",
+            "caption": "مع أكثر من 100 تحديث للمنتجات، يمكنك أن تكون أكثر إنتاجية وإبداعًا، وأقوى في التجارة مما تخيلت يومًا.",
+            "link_text": "تصفح أحدث الإصدارات"
+          },
+          "store_owner": {
+            "header": "هل أنت صاحب المتجر؟",
+            "caption": "هل تواجه مشكلة في الوصول إلى متجرك؟ جرّب ميزة %{forgot_your_store_link}. إذا كنت ترغب في إعادة تنشيط متجرك، تواصل مع %{shopify_support_link}.",
+            "shopify_support_link_text": "دعم Shopify"
+          }
+        }
+      }
+    },
+    "notices": {
+      "customer": {
+        "password_reset_error": "خطأ في إعادة تعيين كلمة المرور",
+        "subscribe_error": "خطأ في الاشتراك",
+        "unsubscribe_error": "خطأ في إلغاء الاشتراك",
+        "open_tracking_error": "خطأ التتبع المفتوح",
+        "no_account_found": "لم يتم العثور على حساب بهذا البريد الإلكتروني.",
+        "invalid_credentials": "بريد إلكتروني أو كلمة مرور غير صحيحة.",
+        "denylisted_reset_password": "تعذر الوصول إلى حسابك لأن كلمة المرور الحالية غير آمنة. ستتلقى رسالة بريد إلكتروني لتحديث كلمة المرور.",
+        "signup_disabled": "تم تعطيل إنشاء حساب العميل."
+      },
+      "address": {
+        "updated": "تم تحديث العنوان بنجاح.",
+        "error_updating": "خطأ في تحديث العنوان",
+        "created": "تم إنشاء العنوان بنجاح",
+        "error_creating": "حدث خطأ أثناء إنشاء العنوان.",
+        "deleted": "تم حذف العنوان بنجاح",
+        "error_deleting": "حدث خطأ أثناء حذف العنوان."
+      },
+      "line_item": {
+        "item_status": {
+          "add_variant": "تمت إضافة %{delta}",
+          "increment_item": "تمت إضافة %{delta}",
+          "decrement_item": "تم حذف %{delta} من %{total}",
+          "decrement_fulfilled_line_item": "تم إرجاع %{delta} من %{total}"
+        }
+      }
     }
   },
   "customer_accounts": {
@@ -2379,6 +2517,40 @@
         "modal_po_number_input_max_length_error": "أرقام أوامر الشراء يجب ألا تتعدى {{maxLength}} حرفًا.",
         "save": "حفظ",
         "title": "أمر شراء رقم #{{poNumber}}"
+      },
+      "account_information": {
+        "company_card_name_label": "اسم الشركة",
+        "company_card_section_accessibility_label": "شركة"
+      },
+      "locations": {
+        "contact_contact": "جهات الاتصال",
+        "contact_email": "بريد إلكتروني",
+        "contact_list_title": "الناس",
+        "contact_name": "الاسم",
+        "contact_permissions": "الأذونات",
+        "contact_phone_number": "رقم الهاتف",
+        "location_picker_label": "اسم الموقع",
+        "location_picker_accessibility_label": "اسم الموقع: {{locationName}}",
+        "net_payment_terms_description": "{{name}}: الدفعات مستحقة خلال {{numberOfDays}} يومًا",
+        "deposit_percentage": "{{percentage}} عربون",
+        "own_role_contact_name": "أنت",
+        "pagination": {
+          "load_more": "أظهر المزيد",
+          "load_more_accessibility_label": "إظهار المزيد من المواقع"
+        },
+        "payment_details_title": "تفاصيل الدفع",
+        "payment_terms": "شروط الدفع",
+        "permissions_label": "أذوناتك",
+        "permissions_title": "الأذونات",
+        "section_title": "الموقع",
+        "shipping_address_required": "أضف عنوان شحن لهذا الموقع لبدء تقديم الطلبات",
+        "staff_and_permissions_title": "الموظفون والصلاحيات",
+        "tax_details_title": "تفاصيل الضريبة",
+        "tax_id": "الرقم الضريبي",
+        "tax_exemptions": "إعفاءات ضريبية",
+        "multiple_tax_exemptions": "{{taxExemptionsCount}} أخرى",
+        "multiple_tax_exemptions_and": "و",
+        "tax_exemptions_modal_close": "إغلاق"
       }
     },
     "errors": {
@@ -2833,6 +3005,98 @@
         "resend_link_and_login": "لعرض تفاصيل طلبك، سجّل الدخول أو أرسل رابطاً جديداً إلى عنوان البريد الإلكتروني أو رقم الهاتف المُستخدَم عند الدفع.",
         "resend_link_only": "لعرض تفاصيل طلبك، أرسل رابطًا جديدًا إلى البريد الإلكتروني أو رقم الهاتف المستخدم عند إتمام عملية الشراء.",
         "log_in": "تسجيل الدخول"
+      }
+    },
+    "addresses": {
+      "cancel_adding_address_accessibility_label": "إلغاء إضافة العنوان",
+      "cancel_deletion_button": "إلغاء",
+      "cancel_deletion_button_accessibility_label": "إلغاء حذف {{address}}",
+      "default_address": {
+        "badge_label": "افتراضي",
+        "title": "العنوان الافتراضي",
+        "title_accessibility_label": "العنوان الافتراضي: {{address}}"
+      },
+      "delete_button": "حذف",
+      "delete_button_accessibility_label": "حذف {{address}}",
+      "delete_confirmation_button": "حذف العنوان",
+      "delete_confirmation_button_accessibility_label": "حذف {{address}}",
+      "delete_confirmation_message": "هل تريد حذف العنوان؟ الطلبات الحالية لن تتأثر.",
+      "delete_confirmation_title": "حذف العنوان؟",
+      "delete_confirmation_description": "لا تتأثر الطلبات الحالية.",
+      "edit_button": "تعديل",
+      "edit_button_accessibility_label": "تعديل {{address}}",
+      "edit_section_accessibility_label": "تعديل {{address}}",
+      "edit_modal_title": {
+        "default": "تعديل العنوان",
+        "billing": "تعديل عنوان الفوترة",
+        "shipping": "تعديل عنوان الشحن"
+      },
+      "loading_accessibility_message": "جاري تحميل العنوان",
+      "loading_addresses_accessibility_message": "جاري تحميل العناوين",
+      "loading_billing_accessibility_message": "جارٍ تحميل عنوان الفواتير",
+      "loading_finished_accessibility_message": "تم تحميل صفحة العناوين الجديدة",
+      "loading_shipping_accessibility_message": "جاري تحميل عنوان الشحن",
+      "pagination": {
+        "load_more": "أظهر المزيد",
+        "load_more_accessibility_label": "أظهِر المزيد من العناوين"
+      },
+      "save_new_address_accessibility_label": "حفظ العنوان",
+      "title": "العناوين",
+      "billing_address_dropdown_placeholder": "عنوان الفواتير"
+    },
+    "address_form": {
+      "attention": "انتباه",
+      "attention_company": "الشركة/الانتباه",
+      "attention_help_text": "اسم شخص أو قسم",
+      "auto_complete_close_accessibility_label": "إغلاق الاقتراحات",
+      "auto_complete_title": "اقتراحات",
+      "billing_address": "استخدم كعنوان للفوترة",
+      "cancel": "إلغاء",
+      "cancel_accessibility_label": "إلغاء تحرير العنوان {{address}}",
+      "creation_success_notification": "تمت إضافة العنوان",
+      "default_address": "هذا هو عنواني الافتراضي",
+      "default_address_creation_success_notification": "تمت إضافة العنوان الافتراضي",
+      "default_address_update_success_notification": "تم تحديث العنوان الافتراضي",
+      "loading_add_form_accessibility_message": "جاري تحميل نموذج العنوان الجديد",
+      "loading_edit_form_accessibility_message": "جارٍ تحميل نموذج تعديل العنوان",
+      "loading_form_accessibility_message": "تحميل نموذج العنوان",
+      "loading_finished_accessibility_message": "تم تحميل نموذج العنوان",
+      "save": "حفظ",
+      "save_accessibility_label": "حفظ العنوان {{address}}",
+      "section_title_accessibility_label": "أضف العنوان",
+      "update_success_notification": "تم تحديث العنوان"
+    },
+    "account_menu": {
+      "signed_out_state": {
+        "sheet_title": "تسجيل الدخول أو إنشاء حساب",
+        "section_divider": "طرق إضافية لتسجيل الدخول",
+        "alternate_divider": "أو",
+        "use_email_button": "استخدم البريد الإلكتروني بدلاً من ذلك",
+        "email_field_label": "بريد إلكتروني",
+        "orders_button": "الطلبات",
+        "profile_button": "الملف الشخصي",
+        "shop_login_button": "تسجيل الدخول باستخدام Shop",
+        "continue_with_google": "المتابعة باستخدام Google",
+        "continue_with_facebook": "المتابعة باستخدام فيسبوك"
+      },
+      "signed_in_state": {
+        "greeting_with_name": "مرحباً، {{first_name}}",
+        "greeting_without_name": "حساب",
+        "orders_button": "الطلبات",
+        "profile_button": "الملف الشخصي"
+      },
+      "location_picker": {
+        "sheet_title": "المواقع",
+        "search_field_placeholder": "بحث"
+      },
+      "aria_labels": {
+        "close_menu": "إغلاق القائمة",
+        "back_to_main_menu": "العودة إلى القائمة الرئيسية من {{title}}",
+        "open_submenu": "{{title}}، يفتح قائمة فرعية",
+        "loading_menu": "قائمة التحميل",
+        "account": "حساب",
+        "sign_in_with_email": "تسجيل الدخول بالبريد الإلكتروني",
+        "sign_in": "تسجيل الدخول"
       }
     }
   }
