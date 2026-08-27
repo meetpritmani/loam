@@ -674,6 +674,57 @@
         },
         "geolocation": {
           "permission_not_allowed": "اسمح بمشاركة الموقع أو ابحث بدلاً من ذلك."
+        },
+        "title": "الموقع",
+        "location_address_search_label": "العنوان",
+        "location_address_search_placeholder": "%{postal_code_label} أو العنوان",
+        "location_closest": "أقرب موقع يتوفر فيه منتجك",
+        "location_closest_one_item": "أقرب موقع يتوفر فيه منتجك",
+        "location_closest_other_items": "أقرب موقع يحتوي على أغراضك",
+        "location_selected": "الموقع المحدد",
+        "location_information": {
+          "one": "يوجد موقع واحد %{count} به مخزون قريب منك",
+          "other": "يوجد %{count} موقع به مخزون قريب منك."
+        },
+        "location_information_far_away": {
+          "one": "هناك موقع واحد يحوي العنصر الخاص بك",
+          "other": "هناك %{count} مواقع تحتوي على السلعة الخاصة بك"
+        },
+        "location_information_far_away_one_item": {
+          "one": "هناك موقع واحد يحوي العنصر الخاص بك",
+          "other": "هناك %{count} مواقع تحتوي على السلعة الخاصة بك"
+        },
+        "location_information_far_away_other_items": {
+          "one": "يوجد موقع واحد به عناصرك",
+          "other": "يوجد %{count} موقع تحتوي على أغراضك"
+        },
+        "location_nearby": {
+          "one": "يوجد موقع واحد قريب يتوفر به منتجك.",
+          "other": "توجد %{count} مواقع قريبة تحتوي على المنتج الذي تبحث عنه."
+        },
+        "location_nearby_one_item": {
+          "one": "يوجد موقع واحد قريب يتوفر به منتجك.",
+          "other": "توجد %{count} مواقع قريبة تحتوي على المنتج الذي تبحث عنه."
+        },
+        "location_nearby_other_items": {
+          "one": "يوجد موقع واحد قريب يتوفر به أغراضك",
+          "other": "يوجد %{count} موقع قريب تحتوي على أغراضك"
+        },
+        "location_nearby_short": {
+          "one": "موقع واحد قريب تتوفر فيه سلعتك",
+          "other": "%{count} مواقع قريبة تحتوي على المنتج الذي تبحث عنه"
+        },
+        "location_nearby_short_one_item": {
+          "one": "موقع واحد قريب تتوفر فيه سلعتك",
+          "other": "%{count} مواقع قريبة تحتوي على المنتج الذي تبحث عنه"
+        },
+        "location_nearby_short_other_items": {
+          "one": "%{count} موقع قريب به أغراضك",
+          "other": "%{count} مواقع قريبة تحتوي على أغراضك"
+        },
+        "location_far_away": {
+          "one": "%{count} موقع يتضمن سلعتك",
+          "other": "%{count} مواقع تتوفر فيها سلعتك"
         }
       },
       "split_delivery": {
@@ -1862,7 +1913,34 @@
         },
         "no_pickup_points_found": "لم يتم العثور على نقاط استلام",
         "paginator": {
-          "next_accessibility_label": "الصفحة التالية"
+          "next_accessibility_label": "الصفحة التالية",
+          "previous_accessibility_label": "الصفحة السابقة",
+          "header": {
+            "one": "عرض %{first} - %{last} من %{count} نقطة",
+            "other": "عرض %{first} - %{last} من %{count} نقطة"
+          },
+          "selected_pickup_point_label": {
+            "one": "النقطة %{pickup_point_index} من أصل %{count} نقاط",
+            "other": "%{pickup_point_index} من %{count} نقطة"
+          },
+          "selected_page": {
+            "one": "%{first} - %{last} من %{count} نقطة",
+            "other": "%{first} - %{last} من %{count} نقطة"
+          }
+        },
+        "number_of_pickup_points_near_location": {
+          "one": "نقطة استلام واحدة بالقرب من موقعك",
+          "other": "%{count} نقطة استلام بالقرب من موقعك"
+        },
+        "change": "تغيير الموقع",
+        "waiting_on_pickup_point_location_notice": "البحث عن نقاط الاستلام...",
+        "geolocation": {
+          "shared_location_button": "استخدام موقعي",
+          "errors": {
+            "unsuported_by_browser": "لا يدعم متصفحك تحديد الموقع الجغرافي. حاول مرة أخرى أو استخدم متصفحًا مختلفًا.",
+            "permission_not_allowed": "السماح بمشاركة موقعك.",
+            "permission_denied": "تعذر تحديد موقعك. حاول مرة أخرى."
+          }
         }
       },
       "vaulted": {
@@ -2110,6 +2188,94 @@
       "tooltip": {
         "accessibility_label_context": "مزيد من المعلومات عن %{context}",
         "additional_payment_methods": "طرق دفع إضافية"
+      },
+      "error_page": {
+        "terminal": {
+          "title": "كانت هناك مشكلة في عملية الدفع لدينا",
+          "message": "حدث هذه الصفحة أو حاول مرة أخرى في غضون بضع دقائق",
+          "action": {
+            "cta": "تحديث الصفحة"
+          },
+          "request_id": "معرف الطلب: {{requestId}}"
+        },
+        "embed_errors": {
+          "storefront_password_required": "هذا المتجر محمي بكلمة مرور.",
+          "customer_account_required": "حساب العميل مطلوب لإتمام عملية الدفع",
+          "cart_completed": "تم إكمال عملية الدفع هذه بالفعل",
+          "invalid_cart": "العربة لم تعد صالحة",
+          "not_authorized": "فشل مصادقة عملية الدفع. تحقق من بيانات اعتماد التطبيق الخاص بك.",
+          "killswitch_enabled": "خدمة الدفع غير متوفرة مؤقتًا",
+          "policy_violation": "تعذر إكمال عملية الدفع بسبب قيود تهيئة السياسة.",
+          "unrecoverable_failure": "تعذر تحميل صفحة الدفع. حاول مجددًا"
+        }
+      },
+      "notice_banner": {
+        "return_to_cart_link_text": "العودة إلى عربة التسوق",
+        "return_to_cart_to_update_quantities": "%{return_to_cart_link_text} لتحديث الكميات",
+        "subscription_changed": "تم تغيير إحدى اشتراكاتك.",
+        "company_location_changed": "تم تحديث سلة التسوق الخاصة بك. راجع طلبك قبل تقديمه.",
+        "company_location_changed_product_removed": "تم تحديث عربة التسوق الخاصة بك لأن بعض المنتجات غير متوفرة في هذا الموقع. يرجى مراجعة طلبك قبل إرساله.",
+        "violations_title": "{{violation}} مفقود أو غير صالح",
+        "individual_violations_title": {
+          "DeliveryViolations": "عنوان الشحن",
+          "PaymentViolations": "عنوان الفواتير",
+          "OtherViolations": "معلومات الطلب",
+          "UnhandledViolations": "معلومات الطلب"
+        },
+        "all_violations_content": "اتصل بنا أو {{emailLink}} لتحديث هذه المعلومات وإكمال طلبك:",
+        "all_violations_email_link": "بريد إلكتروني",
+        "editable_shipping_address_violations_message_title": "أضف هذه المعلومات لإتمام طلبك:",
+        "editable_shipping_address_violations_message_footer": "لتحديث العنوان لهذا الموقع بشكل دائم، {{emailLink}}.",
+        "editable_shipping_address_violations_email_link": "اتصل بنا",
+        "shipping_address_incomplete_title": "عنوان الشحن غير مكتمل",
+        "calculating_shipping": "جاري حساب تكلفة الشحن. حاول مرة أخرى خلال بضع ثوانٍ. لم يتم تحصيل أي رسوم منك.",
+        "calculating_taxes": "لا يزال يجري احتساب الضرائب. حاول مرة أخرى في غضون ثوانٍ قليلة. لم يتم تحصيل أي رسوم منك.",
+        "generic_processing_error": {
+          "title": "حدثت مشكلة في معالجة طلبك",
+          "body": "لم يتم خصم المبلغ. حاول مرة أخرى أو استخدم طريقة دفع مختلفة."
+        },
+        "payment_method_not_available_with_payment_terms": "طريقة الدفع التي حددتها لم تعد متاحة لأن دفع هذا الطلب أصبح الآن بشروط {{paymentTerms}}",
+        "payment_method_not_available_with_fulfillment_terms": "طريقة الدفع التي حددتها لم تعد متاحة لأن الدفع لهذا الطلب مستحق الآن عند التسليم",
+        "payment_method_not_available_with_fixed_terms": "طريقة الدفع التي اخترتها غير متاحة لأن دفع هذا الطلب مستحق لاحقًا",
+        "payment_method_not_available_with_review_requirement": "وسيلة الدفع التي اخترتها لم تعد متاحة، لأن الدفع سيكون مستحقًا بمجرد تأكيد طلبك.",
+        "contact_information": {
+          "title": "معلومات الاتصال غير صالحة",
+          "header": "لتحديث معلوماتك، {{emailLink}}.",
+          "email_link": "اتصل بنا"
+        },
+        "validation_errors_banner": {
+          "heading": {
+            "one": "يوجد {{count}} خطأ:",
+            "other": "يوجد {{count}} أخطاء:"
+          },
+          "section_label": {
+            "delivery": "توصيل",
+            "contact": "جهات الاتصال",
+            "payment": "الدفع",
+            "billing": "الفواتير"
+          }
+        }
+      },
+      "review_address_modal": {
+        "title": "عنوان المراجعة",
+        "subtitle": {
+          "one": "سيتم شحن هذا الطلب إلى العنوان الذي قدمه {{merchant}}.",
+          "other": "سيتم شحن هذا الطلب إلى عنوان قدمه {{merchant}}. حدد عنوان الشحن."
+        },
+        "subtitle_no_match": "هذا العنوان لا يتطابق مع أي من عناوينك المحفوظة.",
+        "subtitle_must_use": "سيتم شحن طلبك إلى هذا العنوان.",
+        "continue": "أكمل باستخدام هذا العنوان",
+        "use_saved_address": "استخدم عنواناً مختلفاً",
+        "return_to_cart": "العودة إلى عربة التسوق"
+      },
+      "marketplaces": {
+        "legal_notice": {
+          "legal_text": "مراجعة",
+          "link_label": "{{partnerDisplayName}} الشروط والأحكام"
+        }
+      },
+      "online_store_chat": {
+        "title": "أسئلة؟ تحدث معنا"
       }
     },
     "search": {
