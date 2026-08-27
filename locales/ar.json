@@ -3812,6 +3812,33 @@
   "search": {
     "title": "بحث",
     "placeholder": "ابحث عن المنتجات والمقالات والصفحات",
-    "submit": "بحث"
+    "submit": "بحث",
+    "reset": "مسح البحث",
+    "no_results_html": "لم يتم العثور على نتائج لـ \"{{ terms }}\".",
+    "no_results_text": "تحقق من الإملاء، أو جرّب كلمة أقصر أو أوسع، أو تصفح النطاق الكامل.",
+    "popular_searches": "عمليات البحث الشائعة",
+    "popular_products": "شائع حالياً",
+    "browse_collections": "تصفح المجموعات",
+    "browse_all": "تصفح الكل",
+    "results_for_html": "{{ count }} نتائج لـ \"{{ terms }}\"",
+    "suggestions": "اقتراحات",
+    "products": "المنتجات",
+    "articles": "مقالات",
+    "pages": "صفحات",
+    "view_all_results": "عرض كافة النتائج"
+  },
+  "announcement": {
+    "label": "إعلان",
+    "previous": "إعلان سابق",
+    "next": "الإعلان التالي"
+  },
+  "localization": {
+    "country_label": "البلد/المنطقة",
+    "language_label": "اللغة",
+    "update": "تحديث"
+  },
+  "footer": {
+    "follow_us": "تابعنا",
+    "payment_methods": "طرق الدفع"
   }
 }
