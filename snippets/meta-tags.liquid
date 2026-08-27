@@ -57,9 +57,14 @@
   <link rel="prev" href="{{ prev_url }}">
 {%- endif -%}
 
-{%- if page_description -%}
-  <meta name="description" content="{{ page_description | escape }}">
-{%- endif -%}
+{%- comment -%}
+  Same fallback chain as `og_description` (line 20), not just the bare
+  per-page value. A page with no description of its own — the homepage,
+  chiefly — still has `shop.description` or `settings.brand_description`
+  to fall back to, and there is no reason the social-share description
+  gets that fallback while the actual SEO meta description does not.
+{%- endcomment -%}
+<meta name="description" content="{{ og_description | escape }}">
 
 {%- for scheme in settings.color_schemes limit: 1 -%}
   <meta name="theme-color" content="{{ scheme.settings.background }}">

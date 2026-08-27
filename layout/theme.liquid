@@ -56,6 +56,14 @@
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
       <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180, height: 180 }}">
+    {%- else -%}
+      {%- comment -%}
+        No favicon uploaded yet — an empty data URI stops the browser
+        probing /favicon.ico on its own, which otherwise 404s and prints a
+        console error on every page of a fresh install. Not an image, so
+        it is not something §6's "no bundled imagery" rule concerns.
+      {%- endcomment -%}
+      <link rel="icon" href="data:,">
     {%- endif -%}
 
     {{ content_for_header }}
