@@ -30,7 +30,21 @@
   assign quick_view_image = current.featured_image | default: product.featured_media
 -%}
 
-<div class="section quick-view__content color-scheme-surface" data-quick-view>
+{%- comment -%}
+  `.section` is kept (not just `.quick-view__content`) purely so
+  `VariantPicker.onChange` in global.js — which scopes its price/gallery
+  updates to `this.closest('.section')` — finds this wrapper rather than
+  falling through to `document`. But `.section`'s own block padding is
+  built for a full page, not a drawer that already has `.drawer__body`'s
+  padding (base.css:962), so it is zeroed here rather than left to stack:
+  the exact double-application §4 already warns against elsewhere, just
+  arrived at from a drawer instead of a second component class.
+{%- endcomment -%}
+<div
+  class="section quick-view__content color-scheme-surface"
+  style="--section-padding-block-start: 0; --section-padding-block-end: 0; --section-padding-block-start-desktop: 0; --section-padding-block-end-desktop: 0;"
+  data-quick-view
+>
   <div class="quick-view__media media media--portrait" data-quick-view-media>
     {%- render 'image-fallback',
       image: quick_view_image,
