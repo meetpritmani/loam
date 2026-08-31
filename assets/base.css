@@ -1593,11 +1593,18 @@ loam-drawer {
   display: grid;
   align-content: start;
   gap: var(--sp-3);
+  /* A grid item's default min-width is auto, not 0 — it refuses to shrink
+     below its content's intrinsic width. .material-tag__text below sets
+     white-space: nowrap so it can ellipsis instead of wrap, and without
+     this the nowrap text's full width pushes this column, the line, and
+     the whole drawer wider than the panel instead of truncating. */
+  min-width: 0;
 }
 
 .cart-line__heading {
   display: grid;
   gap: var(--sp-1);
+  min-width: 0;
 }
 
 .cart-line__title {
