@@ -1646,6 +1646,67 @@ if (!customElements.get('sticky-atc')) {
 }
 
 /* --------------------------------------------------------------------------
+   <pickup-availability>
+   store_availabilities belongs to the variant, not the product, so this
+   fetches its own tiny section — once on load for the starting variant,
+   again on every variant:change — rather than trying to pre-render every
+   variant's pickup state into the initial page. Same reasoning
+   sticky-atc listens for variant:change rather than owning a second
+   source of truth: one event, several elements react to it independently.
+   -------------------------------------------------------------------------- */
+
+class PickupAvailability extends HTMLElement {
+  connectedCallback() {
+    this.rootUrl = this.dataset.rootUrl || '';
+
+    this.onVariantChange = this.onVariantChange.bind(this);
+    document.addEventListener('variant:change', this.onVariantChange);
+
+    this.load(this.dataset.variantId);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('variant:change', this.onVariantChange);
+    this.controller?.abort();
+  }
+
+  /** @param {CustomEvent} event */
+  onVariantChange(event) {
+    const variant = event.detail?.variant;
+    if (variant?.id) this.load(variant.id);
+  }
+
+  /** @param {string|number} variantId */
+  async load(variantId) {
+    if (!this.rootUrl || !variantId) return;
+
+    this.controller?.abort();
+    this.controller = new AbortController();
+
+    try {
+      const url = `${this.rootUrl}variants/${variantId}/?section_id=pickup-availability`;
+      const response = await fetch(url, { signal: this.controller.signal });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const next = parsed.querySelector('[data-pickup-availability]');
+      // Nothing announced on either branch: this row is not a promise the
+      // shopper is owed an update about, only a fact that may or may not
+      // apply to what they have selected.
+      this.innerHTML = next ? next.innerHTML : '';
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('[Loam] Pickup availability could not be loaded:', error);
+      this.innerHTML = '';
+    }
+  }
+}
+
+if (!customElements.get('pickup-availability')) {
+  customElements.define('pickup-availability', PickupAvailability);
+}
+
+/* --------------------------------------------------------------------------
    <quick-view-trigger>
    Fetches `sections/quick-view.liquid` for one product into the shared
    `#quick-view-drawer` shell. The drawer opens immediately on click — a

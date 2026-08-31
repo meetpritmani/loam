@@ -48,6 +48,18 @@
     {% unless can_buy %}disabled{% endunless %}
   >
 
+  {%- comment -%}
+    Theme Store requirement. Has to sit inside this specific form — the
+    filter binds to the form's own variant-id input, which is what lets
+    Shopify keep the banner in sync on a variant change without any theme
+    JS of ours. Placed first in the form, directly under the price block
+    that sits immediately above buy_buttons in every product.json block
+    order, per Shopify's own guidance to group price and financing info.
+  {%- endcomment -%}
+  {%- if can_buy -%}
+    {{ form | payment_terms }}
+  {%- endif -%}
+
   {%- if with_qty -%}
     {%- liquid
       assign qty_id = section_id | append: '-qty'

@@ -527,6 +527,9 @@
             "label": "Show quantity selector"
           }
         },
+        "pickup": {
+          "name": "Pickup availability"
+        },
         "trust": {
           "name": "Trust row"
         },
@@ -612,6 +615,16 @@
     },
     "quick_view": {
       "name": "Quick view"
+    },
+    "pickup_availability": {
+      "name": "Pickup availability"
+    },
+    "custom_liquid": {
+      "name": "Custom Liquid",
+      "custom_liquid": {
+        "label": "Liquid code",
+        "info": "For a developer or an app that needs to add something outside the theme's own sections. No support is provided for what you put here."
+      }
     },
     "quick_view_drawer": {
       "name": "Quick view drawer"
@@ -949,6 +962,9 @@
         "label": "Hide the row below",
         "info": "A row of one or two products reads as a thin catalogue. Below this count nothing renders at all."
       }
+    },
+    "complementary_products": {
+      "name": "Complementary products"
     },
     "recently_viewed": {
       "name": "Recently viewed"

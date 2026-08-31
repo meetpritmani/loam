@@ -300,6 +300,11 @@
       "media_gallery": "Imagens do produto",
       "new": "Novo",
       "on_sale": "Promoção",
+      "pickup": {
+        "title": "Levantamento disponível",
+        "available_at_html": "Levantamento disponível em <strong>{{ location }}</strong>",
+        "view_all": "Ver as {{ count }} localizações"
+      },
       "price": {
         "from": "Desde {{ price }}",
         "sale_price": "Preço promocional",

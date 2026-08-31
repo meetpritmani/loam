@@ -177,14 +177,16 @@
         {%- render 'icon', icon: 'search' -%}
       </button>
 
+      {%- comment -%}
+        Theme Store requirement (effective 2026-07-30): the account entry
+        point has to be this exact web component, not a themed link to
+        routes.account_url. It self-adapts to whichever account system the
+        shop runs — new accounts get an in-page sheet, classic accounts get
+        a redirect to sign-in — so one conditional block covers both; no
+        branching on the account system here.
+      {%- endcomment -%}
       {%- if shop.customer_accounts_enabled -%}
-        <a
-          class="icon-button header__account"
-          href="{{ routes.account_url }}"
-          aria-label="{{ 'general.account' | t }}"
-        >
-          {%- render 'icon', icon: 'account' -%}
-        </a>
+        <shopify-account class="header__account" menu="customer-account-main-menu"></shopify-account>
       {%- endif -%}
 
       {%- if cart_is_drawer -%}
@@ -282,10 +284,7 @@
 
         {%- if shop.customer_accounts_enabled -%}
           <div class="drawer__footer">
-            <a class="button button--secondary button--full" href="{{ routes.account_url }}">
-              {%- render 'icon', icon: 'account', size: 18 -%}
-              {{ 'general.account' | t }}
-            </a>
+            <shopify-account class="header__account header__account--mobile" menu="customer-account-main-menu"></shopify-account>
           </div>
         {%- endif -%}
       </div>

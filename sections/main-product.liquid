@@ -223,6 +223,22 @@
                   -%}
                 </div>
 
+              {%- when 'pickup' -%}
+                {%- comment -%}
+                  Theme Store requirement: pickup availability, without
+                  adding to cart. store_availabilities belongs to the
+                  variant, not the product, so this fetches its own
+                  section rather than rendering synchronously — see the
+                  comment in pickup-availability.liquid and the
+                  <pickup-availability> element in global.js.
+                {%- endcomment -%}
+                <pickup-availability
+                  class="pickup-availability"
+                  data-root-url="{{ routes.root_url }}"
+                  data-variant-id="{{ current.id }}"
+                  {{ block.shopify_attributes }}
+                ></pickup-availability>
+
               {%- when 'trust' -%}
                 <div {{ block.shopify_attributes }}>
                   {%- render 'trust-row', show_payment: settings.cro_show_payment_icons_pdp -%}
@@ -312,6 +328,7 @@
         }
       ]
     },
+    { "type": "pickup", "name": "t:sections.main_product.blocks.pickup.name", "limit": 1 },
     { "type": "trust", "name": "t:sections.main_product.blocks.trust.name", "limit": 1 },
     { "type": "description", "name": "t:sections.main_product.blocks.description.name", "limit": 1 },
     {

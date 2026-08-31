@@ -300,6 +300,11 @@
       "media_gallery": "Médias du produit",
       "new": "Nouveau",
       "on_sale": "Promo",
+      "pickup": {
+        "title": "Retrait disponible",
+        "available_at_html": "Retrait disponible à <strong>{{ location }}</strong>",
+        "view_all": "Voir les {{ count }} emplacements"
+      },
       "price": {
         "from": "À partir de {{ price }}",
         "sale_price": "Prix promotionnel",

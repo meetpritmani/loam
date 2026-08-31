@@ -300,6 +300,11 @@
       "media_gallery": "Immagini del prodotto",
       "new": "Novità",
       "on_sale": "Saldo",
+      "pickup": {
+        "title": "Ritiro disponibile",
+        "available_at_html": "Ritiro disponibile presso <strong>{{ location }}</strong>",
+        "view_all": "Vedi tutte le {{ count }} sedi"
+      },
       "price": {
         "from": "Da {{ price }}",
         "sale_price": "Prezzo in saldo",

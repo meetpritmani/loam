@@ -300,6 +300,11 @@
       "media_gallery": "Produktmedien",
       "new": "Neu",
       "on_sale": "Sale",
+      "pickup": {
+        "title": "Abholung verfügbar",
+        "available_at_html": "Abholung verfügbar bei <strong>{{ location }}</strong>",
+        "view_all": "Alle {{ count }} Standorte anzeigen"
+      },
       "price": {
         "from": "Ab {{ price }}",
         "sale_price": "Aktionspreis",

@@ -300,6 +300,11 @@
       "media_gallery": "Imágenes del producto",
       "new": "Nuevo",
       "on_sale": "Oferta",
+      "pickup": {
+        "title": "Recogida disponible",
+        "available_at_html": "Recogida disponible en <strong>{{ location }}</strong>",
+        "view_all": "Ver las {{ count }} ubicaciones"
+      },
       "price": {
         "from": "Desde {{ price }}",
         "sale_price": "Precio de oferta",

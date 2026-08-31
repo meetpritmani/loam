@@ -300,6 +300,11 @@
       "media_gallery": "Product media",
       "new": "New",
       "on_sale": "Sale",
+      "pickup": {
+        "title": "Pickup available",
+        "available_at_html": "Pickup available at <strong>{{ location }}</strong>",
+        "view_all": "View all {{ count }} locations"
+      },
       "price": {
         "from": "From {{ price }}",
         "sale_price": "Sale price",

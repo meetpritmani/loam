@@ -1323,6 +1323,14 @@ loam-drawer {
   display: none;
 }
 
+/* The drawer's own copy has to stay visible below 750px even though the
+   header's copy hides there — see the media query below, which only
+   un-hides .header__account (no modifier) at that breakpoint. */
+.header__account--mobile {
+  display: inline-flex;
+  width: 100%;
+}
+
 .header__cart {
   position: relative;
 }
@@ -4064,6 +4072,43 @@ recently-viewed {
   gap: var(--sp-2);
 }
 
+/* --- Pickup availability -------------------------------------------------
+   Fetched into <pickup-availability> by global.js — see the comment there
+   and in pickup-availability.liquid for why this is never rendered
+   synchronously with the rest of the PDP. Renders nothing (zero-height,
+   no border) when its fetch resolves empty, same as low-stock below. */
+
+.pickup-availability:empty {
+  display: none;
+}
+
+.pickup-availability__summary {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--t-sm);
+}
+
+.pickup-availability__summary > svg {
+  flex: 0 0 auto;
+  margin-block-start: 2px;
+  color: var(--c-ink-70);
+}
+
+.pickup-availability__trigger {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.pickup-availability__list {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.pickup-availability__location-name {
+  font-weight: var(--f-body-weight-bold);
+}
+
 /* --- Trust row ---------------------------------------------------------- */
 
 .trust-row {
@@ -4479,8 +4524,12 @@ recently-viewed {
 }
 
 /* Results are dimmed, never removed, while a refinement is in flight — an
-   empty box mid-request reads as "no results" and is worse than a brief wait. */
-[data-collection-results][aria-busy] {
+   empty box mid-request reads as "no results" and is worse than a brief wait.
+   Search's own facet results share this: same <facet-filters> component,
+   different results attribute so a collection page and a search page never
+   have their sections cross-target each other's DOM. */
+[data-collection-results][aria-busy],
+[data-search-results][aria-busy] {
   opacity: 0.55;
   transition: opacity var(--dur) var(--ease);
 }

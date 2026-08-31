@@ -1,0 +1,112 @@
+{%- comment -%}
+  pickup-availability.liquid — "pick up in store", without adding to cart.
+
+  Fetched, never rendered synchronously into the PDP: Shopify's documented
+  pattern for this feature (see the `<pickup-availability>` custom element
+  in global.js) is a request to `{{ routes.root_url }}variants/{id}/?section_id=
+  pickup-availability`, made once on load for the starting variant and again
+  on every `variant:change` — because store_availabilities belongs to the
+  VARIANT, not the product, and a variant-scoped fact has to be fetched
+  variant-scoped rather than guessed from whatever loaded first.
+
+  Renders nothing at all — not an empty wrapper — when no location both
+  stocks this variant and has pickup enabled. An empty state here would be
+  a promise ("check pickup availability") the shop cannot keep, which is
+  the same reasoning low-stock.liquid already applies to its own threshold.
+
+  Params: none — always rendered against `variant` from the request context
+  (`variants/{id}/...` resolves both `product` and `variant` for that id).
+{%- endcomment -%}
+
+{% # theme-check-disable UndefinedObject %}
+{%- liquid
+  assign pickup_locations = variant.store_availabilities | where: 'pick_up_enabled', true
+  assign pickup_count = pickup_locations.size
+-%}
+
+{%- comment -%}
+  No class here — `<pickup-availability>` in global.js reads only this
+  wrapper's innerHTML (not outerHTML), so the real .pickup-availability
+  class lives once, on the custom element itself in main-product.liquid,
+  rather than being duplicated onto both it and this fetched root.
+{%- endcomment -%}
+<div data-pickup-availability>
+  {%- if pickup_count > 0 -%}
+    {%- assign nearest = pickup_locations.first -%}
+    <div class="pickup-availability__summary">
+      {%- render 'icon', icon: 'truck', size: 16 -%}
+      <div>
+        <p class="pickup-availability__line">
+          {{- 'products.product.pickup.available_at_html' | t: location: nearest.location.name -}}
+        </p>
+        {%- if nearest.pick_up_time != blank -%}
+          <p class="pickup-availability__time text-body-sm text-muted">{{ nearest.pick_up_time | escape }}</p>
+        {%- endif -%}
+      </div>
+
+      {%- if pickup_count > 1 -%}
+        <button
+          class="link-underline pickup-availability__trigger"
+          type="button"
+          data-drawer-toggle
+          aria-controls="pickup-availability-drawer"
+        >
+          {{ 'products.product.pickup.view_all' | t: count: pickup_count }}
+        </button>
+      {%- endif -%}
+    </div>
+
+    {%- if pickup_count > 1 -%}
+      {%- comment -%}
+        The drawer shell lives here too, refetched with the rest of this
+        section on every variant change — simpler than trying to keep a
+        separately-scoped drawer in sync with a fragment that replaces its
+        trigger out from under it.
+      {%- endcomment -%}
+      <loam-drawer id="pickup-availability-drawer">
+        <div
+          class="drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pickup-availability-drawer-title"
+        >
+          <div class="drawer__overlay" data-drawer-close></div>
+          <div class="drawer__panel color-scheme-surface">
+            <div class="drawer__header">
+              <h2 class="h5" id="pickup-availability-drawer-title">
+                {{ 'products.product.pickup.title' | t }}
+              </h2>
+              <button
+                class="icon-button"
+                type="button"
+                data-drawer-close
+                aria-label="{{ 'accessibility.close_drawer' | t }}"
+              >
+                {%- render 'icon', icon: 'close' -%}
+              </button>
+            </div>
+            <ul class="drawer__body pickup-availability__list">
+              {%- for store in pickup_locations -%}
+                <li class="pickup-availability__location">
+                  <p class="pickup-availability__location-name">{{ store.location.name | escape }}</p>
+                  <p class="text-body-sm text-muted">
+                    {{- store.location.address.summary | escape -}}
+                  </p>
+                  {%- if store.pick_up_time != blank -%}
+                    <p class="text-body-sm text-muted">{{ store.pick_up_time | escape }}</p>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        </div>
+      </loam-drawer>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.pickup_availability.name"
+}
+{% endschema %}

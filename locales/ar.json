@@ -4433,6 +4433,11 @@
       "media_gallery": "وسائط المنتج",
       "new": "جديد",
       "on_sale": "مبيع",
+      "pickup": {
+        "title": "الاستلام متاح",
+        "available_at_html": "الاستلام متاح من <strong>{{ location }}</strong>",
+        "view_all": "عرض جميع الفروع ({{ count }})"
+      },
       "price": {
         "from": "من {{ price }}",
         "sale_price": "سعر البيع",

@@ -294,6 +294,11 @@
       "media_gallery": "商品画像",
       "new": "新着",
       "on_sale": "セール",
+      "pickup": {
+        "title": "店舗受け取り可能",
+        "available_at_html": "<strong>{{ location }}</strong>で店舗受け取り可能",
+        "view_all": "他{{ count }}店舗を見る"
+      },
       "price": {
         "from": "{{ price }}から",
         "sale_price": "セール価格",
