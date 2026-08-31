@@ -1634,6 +1634,38 @@ loam-drawer {
   font-size: var(--t-sm);
 }
 
+/* The cart page has the width the drawer does not — a shared 88px thumbnail
+   stretched across a full page column read as the drawer rather than as its
+   own layout. `cart-line.liquid` still renders the same markup and CSS
+   classes either way; this only widens the image column and steps the type
+   up one notch on the page. */
+.cart-line--page {
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+
+.cart-line--page .cart-line__media {
+  width: 96px;
+}
+
+.cart-line--page .cart-line__title {
+  font-size: var(--t-base);
+}
+
+.cart-line--page .cart-line__price {
+  font-size: var(--t-base);
+}
+
+@media (min-width: 750px) {
+  .cart-line--page {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .cart-line--page .cart-line__media {
+    width: 180px;
+  }
+}
+
 /* While a cart request is in flight the region is dimmed and inert, so a
    second click cannot race the first. */
 cart-items[aria-busy] {

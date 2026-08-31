@@ -29,18 +29,33 @@
 {%- endcapture -%}
 
 <li
-  class="cart-line"
+  class="cart-line{% if prefix == 'page' %} cart-line--page{% endif %}"
   data-cart-line="{{ line }}"
   data-key="{{ item.key }}"
   {% if analytics_item != blank %}data-analytics-item="{{ analytics_item | strip | escape }}"{% endif %}
 >
   <a class="cart-line__media media media--portrait" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
-    {%- render 'image-fallback',
-      image: item.image,
-      alt: item.title,
-      widths: '150,200,300,400',
-      sizes: '100px'
-    -%}
+    {%- comment -%}
+      The drawer is a narrow column and stays at its original compact
+      size (88px, §-documented below in base.css). The page has the
+      width to spare, so it earns a larger image rather than inheriting
+      the drawer's thumbnail — see `.cart-line--page` in base.css.
+    {%- endcomment -%}
+    {%- if prefix == 'page' -%}
+      {%- render 'image-fallback',
+        image: item.image,
+        alt: item.title,
+        widths: '200,300,400,600',
+        sizes: '(min-width: 750px) 180px, 96px'
+      -%}
+    {%- else -%}
+      {%- render 'image-fallback',
+        image: item.image,
+        alt: item.title,
+        widths: '150,200,300,400',
+        sizes: '100px'
+      -%}
+    {%- endif -%}
   </a>
 
   <div class="cart-line__body">
