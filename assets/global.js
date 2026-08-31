@@ -1499,8 +1499,8 @@ class VariantPicker extends HTMLElement {
     url.searchParams.set('variant', String(variant.id));
     window.history.replaceState({}, '', url.toString());
 
-    if (variant.featured_media?.id) {
-      root.querySelector('product-gallery')?.show(variant.featured_media.id);
+    if (variant.featured_image?.id) {
+      root.querySelector('product-gallery')?.show(variant.featured_image.id);
     }
 
     document.dispatchEvent(
