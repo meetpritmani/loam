@@ -853,6 +853,29 @@ dialog {
   opacity: 0.65;
 }
 
+/* Quick view. A thin wrapper custom element must not create a box of its
+   own inside the card, the same reasoning as <loam-drawer> below. */
+quick-view-trigger {
+  display: contents;
+}
+
+.card-product__quick-view {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: var(--sp-2);
+  inset-inline-end: var(--sp-2);
+  width: 40px;
+  height: 40px;
+  background-color: rgb(var(--c-paper-rgb) / 0.9);
+  color: var(--c-ink);
+}
+
+@media (hover: hover) {
+  .card-product__quick-view:hover {
+    color: var(--c-accent);
+  }
+}
+
 /* --- Drawer -------------------------------------------------------------
    Shared by the cart drawer, the mobile nav, and the size-guide drawer.
    The dialog element handles the top layer; JS handles the focus trap,
@@ -1678,6 +1701,40 @@ cart-items[aria-busy] {
 
 .drawer__footer > * + * {
   margin-block-start: var(--sp-3);
+}
+
+/* --- Quick view -----------------------------------------------------------
+   Fetched into #quick-view-drawer's [data-quick-view-body] by
+   <quick-view-trigger>. A drawer body, not a page section — one image, then
+   the buy box beneath it, reusing .drawer__body's own scroll and padding. */
+
+.quick-view__content {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.quick-view__media {
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.quick-view__body {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.quick-view__title a {
+  color: inherit;
+}
+
+.quick-view__details {
+  justify-self: start;
+}
+
+/* Reserves height on the first, empty-bodied open so the drawer does not
+   slide in as a near-blank sliver while the fetch is in flight. */
+[data-quick-view-body][aria-busy] {
+  min-height: 320px;
 }
 
 /* --- Free shipping progress --------------------------------------------- */

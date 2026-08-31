@@ -1,0 +1,48 @@
+{%- comment -%}
+  quick-view-drawer.liquid — the empty shell `<quick-view-trigger>` fills.
+
+  Rendered once from theme.liquid, the same reasoning as cart-drawer.liquid:
+  it has to exist on every template so any product card can open it, and the
+  Section Rendering API can target `quick-view` by name from anywhere.
+
+  Starts empty. `<quick-view-trigger>` fetches `{{ product.url
+  }}?section_id=quick-view`, injects the response into `[data-quick-view-body]`,
+  then opens this `<loam-drawer>` — the same open/focus-trap/Escape mechanics
+  every other drawer in the theme already gets for free from the element
+  itself, no drawer-specific JS needed here.
+{%- endcomment -%}
+
+<loam-drawer id="quick-view-drawer">
+  <div
+    class="drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="quick-view-drawer-title"
+  >
+    <div class="drawer__overlay" data-drawer-close></div>
+
+    <div class="drawer__panel color-scheme-surface">
+      <div class="drawer__header">
+        <h2 class="h5" id="quick-view-drawer-title">
+          {{ 'products.product.quick_view' | t }}
+        </h2>
+        <button
+          class="icon-button"
+          type="button"
+          data-drawer-close
+          aria-label="{{ 'accessibility.close_drawer' | t }}"
+        >
+          {%- render 'icon', icon: 'close' -%}
+        </button>
+      </div>
+
+      <div class="drawer__body" data-quick-view-body></div>
+    </div>
+  </div>
+</loam-drawer>
+
+{% schema %}
+{
+  "name": "t:sections.quick_view_drawer.name"
+}
+{% endschema %}

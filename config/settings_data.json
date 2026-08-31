@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "current": {
     "color_schemes": {
@@ -99,7 +108,8 @@
     "cro_trust_returns": "Free returns for 30 days",
     "cro_trust_shipping": "Carbon neutral shipping on every order",
     "cro_datalayer": false,
-    "card_quick_add": true
+    "card_quick_add": true,
+    "card_quick_view": true
   },
   "presets": {
     "Fernway": {
@@ -202,7 +212,8 @@
       "cro_trust_returns": "Free returns for 30 days",
       "cro_trust_shipping": "Carbon neutral shipping on every order",
       "cro_datalayer": false,
-      "card_quick_add": true
+      "card_quick_add": true,
+      "card_quick_view": true
     },
     "Fernway Night": {
       "color_schemes": {
@@ -304,7 +315,8 @@
       "cro_trust_returns": "Free returns for 30 days",
       "cro_trust_shipping": "Carbon neutral shipping on every order",
       "cro_datalayer": false,
-      "card_quick_add": true
+      "card_quick_add": true,
+      "card_quick_view": true
     }
   }
 }

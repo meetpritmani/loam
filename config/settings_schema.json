@@ -285,6 +285,13 @@
       },
       {
         "type": "checkbox",
+        "id": "card_quick_view",
+        "label": "t:settings.product_cards.card_quick_view.label",
+        "info": "t:settings.product_cards.card_quick_view.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
         "id": "card_show_swatches",
         "label": "t:settings.product_cards.card_show_swatches.label",
         "default": true

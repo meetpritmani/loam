@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "general": {
     "meta": {
@@ -300,6 +309,9 @@
       },
       "quantity": "Quantité",
       "quick_add_label": "Ajouter {{ title }} au panier",
+      "quick_view": "Aperçu rapide",
+      "quick_view_label": "Aperçu rapide de {{ title }}",
+      "quick_view_error": "Ce produit n'a pas pu être chargé. Essayez sa page complète.",
       "share": "Partager",
       "size_guide": "Guide des tailles",
       "sku": "UGS",

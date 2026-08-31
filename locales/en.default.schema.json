@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "settings": {
     "colors": {
@@ -138,6 +147,10 @@
       "card_quick_add": {
         "label": "Show quick add button",
         "info": "Products with one variant are added straight from the card. Products with options link through to the product page so the shopper can choose."
+      },
+      "card_quick_view": {
+        "label": "Show quick view button",
+        "info": "Opens a drawer with the full variant picker and Add to Cart, without leaving the page."
       }
     },
     "cart": {
@@ -596,6 +609,12 @@
     },
     "cart_count": {
       "name": "Cart count"
+    },
+    "quick_view": {
+      "name": "Quick view"
+    },
+    "quick_view_drawer": {
+      "name": "Quick view drawer"
     },
     "hero": {
       "name": "Hero",

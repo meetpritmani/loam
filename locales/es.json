@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "general": {
     "meta": {
@@ -300,6 +309,9 @@
       },
       "quantity": "Cantidad",
       "quick_add_label": "Añadir {{ title }} al carrito",
+      "quick_view": "Vista rápida",
+      "quick_view_label": "Vista rápida de {{ title }}",
+      "quick_view_error": "No se pudo cargar este producto. Prueba con su página completa.",
       "share": "Compartir",
       "size_guide": "Guía de tallas",
       "sku": "SKU",

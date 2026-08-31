@@ -105,6 +105,29 @@
       {%- endif -%}
     </a>
 
+    {%- comment -%}
+      Quick view. A genuinely different action from quick add (preview vs.
+      commit), so — like quick add — it earns its own tab stop rather than
+      folding into the card's one stretched link. Sits over the media, so it
+      needs its own z-index above the title's stretched ::after (see
+      `.card__action` above) and a background of its own: an icon alone has
+      no guaranteed contrast against arbitrary product photography.
+    {%- endcomment -%}
+    {%- if settings.card_quick_view -%}
+      <quick-view-trigger
+        data-url="{{ product.url }}"
+        data-error-message="{{ 'products.product.quick_view_error' | t | escape }}"
+      >
+        <button
+          type="button"
+          class="card-product__quick-view icon-button"
+          aria-label="{{ 'products.product.quick_view_label' | t: title: product.title | escape }}"
+        >
+          {%- render 'icon', icon: 'eye' -%}
+        </button>
+      </quick-view-trigger>
+    {%- endif -%}
+
     {%- if show_card_badges -%}
       <div class="badge-row">
         {%- if product.available == false and settings.card_show_sold_out_badge -%}

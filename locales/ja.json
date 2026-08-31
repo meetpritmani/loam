@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "general": {
     "meta": {
@@ -294,6 +303,9 @@
       },
       "quantity": "数量",
       "quick_add_label": "{{ title }}をカートに追加",
+      "quick_view": "クイックビュー",
+      "quick_view_label": "{{ title }}をクイックビューで見る",
+      "quick_view_error": "この商品を読み込めませんでした。商品ページをご覧ください。",
       "share": "シェア",
       "size_guide": "サイズガイド",
       "sku": "SKU",

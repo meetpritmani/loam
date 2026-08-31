@@ -1494,12 +1494,28 @@ class VariantPicker extends HTMLElement {
 
     if (!variant) return;
 
-    // Keep the URL shareable and the back button honest.
-    const url = new URL(window.location.href);
-    url.searchParams.set('variant', String(variant.id));
-    window.history.replaceState({}, '', url.toString());
+    // Quick view fetches this same buy box into a drawer over a collection
+    // or homepage URL. Rewriting THAT page's address with a product variant
+    // query string would break its back button, and there is no stacked
+    // gallery in a quick view for product-gallery to scroll within — so a
+    // quick view swaps its one image directly instead, and skips the URL
+    // sync a real PDP still wants.
+    const inQuickView = root.hasAttribute('data-quick-view');
 
-    if (variant.featured_image?.id) {
+    if (!inQuickView) {
+      // Keep the URL shareable and the back button honest.
+      const url = new URL(window.location.href);
+      url.searchParams.set('variant', String(variant.id));
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    if (inQuickView) {
+      const image = root.querySelector('[data-quick-view-media] img');
+      if (image && variant.featured_image?.src) {
+        image.src = variant.featured_image.src;
+        image.srcset = '';
+      }
+    } else if (variant.featured_image?.id) {
       root.querySelector('product-gallery')?.show(variant.featured_image.id);
     }
 
@@ -1602,6 +1618,70 @@ class StickyAtc extends HTMLElement {
 
 if (!customElements.get('sticky-atc')) {
   customElements.define('sticky-atc', StickyAtc);
+}
+
+/* --------------------------------------------------------------------------
+   <quick-view-trigger>
+   Fetches `sections/quick-view.liquid` for one product into the shared
+   `#quick-view-drawer` shell. The drawer opens immediately on click — a
+   product card has nothing worth dimming yet on a first open, so there is
+   no content to protect from a second click the way the cart guards
+   itself — and the fetched markup replaces the empty body once it lands.
+   -------------------------------------------------------------------------- */
+
+class QuickViewTrigger extends HTMLElement {
+  connectedCallback() {
+    this.url = this.dataset.url || '';
+    this.errorMessage = this.dataset.errorMessage || '';
+    this.button = this.querySelector('button');
+
+    this.onClick = this.onClick.bind(this);
+    this.button?.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    this.button?.removeEventListener('click', this.onClick);
+    this.controller?.abort();
+  }
+
+  async onClick() {
+    const drawer = document.getElementById('quick-view-drawer');
+    const body = drawer?.querySelector('[data-quick-view-body]');
+    if (!this.url || !drawer || !body || typeof drawer.show !== 'function') return;
+
+    drawer.opener = this.button;
+    drawer.show();
+    body.setAttribute('aria-busy', 'true');
+
+    // A shopper who quick-views a second product before the first response
+    // lands must not see the first product's buy box flash in afterward.
+    this.controller?.abort();
+    this.controller = new AbortController();
+
+    try {
+      const response = await fetch(this.url + '?section_id=quick-view', {
+        signal: this.controller.signal,
+      });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const content = parsed.querySelector('[data-quick-view]');
+      if (!content) throw new Error('Quick view content missing from response');
+
+      body.replaceChildren(content);
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('[Loam] Quick view could not be loaded:', error);
+      body.replaceChildren();
+      announce(this.errorMessage);
+    } finally {
+      body.removeAttribute('aria-busy');
+    }
+  }
+}
+
+if (!customElements.get('quick-view-trigger')) {
+  customElements.define('quick-view-trigger', QuickViewTrigger);
 }
 
 /* The sticky bar mirrors the price region, which is swapped in after the
