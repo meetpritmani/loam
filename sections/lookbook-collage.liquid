@@ -26,6 +26,13 @@
   that links to a product. It is a real link with a real accessible name, not
   a tooltip — so it is reachable by keyboard and announced properly, and it
   simply does not render when no product is picked.
+
+  An optional social link (§9.4: "without hotspots it still carries a CTA")
+  sits beside the heading, outside the grid rather than as one more tile
+  inside it. The grid's unit-row tiling is exact only for the spans measured
+  and documented above; adding a variable-sized extra cell would reopen that
+  math for no real gain when a plain link next to the title does the same
+  job with zero risk to it.
 {%- endcomment -%}
 
 <div
@@ -38,12 +45,20 @@
   "
 >
   <div class="{% if section.settings.full_width %}page-width page-width--full{% else %}page-width{% endif %}">
-    {%- if section.settings.heading != blank -%}
+    {%- if section.settings.heading != blank or section.settings.social_url != blank -%}
       <div class="section__header{% if section.settings.full_width %} lookbook__header{% endif %} reveal">
         {%- if section.settings.eyebrow != blank -%}
           <p class="caption">{{ section.settings.eyebrow | escape }}</p>
         {%- endif -%}
-        <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.heading != blank -%}
+          <h2 class="section__title h2">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.social_url != blank -%}
+          <a class="lookbook__social link-underline" href="{{ section.settings.social_url }}">
+            {%- render 'icon', icon: 'camera', size: 16 -%}
+            <span>{{ section.settings.social_label | escape }}</span>
+          </a>
+        {%- endif -%}
       </div>
     {%- endif -%}
 
@@ -136,6 +151,22 @@
       "id": "full_width",
       "label": "t:sections.lookbook.full_width.label",
       "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:sections.lookbook.social.content"
+    },
+    {
+      "type": "url",
+      "id": "social_url",
+      "label": "t:sections.lookbook.social.url.label",
+      "info": "t:sections.lookbook.social.url.info"
+    },
+    {
+      "type": "text",
+      "id": "social_label",
+      "label": "t:sections.lookbook.social.label.label",
+      "default": "Follow @fernway"
     },
     {
       "type": "header",

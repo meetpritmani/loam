@@ -77,6 +77,25 @@
     {%- render 'analytics-events', scope: 'item', product: product -%}
   {%- endcapture -%}
 
+  {%- comment -%}
+    Compare payload. Captured once here rather than rebuilt in JavaScript —
+    Liquid already knows the merchant's own money format, and re-implementing
+    it client-side is exactly the mistake variant-picker's own comment warns
+    against for price.
+  {%- endcomment -%}
+  {%- capture compare_payload -%}
+    {
+      "handle": {{ product.handle | json }},
+      "title": {{ product.title | json }},
+      "url": {{ product.url | json }},
+      "image": {{ product.featured_image | image_url: width: 200 | json }},
+      "price": {{ product.price | money | json }},
+      "material": {{ material | json }},
+      "footprint": {{ product.metafields.custom.carbon_footprint | json }},
+      "available": {{ product.available | json }}
+    }
+  {%- endcapture -%}
+
   <div
     class="card card-product"
     {% if analytics_item != blank %}data-analytics-item="{{ analytics_item | strip | escape }}"{% endif %}
@@ -105,6 +124,52 @@
       {%- endif -%}
     </a>
 
+    {%- comment -%}
+      Quick view. A genuinely different action from quick add (preview vs.
+      commit), so — like quick add — it earns its own tab stop rather than
+      folding into the card's one stretched link. Sits over the media, so it
+      needs its own z-index above the title's stretched ::after (see
+      `.card__action` above) and a background of its own: an icon alone has
+      no guaranteed contrast against arbitrary product photography.
+    {%- endcomment -%}
+    {%- if settings.card_quick_view -%}
+      <quick-view-trigger
+        data-url="{{ product.url }}"
+        data-error-message="{{ 'products.product.quick_view_error' | t | escape }}"
+      >
+        <button
+          type="button"
+          class="card-product__quick-view icon-button"
+          aria-label="{{ 'products.product.quick_view_label' | t: title: product.title | escape }}"
+        >
+          {%- render 'icon', icon: 'eye' -%}
+        </button>
+      </quick-view-trigger>
+    {%- endif -%}
+
+    {%- comment -%}
+      Compare. A genuinely different action from quick view or quick add —
+      it does not open anything or add anything, only marks the product for
+      later — so it earns its own tab stop the same way those two already do.
+    {%- endcomment -%}
+    {%- if settings.card_show_compare -%}
+      <compare-toggle
+        data-compare="{{ compare_payload | strip | escape }}"
+        data-added-message="{{ 'products.product.compare_added' | t | escape }}"
+        data-removed-message="{{ 'products.product.compare_removed' | t | escape }}"
+        data-full-message="{{ 'products.product.compare_full' | t | escape }}"
+      >
+        <button
+          type="button"
+          class="card-product__compare icon-button"
+          aria-pressed="false"
+          aria-label="{{ 'products.product.compare_add_label' | t: title: product.title | escape }}"
+        >
+          {%- render 'icon', icon: 'compare' -%}
+        </button>
+      </compare-toggle>
+    {%- endif -%}
+
     {%- if show_card_badges -%}
       <div class="badge-row">
         {%- if product.available == false and settings.card_show_sold_out_badge -%}
@@ -123,7 +188,12 @@
       </{{ title_tag }}>
 
       {%- if settings.card_show_material and material != blank -%}
-        <p class="material-tag"><span class="material-tag__text">{{ material | escape }}</span></p>
+        {%- render 'material-tag',
+          material: material,
+          composition: product.metafields.custom.material_composition.value,
+          story: product.metafields.custom.material_story.value,
+          compact: true
+        -%}
       {%- endif -%}
 
       {%- if settings.card_show_swatches -%}
@@ -264,7 +334,7 @@
       <{{ title_tag }} class="card-product__title h5">{{ demo_name }}</{{ title_tag }}>
 
       {%- if settings.card_show_material -%}
-        <p class="material-tag"><span class="material-tag__text">{{ demo_material }}</span></p>
+        {%- render 'material-tag', material: demo_material, compact: true -%}
       {%- endif -%}
 
       {%- render 'price', price: demo_price -%}

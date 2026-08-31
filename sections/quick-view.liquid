@@ -1,0 +1,90 @@
+{%- comment -%}
+  quick-view.liquid — the buy box fetched into the quick view drawer.
+
+  Never part of a template's sections list and never editor-addable (no
+  presets below) — it exists purely as a Section Rendering API target,
+  fetched as `{{ product.url }}?section_id=quick-view` from
+  `<quick-view-trigger>` in global.js, the same pattern `main-product.liquid`
+  already uses for its own price/low-stock refresh. Because the request
+  carries a real product URL, `product` resolves normally even though this
+  section is not on that product's template.
+
+  Deliberately lean compared to `main-product.liquid`: one image, no gallery
+  grid, no accordion, no trust row. This is a preview, not the PDP — the
+  "View full details" link is the way out to everything this section leaves
+  off.
+
+  `data-quick-view` on the wrapper is read by `VariantPicker.onChange` in
+  global.js: inside a quick view it skips the URL history update (this
+  content did not navigate the page, and rewriting a collection page's URL
+  with a product variant query string would break the back button) and
+  swaps the single image directly instead of calling `<product-gallery>`,
+  which assumes a full stacked grid that does not exist here.
+
+  Params: none — always rendered against `product` from the request context.
+{%- endcomment -%}
+
+{%- liquid
+  assign current = product.selected_or_first_available_variant
+  assign section_id = 'quick-view'
+  assign quick_view_image = current.featured_image | default: product.featured_media
+-%}
+
+{%- comment -%}
+  `.section` is kept (not just `.quick-view__content`) purely so
+  `VariantPicker.onChange` in global.js — which scopes its price/gallery
+  updates to `this.closest('.section')` — finds this wrapper rather than
+  falling through to `document`. But `.section`'s own block padding is
+  built for a full page, not a drawer that already has `.drawer__body`'s
+  padding (base.css:962), so it is zeroed here rather than left to stack:
+  the exact double-application §4 already warns against elsewhere, just
+  arrived at from a drawer instead of a second component class.
+{%- endcomment -%}
+<div
+  class="section quick-view__content color-scheme-surface"
+  style="--section-padding-block-start: 0; --section-padding-block-end: 0; --section-padding-block-start-desktop: 0; --section-padding-block-end-desktop: 0;"
+  data-quick-view
+>
+  <div class="quick-view__media media media--portrait" data-quick-view-media>
+    {%- render 'image-fallback',
+      image: quick_view_image,
+      fallback: 'demo-product-1.webp',
+      alt: product.title,
+      sizes: '(min-width: 750px) 320px, 80vw',
+      widths: '400, 600, 800',
+      loading: 'lazy'
+    -%}
+  </div>
+
+  <div class="quick-view__body">
+    {%- render 'product-badges', product: product, variant: current -%}
+
+    <h2 class="quick-view__title h4">
+      <a href="{{ product.url }}">{{ product.title | escape }}</a>
+    </h2>
+
+    <div class="quick-view__price" data-price-target>
+      {%- render 'price', product: product, variant: current -%}
+    </div>
+
+    <div data-low-stock>
+      {%- render 'low-stock', variant: current -%}
+    </div>
+
+    {%- render 'variant-picker', product: product, section_id: section_id -%}
+
+    <div class="product__buy" data-buy-block>
+      {%- render 'buy-buttons', product: product, section_id: section_id, show_qty: false -%}
+    </div>
+
+    <a class="link-underline quick-view__details" href="{{ product.url }}">
+      {{ 'products.product.view_details' | t }}
+    </a>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.quick_view.name"
+}
+{% endschema %}

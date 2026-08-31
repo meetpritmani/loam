@@ -42,6 +42,9 @@
             "show_quantity": true
           }
         },
+        "pickup": {
+          "type": "pickup"
+        },
         "trust": {
           "type": "trust"
         },
@@ -97,6 +100,7 @@
         "picker",
         "low_stock",
         "buy",
+        "pickup",
         "trust",
         "carbon",
         "acc_materials",
@@ -113,6 +117,18 @@
         "padding_bottom": 64
       }
     },
+    "complementary-products": {
+      "type": "complementary-products",
+      "settings": {
+        "color_scheme": "scheme-paper",
+        "heading": "Goes well with",
+        "products_to_show": 4,
+        "minimum_products": 3,
+        "columns": 4,
+        "padding_top": 40,
+        "padding_bottom": 32
+      }
+    },
     "related-products": {
       "type": "related-products",
       "settings": {
@@ -121,7 +137,7 @@
         "products_to_show": 4,
         "minimum_products": 3,
         "columns": 4,
-        "padding_top": 64,
+        "padding_top": 32,
         "padding_bottom": 32
       }
     },
@@ -139,6 +155,7 @@
   },
   "order": [
     "main",
+    "complementary-products",
     "related-products",
     "recently-viewed"
   ]

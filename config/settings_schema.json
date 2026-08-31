@@ -4,8 +4,8 @@
     "theme_name": "Loam",
     "theme_author": "Loam",
     "theme_version": "1.0.0",
-    "theme_documentation_url": "https://example.com/loam/docs",
-    "theme_support_url": "https://example.com/loam/support"
+    "theme_documentation_url": "https://growth-lab.gitbook.io/growth-lab-docs/",
+    "theme_support_url": "https://tally.so/r/EkOW1L"
   },
   {
     "name": "t:settings.colors.name",
@@ -285,6 +285,20 @@
       },
       {
         "type": "checkbox",
+        "id": "card_quick_view",
+        "label": "t:settings.product_cards.card_quick_view.label",
+        "info": "t:settings.product_cards.card_quick_view.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_compare",
+        "label": "t:settings.product_cards.card_show_compare.label",
+        "info": "t:settings.product_cards.card_show_compare.info",
+        "default": true
+      },
+      {
+        "type": "checkbox",
         "id": "card_show_swatches",
         "label": "t:settings.product_cards.card_show_swatches.label",
         "default": true
@@ -339,6 +353,13 @@
         "type": "checkbox",
         "id": "cart_show_free_shipping_bar",
         "label": "t:settings.cart.cart_show_free_shipping_bar.label",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_footprint",
+        "label": "t:settings.cart.cart_show_footprint.label",
+        "info": "t:settings.cart.cart_show_footprint.info",
         "default": true
       },
       {
@@ -487,6 +508,13 @@
         "type": "checkbox",
         "id": "cro_show_payment_icons_pdp",
         "label": "t:settings.cro.cro_show_payment_icons_pdp.label",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "cro_back_in_stock",
+        "label": "t:settings.cro.cro_back_in_stock.label",
+        "info": "t:settings.cro.cro_back_in_stock.info",
         "default": true
       },
       {

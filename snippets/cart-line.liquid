@@ -12,6 +12,15 @@
   assign prefix = context | default: 'drawer'
   assign line = item.index | plus: 1
   assign input_id = prefix | append: '-quantity-' | append: line
+
+  # Same affordance card-product gives its own image link (§2's merchant
+  # toggle, not a separate decision here) — worth it on the page, where the
+  # image is large enough for the zoom to actually read; skipped in the
+  # drawer, where the thumbnail is too small for it to mean anything.
+  assign zoom_class = ''
+  if prefix == 'page' and settings.enable_image_zoom
+    assign zoom_class = ' media--zoom'
+  endif
 -%}
 
 {%- comment -%}
@@ -29,23 +38,54 @@
 {%- endcapture -%}
 
 <li
-  class="cart-line"
+  class="cart-line{% if prefix == 'page' %} cart-line--page{% endif %}"
   data-cart-line="{{ line }}"
   data-key="{{ item.key }}"
   {% if analytics_item != blank %}data-analytics-item="{{ analytics_item | strip | escape }}"{% endif %}
 >
-  <a class="cart-line__media media media--portrait" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
-    {%- render 'image-fallback',
-      image: item.image,
-      alt: item.title,
-      widths: '150,200,300,400',
-      sizes: '100px'
-    -%}
+  <a class="cart-line__media media media--portrait{{ zoom_class }}" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+    {%- comment -%}
+      The drawer is a narrow column and stays at its original compact
+      size (88px, §-documented below in base.css). The page has the
+      width to spare, so it earns a larger image rather than inheriting
+      the drawer's thumbnail — see `.cart-line--page` in base.css.
+    {%- endcomment -%}
+    {%- if prefix == 'page' -%}
+      {%- render 'image-fallback',
+        image: item.image,
+        alt: item.title,
+        widths: '200,300,400,600',
+        sizes: '(min-width: 750px) 180px, 96px'
+      -%}
+    {%- else -%}
+      {%- render 'image-fallback',
+        image: item.image,
+        alt: item.title,
+        widths: '150,200,300,400',
+        sizes: '100px'
+      -%}
+    {%- endif -%}
   </a>
 
   <div class="cart-line__body">
     <div class="cart-line__heading">
       <a class="cart-line__title link" href="{{ item.url }}">{{ item.product.title | escape }}</a>
+
+      {%- comment -%}
+        Loam's other signature element (§2) — already on card-product and
+        the PDP, never on the cart. A cart line is exactly the kind of
+        product-identifying spot that element exists for, so its absence
+        here was a real gap, not a deliberate omission.
+      {%- endcomment -%}
+      {%- assign material = item.product.metafields.custom.material -%}
+      {%- if settings.card_show_material and material != blank -%}
+        {%- render 'material-tag',
+          material: material,
+          composition: item.product.metafields.custom.material_composition.value,
+          story: item.product.metafields.custom.material_story.value,
+          compact: true
+        -%}
+      {%- endif -%}
 
       {%- unless item.product.has_only_default_variant -%}
         <p class="cart-line__variant text-body-sm text-muted">{{ item.variant.title | escape }}</p>

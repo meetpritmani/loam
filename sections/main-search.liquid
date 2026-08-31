@@ -108,6 +108,11 @@
           </div>
         {%- else -%}
           {%- paginate search.results by section.settings.results_per_page -%}
+          <facet-filters
+            class="search-page__facets"
+            data-section="{{ section.id }}"
+            data-results="[data-search-results]"
+          >
             {%- liquid
               for result in search.results
                 case result.object_type
@@ -119,68 +124,186 @@
                     assign page_count = page_count | plus: 1
                 endcase
               endfor
+
+              assign has_filters = false
+              if search.filters.size > 0
+                assign has_filters = true
+              endif
             -%}
 
-            <p class="search-page__count caption" role="status">
+            {%- comment -%}
+              Same <facet-filters> component and facets__* markup as
+              main-collection.liquid — see that file's comment for why the
+              filter groups are real <details>, rendered once. `search.filters`
+              only ever describes the product results, same object shape as
+              `collection.filters`, so `facet-controls.liquid` needs no
+              changes to serve both.
+            {%- endcomment -%}
+            {%- if has_filters -%}
+              <form class="facets" id="facets-{{ section.id }}" data-facet-form>
+                {%- for param in request.url_params -%}
+                  {%- unless param.first contains 'filter.' or param.first == 'sort_by' or param.first == 'page' -%}
+                    <input type="hidden" name="{{ param.first }}" value="{{ param.last | escape }}">
+                  {%- endunless -%}
+                {%- endfor -%}
+
+                <div class="facets__bar">
+                  <p class="facets__label caption">
+                    {%- render 'icon', icon: 'filter', size: 16 -%}
+                    <span>{{ 'collections.filters.title' | t }}</span>
+                  </p>
+
+                  <div class="facets__inline" data-facet-inline>
+                    {%- for filter in search.filters -%}
+                      <details class="facets__group" data-facet-group>
+                        <summary class="facets__summary">
+                          <span>{{ filter.label | escape }}</span>
+                          {%- render 'icon', icon: 'chevron-down', size: 14 -%}
+                        </summary>
+                        <div class="facets__panel">
+                          {%- render 'facet-controls', filter: filter, section_id: section.id -%}
+                        </div>
+                      </details>
+                    {%- endfor -%}
+                  </div>
+
+                  <noscript>
+                    <button class="button button--secondary" type="submit">
+                      {{ 'collections.filters.apply' | t }}
+                    </button>
+                  </noscript>
+                </div>
+
+                {%- liquid
+                  assign active_count = 0
+                  for filter in search.filters
+                    assign active_count = active_count | plus: filter.active_values.size
+                    if filter.type == 'price_range'
+                      if filter.min_value.value != nil
+                        assign active_count = active_count | plus: 1
+                      endif
+                      if filter.max_value.value != nil
+                        assign active_count = active_count | plus: 1
+                      endif
+                    endif
+                  endfor
+                -%}
+
+                {%- if active_count > 0 -%}
+                  <div class="facets__active">
+                    <ul class="facets__chips">
+                      {%- for filter in search.filters -%}
+                        {%- for value in filter.active_values -%}
+                          <li>
+                            <a class="chip" href="{{ value.url_to_remove }}" data-facet-link>
+                              <span>{{ filter.label | escape }}: {{ value.label | escape }}</span>
+                              {%- render 'icon', icon: 'close', size: 12 -%}
+                              <span class="visually-hidden">{{ 'collections.filters.remove' | t }}</span>
+                            </a>
+                          </li>
+                        {%- endfor -%}
+
+                        {%- if filter.type == 'price_range' -%}
+                          {%- liquid
+                            assign price_active = false
+                            if filter.min_value.value != nil
+                              assign price_active = true
+                            endif
+                            if filter.max_value.value != nil
+                              assign price_active = true
+                            endif
+                          -%}
+                          {%- if price_active -%}
+                            <li>
+                              <a class="chip" href="{{ filter.url_to_remove }}" data-facet-link>
+                                <span>{{ filter.label | escape }}</span>
+                                {%- render 'icon', icon: 'close', size: 12 -%}
+                                <span class="visually-hidden">{{ 'collections.filters.remove' | t }}</span>
+                              </a>
+                            </li>
+                          {%- endif -%}
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </ul>
+
+                    <a class="link-underline" href="{{ routes.search_url }}?q={{ search.terms | url_encode }}" data-facet-link>
+                      {{ 'collections.filters.clear_all' | t }}
+                    </a>
+                  </div>
+                {%- endif -%}
+              </form>
+            {%- endif -%}
+
+            <p class="search-page__count caption" role="status" data-result-count>
               {{- 'search.results_for_html' | t: terms: search.terms, count: search.results_count -}}
             </p>
 
-            {%- if product_count > 0 -%}
-              <section class="search-page__group" aria-labelledby="search-products">
-                <h2 class="h6" id="search-products">{{ 'search.products' | t }}</h2>
-                <ul class="grid" style="--grid-cols: 4; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">
-                  {%- for result in search.results -%}
-                    {%- if result.object_type == 'product' -%}
-                      <li>
-                        {%- render 'card-product',
-                          product: result,
-                          heading_tag: 'h3',
-                          sizes: grid_sizes
-                        -%}
-                      </li>
-                    {%- endif -%}
-                  {%- endfor -%}
-                </ul>
-              </section>
-            {%- endif -%}
+            {%- comment -%}
+              The swap target: on a filter change, <facet-filters> replaces
+              only this div's contents, never the count above or the facets
+              form itself (§ the same reasoning main-collection.liquid
+              documents — replacing the form mid-interaction would close
+              whatever dropdown the shopper has open).
+            {%- endcomment -%}
+            <div data-search-results>
+              {%- if product_count > 0 -%}
+                <section class="search-page__group" aria-labelledby="search-products">
+                  <h2 class="h6" id="search-products">{{ 'search.products' | t }}</h2>
+                  <ul class="grid" style="--grid-cols: 4; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">
+                    {%- for result in search.results -%}
+                      {%- if result.object_type == 'product' -%}
+                        <li>
+                          {%- render 'card-product',
+                            product: result,
+                            heading_tag: 'h3',
+                            sizes: grid_sizes
+                          -%}
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </section>
+              {%- endif -%}
 
-            {%- if article_count > 0 -%}
-              <section class="search-page__group" aria-labelledby="search-articles">
-                <h2 class="h6" id="search-articles">{{ 'search.articles' | t }}</h2>
-                <ul class="grid" style="--grid-cols: 3; --grid-cols-tablet: 2; --grid-cols-mobile: 1;">
-                  {%- for result in search.results -%}
-                    {%- if result.object_type == 'article' -%}
-                      <li>
-                        {%- render 'card-article',
-                          article: result,
-                          heading_tag: 'h3',
-                          sizes: article_sizes
-                        -%}
-                      </li>
-                    {%- endif -%}
-                  {%- endfor -%}
-                </ul>
-              </section>
-            {%- endif -%}
+              {%- if article_count > 0 -%}
+                <section class="search-page__group" aria-labelledby="search-articles">
+                  <h2 class="h6" id="search-articles">{{ 'search.articles' | t }}</h2>
+                  <ul class="grid" style="--grid-cols: 3; --grid-cols-tablet: 2; --grid-cols-mobile: 1;">
+                    {%- for result in search.results -%}
+                      {%- if result.object_type == 'article' -%}
+                        <li>
+                          {%- render 'card-article',
+                            article: result,
+                            heading_tag: 'h3',
+                            sizes: article_sizes
+                          -%}
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </section>
+              {%- endif -%}
 
-            {%- if page_count > 0 -%}
-              <section class="search-page__group" aria-labelledby="search-pages">
-                <h2 class="h6" id="search-pages">{{ 'search.pages' | t }}</h2>
-                <ul class="search-page__pages">
-                  {%- for result in search.results -%}
-                    {%- unless result.object_type == 'product' or result.object_type == 'article' -%}
-                      <li>
-                        <a class="search-page__page-link link-underline" href="{{ result.url }}">
-                          {{- result.title | escape -}}
-                        </a>
-                      </li>
-                    {%- endunless -%}
-                  {%- endfor -%}
-                </ul>
-              </section>
-            {%- endif -%}
+              {%- if page_count > 0 -%}
+                <section class="search-page__group" aria-labelledby="search-pages">
+                  <h2 class="h6" id="search-pages">{{ 'search.pages' | t }}</h2>
+                  <ul class="search-page__pages">
+                    {%- for result in search.results -%}
+                      {%- unless result.object_type == 'product' or result.object_type == 'article' -%}
+                        <li>
+                          <a class="search-page__page-link link-underline" href="{{ result.url }}">
+                            {{- result.title | escape -}}
+                          </a>
+                        </li>
+                      {%- endunless -%}
+                    {%- endfor -%}
+                  </ul>
+                </section>
+              {%- endif -%}
 
-            {%- render 'pagination', paginate: paginate, anchor: '#main' -%}
+              {%- render 'pagination', paginate: paginate, anchor: '#main' -%}
+            </div>
+          </facet-filters>
           {%- endpaginate -%}
         {%- endif -%}
       {%- else -%}

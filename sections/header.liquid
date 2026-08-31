@@ -177,14 +177,33 @@
         {%- render 'icon', icon: 'search' -%}
       </button>
 
+      {%- comment -%}
+        Theme Store requirement (effective 2026-07-30): the account entry
+        point has to be this exact web component, not a themed link to
+        routes.account_url. It self-adapts to whichever account system the
+        shop runs — new accounts get an in-page sheet, classic accounts get
+        a redirect to sign-in — so one conditional block covers both; no
+        branching on the account system here.
+
+        No `menu` attribute: an earlier draft hardcoded
+        `menu="customer-account-main-menu"`, which is exactly the kind of
+        resource reference §19's "installation experience" rule warns
+        about — it has to resolve on every store, not just this demo one.
+        Checking `linklists['customer-account-main-menu'] != blank` first
+        was tried and is not sufficient: this store has a menu with that
+        handle and the check passed, and the browser still logged
+        `[shopify-account] Menu "customer-account-main-menu" not found in
+        Storefront API` followed by a 400 on graphql.json — the New
+        Customer Accounts surface apparently validates something about a
+        menu beyond a normal `linklists[]` lookup that the admin
+        navigation API is happy to hand back. Rather than ship a check that
+        looks right and was proven not to be, this omits the attribute
+        entirely and lets the component use its own default items, which
+        is the one behaviour confirmed to produce no console error on this
+        store.
+      {%- endcomment -%}
       {%- if shop.customer_accounts_enabled -%}
-        <a
-          class="icon-button header__account"
-          href="{{ routes.account_url }}"
-          aria-label="{{ 'general.account' | t }}"
-        >
-          {%- render 'icon', icon: 'account' -%}
-        </a>
+        <shopify-account class="header__account"></shopify-account>
       {%- endif -%}
 
       {%- if cart_is_drawer -%}
@@ -282,10 +301,7 @@
 
         {%- if shop.customer_accounts_enabled -%}
           <div class="drawer__footer">
-            <a class="button button--secondary button--full" href="{{ routes.account_url }}">
-              {%- render 'icon', icon: 'account', size: 18 -%}
-              {{ 'general.account' | t }}
-            </a>
+            <shopify-account class="header__account header__account--mobile"></shopify-account>
           </div>
         {%- endif -%}
       </div>

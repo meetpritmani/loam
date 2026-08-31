@@ -138,6 +138,14 @@
       "card_quick_add": {
         "label": "Show quick add button",
         "info": "Products with one variant are added straight from the card. Products with options link through to the product page so the shopper can choose."
+      },
+      "card_quick_view": {
+        "label": "Show quick view button",
+        "info": "Opens a drawer with the full variant picker and Add to Cart, without leaving the page."
+      },
+      "card_show_compare": {
+        "label": "Show compare button",
+        "info": "Lets a shopper mark up to three products and view them side by side."
       }
     },
     "cart": {
@@ -154,6 +162,10 @@
       },
       "cart_show_free_shipping_bar": {
         "label": "Show free shipping progress"
+      },
+      "cart_show_footprint": {
+        "label": "Show carbon footprint total",
+        "info": "Reads the product metafield custom.carbon_footprint. Only sums the lines that have it set, and only appears once at least one line does."
       },
       "cart_free_shipping_threshold": {
         "label": "Free shipping threshold",
@@ -241,6 +253,10 @@
       },
       "cro_show_payment_icons_pdp": {
         "label": "Show payment icons on the product page"
+      },
+      "cro_back_in_stock": {
+        "label": "Allow back-in-stock requests",
+        "info": "Shows an email field beneath a sold-out variant. Shopify tags the customer restock:{variant id} so you can follow up yourself, through Shopify Flow, or through a restock app — the theme does not send anything on its own."
       },
       "cro_low_stock_threshold": {
         "label": "Low stock message below",
@@ -514,6 +530,9 @@
             "label": "Show quantity selector"
           }
         },
+        "pickup": {
+          "name": "Pickup availability"
+        },
         "trust": {
           "name": "Trust row"
         },
@@ -596,6 +615,28 @@
     },
     "cart_count": {
       "name": "Cart count"
+    },
+    "quick_view": {
+      "name": "Quick view"
+    },
+    "pickup_availability": {
+      "name": "Pickup availability"
+    },
+    "custom_liquid": {
+      "name": "Custom Liquid",
+      "custom_liquid": {
+        "label": "Liquid code",
+        "info": "For a developer or an app that needs to add something outside the theme's own sections. No support is provided for what you put here."
+      }
+    },
+    "quick_view_drawer": {
+      "name": "Quick view drawer"
+    },
+    "compare_bar": {
+      "name": "Compare tray"
+    },
+    "compare_drawer": {
+      "name": "Compare drawer"
     },
     "hero": {
       "name": "Hero",
@@ -803,6 +844,16 @@
       "full_width": {
         "label": "Full width"
       },
+      "social": {
+        "content": "Social link",
+        "url": {
+          "label": "Instagram (or other) URL",
+          "info": "Shown beside the heading, whether or not any image below has a hotspot — the section's own call to action when it has no shoppable dots. Leave empty to hide it."
+        },
+        "label": {
+          "label": "Link text"
+        }
+      },
       "hotspot": {
         "content": "Hotspot",
         "info": "Pins a shoppable dot to this image. Leave empty for no hotspot.",
@@ -920,6 +971,9 @@
         "label": "Hide the row below",
         "info": "A row of one or two products reads as a thin catalogue. Below this count nothing renders at all."
       }
+    },
+    "complementary_products": {
+      "name": "Complementary products"
     },
     "recently_viewed": {
       "name": "Recently viewed"

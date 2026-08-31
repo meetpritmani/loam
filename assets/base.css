@@ -674,6 +674,17 @@ dialog {
   align-items: center;
   gap: var(--sp-2);
   max-width: 100%;
+  /* Every ancestor in cart-line.liquid's grid chain now has its own
+     min-width: 0 (see .cart-line__heading / .cart-line__body), but this
+     element is itself a grid item in that chain too, and grid items
+     default to min-width: auto regardless of what their own ancestors
+     do — each level needs the override independently, not just the ones
+     closer to the root. max-width: 100% alone does not do this job: it
+     bounds the element from above, not its refusal to shrink below its
+     nowrap child's full content width. Set here on the component itself
+     rather than patched into every consumer, since any future nesting
+     context hits the same default. */
+  min-width: 0;
   font-size: var(--t-xs);
   line-height: 1.4;
   letter-spacing: var(--caption-tracking);
@@ -695,6 +706,86 @@ dialog {
   min-width: 0;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* --- Material info --------------------------------------------------------
+   The interactive form of the material tag (material-tag.liquid), only
+   rendered when a product actually has composition or story data. A native
+   <details>, so the panel pushes the layout open rather than needing
+   z-index or positioning of its own — same choice as the accordion. */
+
+.material-info__summary {
+  /* <summary> is list-item by default; the reset in region 1 already drops
+     the marker, this just restores material-tag's own flex layout on it. */
+  width: fit-content;
+}
+
+.material-info__caret {
+  color: var(--c-ink-45);
+  transition: transform var(--dur) var(--ease);
+}
+
+.material-info[open] .material-info__caret {
+  transform: rotate(180deg);
+}
+
+.material-info__panel {
+  display: grid;
+  gap: var(--sp-2);
+  padding-block-start: var(--sp-2);
+  max-width: 32ch;
+}
+
+.material-info--compact .material-info__panel {
+  max-width: 26ch;
+}
+
+.material-bar {
+  display: flex;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background-color: var(--c-ink-12);
+}
+
+.material-bar__segment {
+  flex-grow: var(--pct, 0);
+  flex-basis: 0;
+  min-width: 2px;
+}
+
+.material-bar__segment--1 {
+  background-color: var(--c-accent);
+}
+
+.material-bar__segment--2 {
+  background-color: var(--c-ink);
+}
+
+.material-bar__segment--3 {
+  background-color: var(--c-ink-45);
+}
+
+.material-bar__segment--4 {
+  background-color: var(--c-sand);
+}
+
+.material-info__breakdown {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--t-xs);
+  color: var(--c-ink-70);
+}
+
+.material-info__breakdown dd {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.material-info__story {
+  font-size: var(--t-sm);
+  color: var(--c-ink-70);
 }
 
 /* --- Badges ------------------------------------------------------------- */
@@ -851,6 +942,58 @@ dialog {
 .card__action [aria-disabled='true'] {
   cursor: progress;
   opacity: 0.65;
+}
+
+/* Quick view. A thin wrapper custom element must not create a box of its
+   own inside the card, the same reasoning as <loam-drawer> below. */
+quick-view-trigger {
+  display: contents;
+}
+
+.card-product__quick-view {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: var(--sp-2);
+  inset-inline-end: var(--sp-2);
+  width: 40px;
+  height: 40px;
+  background-color: rgb(var(--c-paper-rgb) / 0.9);
+  color: var(--c-ink);
+}
+
+@media (hover: hover) {
+  .card-product__quick-view:hover {
+    color: var(--c-accent);
+  }
+}
+
+/* Compare. Same thin-wrapper reasoning as quick-view-trigger above, and the
+   mirror position — top-left rather than top-right — so the two controls
+   never collide on a narrow card. */
+compare-toggle {
+  display: contents;
+}
+
+.card-product__compare {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: var(--sp-2);
+  inset-inline-start: var(--sp-2);
+  width: 40px;
+  height: 40px;
+  background-color: rgb(var(--c-paper-rgb) / 0.9);
+  color: var(--c-ink);
+}
+
+.card-product__compare[aria-pressed='true'] {
+  color: var(--c-accent);
+  background-color: var(--c-surface);
+}
+
+@media (hover: hover) {
+  .card-product__compare:hover {
+    color: var(--c-accent);
+  }
 }
 
 /* --- Drawer -------------------------------------------------------------
@@ -1289,6 +1432,14 @@ loam-drawer {
   display: none;
 }
 
+/* The drawer's own copy has to stay visible below 750px even though the
+   header's copy hides there — see the media query below, which only
+   un-hides .header__account (no modifier) at that breakpoint. */
+.header__account--mobile {
+  display: inline-flex;
+  width: 100%;
+}
+
 .header__cart {
   position: relative;
 }
@@ -1570,11 +1721,18 @@ loam-drawer {
   display: grid;
   align-content: start;
   gap: var(--sp-3);
+  /* A grid item's default min-width is auto, not 0 — it refuses to shrink
+     below its content's intrinsic width. .material-tag__text below sets
+     white-space: nowrap so it can ellipsis instead of wrap, and without
+     this the nowrap text's full width pushes this column, the line, and
+     the whole drawer wider than the panel instead of truncating. */
+  min-width: 0;
 }
 
 .cart-line__heading {
   display: grid;
   gap: var(--sp-1);
+  min-width: 0;
 }
 
 .cart-line__title {
@@ -1609,6 +1767,38 @@ loam-drawer {
 
 .cart-line__price {
   font-size: var(--t-sm);
+}
+
+/* The cart page has the width the drawer does not — a shared 88px thumbnail
+   stretched across a full page column read as the drawer rather than as its
+   own layout. `cart-line.liquid` still renders the same markup and CSS
+   classes either way; this only widens the image column and steps the type
+   up one notch on the page. */
+.cart-line--page {
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+
+.cart-line--page .cart-line__media {
+  width: 96px;
+}
+
+.cart-line--page .cart-line__title {
+  font-size: var(--t-base);
+}
+
+.cart-line--page .cart-line__price {
+  font-size: var(--t-base);
+}
+
+@media (min-width: 750px) {
+  .cart-line--page {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .cart-line--page .cart-line__media {
+    width: 180px;
+  }
 }
 
 /* While a cart request is in flight the region is dimmed and inert, so a
@@ -1680,6 +1870,40 @@ cart-items[aria-busy] {
   margin-block-start: var(--sp-3);
 }
 
+/* --- Quick view -----------------------------------------------------------
+   Fetched into #quick-view-drawer's [data-quick-view-body] by
+   <quick-view-trigger>. A drawer body, not a page section — one image, then
+   the buy box beneath it, reusing .drawer__body's own scroll and padding. */
+
+.quick-view__content {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.quick-view__media {
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.quick-view__body {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.quick-view__title a {
+  color: inherit;
+}
+
+.quick-view__details {
+  justify-self: start;
+}
+
+/* Reserves height on the first, empty-bodied open so the drawer does not
+   slide in as a near-blank sliver while the fetch is in flight. */
+[data-quick-view-body][aria-busy] {
+  min-height: 320px;
+}
+
 /* --- Free shipping progress --------------------------------------------- */
 
 .shipping-bar {
@@ -1707,6 +1931,196 @@ cart-items[aria-busy] {
   height: 100%;
   background-color: var(--c-accent);
   transition: width var(--dur-slow) var(--ease);
+}
+
+/* --- Footprint counter ---------------------------------------------------
+   footprint-counter.liquid. Sits directly under the shipping bar, same row
+   rhythm, so the two read as one strip of cart-level facts rather than two
+   unrelated widgets stacked on top of each other. */
+
+.footprint-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-5);
+  color: var(--c-ink-70);
+}
+
+.footprint-counter__text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  font-size: var(--t-sm);
+}
+
+.footprint-counter__value {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--f-body-weight-bold);
+  color: var(--c-ink);
+}
+
+/* --- Compare ---------------------------------------------------------------
+   compare-bar.liquid, compare-drawer.liquid. A persistent bottom bar, the
+   same reasoning as the cart drawer for existing on every template: it is
+   `hidden` in the markup and stays that way until <compare-tray> finds
+   something in storage worth showing. */
+
+.compare-tray {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  /* Below .drawer's z-index: 30 (region 4, Drawer), not above it — a drawer
+     opened over the tray (the compare drawer itself, or any other) must
+     cover it, not sit under a bar that stays clickable through the scrim. */
+  z-index: 25;
+  background-color: var(--c-surface);
+  border-block-start: 1px solid var(--c-ink-12);
+  box-shadow: var(--shadow-soft);
+}
+
+.compare-tray__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+  padding-block: var(--sp-3);
+}
+
+.compare-tray__count {
+  display: flex;
+  gap: var(--sp-1);
+  font-size: var(--t-sm);
+  font-weight: var(--f-body-weight-bold);
+  white-space: nowrap;
+}
+
+/* Shown for a few seconds when the 3-item cap is hit (global.js). The live
+   region CompareToggle also fires covers a screen reader; this covers
+   everyone else, since a visually-hidden announcement is by definition not
+   visible to a sighted shopper who just clicked and saw nothing happen. */
+.compare-tray__notice {
+  font-size: var(--t-sm);
+  font-weight: var(--f-body-weight-bold);
+  white-space: nowrap;
+}
+
+.compare-tray__notice[hidden] {
+  display: none;
+}
+
+.compare-tray__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.compare-tray__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding-inline: var(--sp-3);
+  padding-block: var(--sp-1);
+  border-radius: var(--radius-sm);
+  background-color: var(--c-sand);
+  font-size: var(--t-xs);
+  max-width: 220px;
+}
+
+.compare-tray__chip-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.compare-tray__chip-remove {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  font-size: var(--t-sm);
+  line-height: 1;
+}
+
+.compare-tray__actions {
+  display: flex;
+  gap: var(--sp-3);
+  flex: 0 0 auto;
+}
+
+/* The compare drawer is a centred dialog, not a side-slide panel — same
+   centring technique as `.drawer__panel--lightbox` (transparent, full-
+   viewport, `pointer-events: none` restored only on its direct child) but
+   wrapping an actual opaque card instead of a bare image, since a data
+   table needs a real background behind its text. */
+.drawer__panel--dialog {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  padding: var(--sp-5);
+  pointer-events: none;
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform var(--dur-slow) var(--ease), opacity var(--dur-slow) var(--ease);
+}
+
+.drawer__panel--dialog > * {
+  pointer-events: auto;
+}
+
+.drawer[open] .drawer__panel--dialog {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.drawer__overlay--dialog {
+  background-color: rgb(var(--c-ink-rgb) / 0.6);
+}
+
+.drawer__dialog-card {
+  display: flex;
+  flex-direction: column;
+  width: min(92vw, 900px);
+  max-height: 85vh;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.compare-drawer__body {
+  overflow: auto;
+}
+
+.compare-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: var(--sp-3);
+  text-align: start;
+  vertical-align: top;
+  border-block-end: 1px solid var(--c-ink-12);
+}
+
+.compare-table th[scope='row'] {
+  color: var(--c-ink-70);
+  font-size: var(--t-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--caption-tracking);
+  white-space: nowrap;
+}
+
+.compare-table img {
+  display: block;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
 }
 
 /* --- Customer accounts ---------------------------------------------------
@@ -2593,6 +3007,11 @@ recently-viewed {
   flex-wrap: wrap;
   gap: var(--sp-3);
   margin-block-end: var(--sp-6);
+  padding-block-end: var(--sp-5);
+  background-image: var(--seam);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: bottom left;
 }
 
 .cart-page__count {
@@ -3463,6 +3882,15 @@ recently-viewed {
    here and nowhere else in the theme: a lookbook has no meaningful
    sequence. */
 
+/* Section-level CTA, sits beside the heading rather than inside the grid —
+   see the comment in lookbook-collage.liquid for why. */
+.lookbook__social {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  align-self: flex-start;
+}
+
 .lookbook {
   --lookbook-row: clamp(76px, 11vw, 118px);
   display: grid;
@@ -3943,6 +4371,76 @@ recently-viewed {
   gap: var(--sp-2);
 }
 
+/* --- Back in stock --------------------------------------------------------
+   back-in-stock-form.liquid. Only ever rendered under a genuinely sold-out
+   buy-buttons, so it sits directly beneath it rather than needing its own
+   section padding — see the render guard in buy-buttons.liquid. */
+
+.back-in-stock {
+  margin-block-start: var(--sp-3);
+}
+
+.back-in-stock__summary {
+  font-size: var(--t-sm);
+}
+
+.back-in-stock__form {
+  padding-block-start: var(--sp-3);
+}
+
+.back-in-stock__field {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.back-in-stock__field .field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.back-in-stock__message {
+  display: block;
+  min-height: 1.4em;
+  margin-block-start: var(--sp-2);
+}
+
+/* --- Pickup availability -------------------------------------------------
+   Fetched into <pickup-availability> by global.js — see the comment there
+   and in pickup-availability.liquid for why this is never rendered
+   synchronously with the rest of the PDP. Renders nothing (zero-height,
+   no border) when its fetch resolves empty, same as low-stock below. */
+
+.pickup-availability:empty {
+  display: none;
+}
+
+.pickup-availability__summary {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--t-sm);
+}
+
+.pickup-availability__summary > svg {
+  flex: 0 0 auto;
+  margin-block-start: 2px;
+  color: var(--c-ink-70);
+}
+
+.pickup-availability__trigger {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.pickup-availability__list {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.pickup-availability__location-name {
+  font-weight: var(--f-body-weight-bold);
+}
+
 /* --- Trust row ---------------------------------------------------------- */
 
 .trust-row {
@@ -4358,8 +4856,12 @@ recently-viewed {
 }
 
 /* Results are dimmed, never removed, while a refinement is in flight — an
-   empty box mid-request reads as "no results" and is worse than a brief wait. */
-[data-collection-results][aria-busy] {
+   empty box mid-request reads as "no results" and is worse than a brief wait.
+   Search's own facet results share this: same <facet-filters> component,
+   different results attribute so a collection page and a search page never
+   have their sections cross-target each other's DOM. */
+[data-collection-results][aria-busy],
+[data-search-results][aria-busy] {
   opacity: 0.55;
   transition: opacity var(--dur) var(--ease);
 }

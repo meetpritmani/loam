@@ -1,0 +1,67 @@
+{%- comment -%}
+  material-tag.liquid — Loam's first signature element, extended.
+
+  Plain mode is unchanged: a hollow-dot caption, nothing to click. It is
+  promoted to an interactive <details> only when the product actually
+  carries composition or story data — never invents copy or a breakdown to
+  make a product look more interactive than its data supports.
+
+  composition renders as a segmented bar (each segment's share of the
+  material) plus the same numbers as an accessible list; story is the
+  "Behind the seam" provenance note. Either can be blank on its own — a
+  product with only a composition metafield still gets the bar with no note
+  beneath it, and vice versa.
+
+  Native <details>/<summary> rather than a floating popover: keyboard and
+  screen-reader support come for free, and the panel pushes the layout below
+  it open rather than needing z-index/positioning of its own — the same
+  choice already made for the mega menu and the accordion.
+
+  Params:
+    material     (string, required)  — product.metafields.custom.material
+    composition  (array, optional)   — parsed custom.material_composition,
+                                        e.g. [{"name": "Merino wool", "percent": 70}, ...]
+    story        (string, optional)  — custom.material_story (rich text)
+    compact      (boolean, optional) — default false; tightens spacing for
+                                        product cards and cart lines
+{%- endcomment -%}
+
+{%- liquid
+  assign has_extra = false
+  if composition != blank or story != blank
+    assign has_extra = true
+  endif
+-%}
+
+{%- if material == blank -%}
+  {%- comment -%} Nothing to show. {%- endcomment -%}
+{%- elsif has_extra -%}
+  <details class="material-info{% if compact %} material-info--compact{% endif %}">
+    <summary class="material-tag material-info__summary">
+      <span class="material-tag__text">{{ material | escape }}</span>
+      {%- render 'icon', icon: 'chevron-down', size: 12, class: 'material-info__caret' -%}
+    </summary>
+
+    <div class="material-info__panel">
+      {%- if composition != blank -%}
+        <ul class="material-bar" aria-hidden="true">
+          {%- for part in composition limit: 4 -%}
+            <li class="material-bar__segment material-bar__segment--{{ forloop.index }}" style="--pct: {{ part.percent | default: 0 }};"></li>
+          {%- endfor -%}
+        </ul>
+        <dl class="material-info__breakdown">
+          {%- for part in composition limit: 4 -%}
+            <dt>{{ part.name | escape }}</dt>
+            <dd>{{ part.percent | default: 0 }}%</dd>
+          {%- endfor -%}
+        </dl>
+      {%- endif -%}
+
+      {%- if story != blank -%}
+        <div class="material-info__story rte">{{ story }}</div>
+      {%- endif -%}
+    </div>
+  </details>
+{%- else -%}
+  <p class="material-tag"><span class="material-tag__text">{{ material | escape }}</span></p>
+{%- endif -%}

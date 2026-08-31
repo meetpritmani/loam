@@ -92,6 +92,25 @@
     {%- endif -%}
 
     {%- comment -%}
+      Same reasoning as the cart drawer above: has to exist on every
+      template so any product card can open it, never loaded at all when
+      the merchant has quick view switched off.
+    {%- endcomment -%}
+    {%- if settings.card_quick_view -%}
+      {% section 'quick-view-drawer' %}
+    {%- endif -%}
+
+    {%- comment -%}
+      Same reasoning again: the compare tray and its drawer have to exist on
+      every template so any product card can add to them, and neither loads
+      at all when compare is switched off.
+    {%- endcomment -%}
+    {%- if settings.card_show_compare -%}
+      {% section 'compare-bar' %}
+      {% section 'compare-drawer' %}
+    {%- endif -%}
+
+    {%- comment -%}
       The single polite live region for the whole theme. Cart updates, form
       results, and any failed fetch announce through global.js's announce().
     {%- endcomment -%}

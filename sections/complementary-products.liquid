@@ -1,0 +1,129 @@
+{%- comment -%}
+  complementary-products.liquid — "goes well with", from Shopify.
+
+  Same lazy-fetch pattern as related-products.liquid, and deliberately a
+  separate section rather than an `intent` setting bolted onto that one:
+  Theme Store review treats related and complementary as two distinct
+  required features, and the two answer different questions — related is
+  "shoppers who liked this also liked," complementary is "pairs well with
+  this specific item" (Shopify's own cross-sell model, e.g. socks with
+  shoes). Conflating them into one toggle would make either row a worse
+  answer to whichever question it isn't currently set to.
+
+  Hidden entirely below the minimum, same reasoning as related-products:
+  a row of one or two products reads as a thin recommendation, not a
+  cross-sell.
+{%- endcomment -%}
+
+{%- liquid
+  assign limit = section.settings.products_to_show
+  assign minimum = section.settings.minimum_products
+
+  assign fetch_url = routes.product_recommendations_url
+  assign fetch_url = fetch_url | append: '?section_id=' | append: section.id
+  assign fetch_url = fetch_url | append: '&product_id=' | append: product.id
+  assign fetch_url = fetch_url | append: '&limit=' | append: limit
+  assign fetch_url = fetch_url | append: '&intent=complementary'
+
+  assign render_row = false
+  if recommendations.performed and recommendations.products_count >= minimum
+    assign render_row = true
+  endif
+-%}
+
+<lazy-section data-url="{{ fetch_url }}" data-name="complementary-products">
+  {%- if render_row -%}
+    <div
+      class="section color-{{ section.settings.color_scheme }}"
+      style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+    >
+      <div class="page-width">
+        <div class="section__header">
+          <h2 class="h3 section__title">{{ section.settings.heading | escape }}</h2>
+        </div>
+
+        <ul class="grid" style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 3; --grid-cols-mobile: 2;">
+          {%- for recommendation in recommendations.products -%}
+            <li>
+              {%- render 'card-product',
+                product: recommendation,
+                heading_tag: 'h3',
+                sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+              -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  {%- endif -%}
+</lazy-section>
+
+{% schema %}
+{
+  "name": "t:sections.complementary_products.name",
+  "tag": "section",
+  "class": "section-complementary-products",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Goes well with"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "t:sections.related_products.products_to_show.label",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "minimum_products",
+      "label": "t:sections.related_products.minimum_products.label",
+      "info": "t:sections.related_products.minimum_products.info",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:sections.main_collection.columns.label",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}

@@ -14,8 +14,22 @@
 {%- endcomment -%}
 
 {%- liquid
+  comment
+    section_id has to be the section's REAL id, unprefixed — it doubles as
+    the Section Rendering API's `section_id` query param (see
+    VariantPicker.refreshRegions in global.js, which builds
+    `productUrl + '?variant=...&section_id=' + this.section`). A "product-"
+    prefix was on this line before, presumably meant only to namespace the
+    HTML element ids built from it below (qty_id, the lightbox ids, buy-
+    buttons' form_id) — but Shopify's Section Rendering API takes it
+    literally too, and a section_id that does not name a real section on
+    the current template 404s outright rather than degrading, which is
+    exactly what broke every variant click on this page. section.id
+    (e.g. `template--21279671484486__main`) is already unique enough on
+    its own to double as the HTML id prefix; nothing needs the extra text.
+  endcomment
   assign current = product.selected_or_first_available_variant
-  assign section_id = 'product-' | append: section.id
+  assign section_id = section.id
   assign media_count = product.media.size
 -%}
 
@@ -187,9 +201,13 @@
               {%- when 'material' -%}
                 {%- assign material = product.metafields.custom.material -%}
                 {%- if material != blank -%}
-                  <p class="material-tag" {{ block.shopify_attributes }}>
-                    {{- material | escape -}}
-                  </p>
+                  <div {{ block.shopify_attributes }}>
+                    {%- render 'material-tag',
+                      material: material,
+                      composition: product.metafields.custom.material_composition.value,
+                      story: product.metafields.custom.material_story.value
+                    -%}
+                  </div>
                 {%- endif -%}
 
               {%- when 'carbon' -%}
@@ -222,6 +240,22 @@
                     show_qty: block.settings.show_quantity
                   -%}
                 </div>
+
+              {%- when 'pickup' -%}
+                {%- comment -%}
+                  Theme Store requirement: pickup availability, without
+                  adding to cart. store_availabilities belongs to the
+                  variant, not the product, so this fetches its own
+                  section rather than rendering synchronously — see the
+                  comment in pickup-availability.liquid and the
+                  <pickup-availability> element in global.js.
+                {%- endcomment -%}
+                <pickup-availability
+                  class="pickup-availability"
+                  data-root-url="{{ routes.root_url }}"
+                  data-variant-id="{{ current.id }}"
+                  {{ block.shopify_attributes }}
+                ></pickup-availability>
 
               {%- when 'trust' -%}
                 <div {{ block.shopify_attributes }}>
@@ -312,6 +346,7 @@
         }
       ]
     },
+    { "type": "pickup", "name": "t:sections.main_product.blocks.pickup.name", "limit": 1 },
     { "type": "trust", "name": "t:sections.main_product.blocks.trust.name", "limit": 1 },
     { "type": "description", "name": "t:sections.main_product.blocks.description.name", "limit": 1 },
     {

@@ -291,11 +291,19 @@ Loam reads these and degrades cleanly when they are absent. None is required.
 |---|---|---|
 | `custom.material` | Single line text | Material tag on cards and the product page |
 | `custom.care` | Rich text | Care collapsible row |
-| `custom.carbon_footprint` | Decimal | Carbon badge on the product page |
+| `custom.carbon_footprint` | Decimal | Carbon badge on the product page, and the cart's running footprint total |
 | `custom.size_guide` | Page reference | Size guide drawer |
+| `custom.material_composition` | JSON | Segmented composition bar in the material tag, e.g. `[{"name": "Merino wool", "percent": 70}, {"name": "Sugarcane foam", "percent": 30}]`. Up to 4 entries are shown |
+| `custom.material_story` | Rich text | The "Behind the seam" note in the material tag's expanded panel |
 
 Create these under **Settings → Custom data → Products**. Set storefront
 access to **read** or the theme cannot see them.
+
+The last two are optional even where `custom.material` is set: with neither
+present the material tag stays the plain, non-interactive caption it has
+always been. Set one, the other, or both to promote it to an expandable
+`<details>` — no theme setting turns this on or off, it is driven entirely by
+whether the data exists.
 
 ---
 

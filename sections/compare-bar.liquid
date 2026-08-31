@@ -1,0 +1,61 @@
+{%- comment -%}
+  compare-bar.liquid — the compare tray.
+
+  Rendered statically from theme.liquid on every page, the same reasoning as
+  the cart drawer and quick view: any product card anywhere can add to it, so
+  it has to exist everywhere rather than living on one template.
+
+  Starts hidden. Comparison is entirely client-side state (§16's localStorage
+  ban is scoped to anything the cart depends on — this is neither the cart
+  nor anything the server needs back), so a shopper who has never touched the
+  feature sees nothing at all, ever: <compare-tray> only removes `hidden`
+  once it finds something in storage to show.
+{%- endcomment -%}
+
+<compare-tray
+  class="compare-tray"
+  hidden
+  data-remove-label="{{ 'products.product.compare_remove_label' | t | escape }}"
+>
+  <div class="compare-tray__inner page-width">
+    <p class="compare-tray__count">
+      <span data-compare-count>0</span>
+      <span>{{ 'products.product.compare_label' | t }}</span>
+    </p>
+
+    {%- comment -%}
+      Visible sibling to the aria-live announcement CompareToggle already
+      fires when the 3-item cap is hit. The live region is real for a screen
+      reader, but it is visually hidden by definition — a sighted shopper
+      who clicks a 4th product's compare button sees nothing happen at all
+      without this. Starts hidden; <compare-tray> shows it for a few seconds
+      on a `compare:full` event and hides it again, it never needs its own
+      permanent space reserved.
+    {%- endcomment -%}
+    <p class="compare-tray__notice" data-compare-notice hidden></p>
+
+    <ul class="compare-tray__chips" data-compare-list></ul>
+
+    <div class="compare-tray__actions">
+      <button type="button" class="button--tertiary" data-compare-clear>
+        {{ 'products.product.compare_clear' | t }}
+      </button>
+      <button
+        type="button"
+        class="button button--primary"
+        data-drawer-toggle
+        aria-controls="compare-drawer"
+        aria-expanded="false"
+        disabled
+      >
+        {{ 'products.product.compare_open' | t }}
+      </button>
+    </div>
+  </div>
+</compare-tray>
+
+{% schema %}
+{
+  "name": "t:sections.compare_bar.name"
+}
+{% endschema %}

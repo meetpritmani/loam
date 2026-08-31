@@ -22,6 +22,12 @@
 const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
 const CAN_HOVER = window.matchMedia('(hover: hover) and (pointer: fine)');
 
+// Matches --dur-slow in theme-tokens.liquid, the drawer panel's own
+// slide transition. Used only to sequence one drawer's close against
+// another's open — see <product-form> below — so it has to track that
+// token rather than drift from it.
+const DRAWER_TRANSITION_MS = 420;
+
 // Marks that the module parsed and is running, so CSS can hide the no-JS
 // fallbacks (the localization submit buttons) without a flash.
 document.documentElement.classList.add('js');
@@ -935,7 +941,26 @@ class ProductForm extends HTMLElement {
 
     // Opening the drawer is the confirmation. Only on success, and only when
     // the merchant is running the drawer rather than the cart page.
-    document.getElementById('cart-drawer')?.show?.();
+    const cartDrawer = document.getElementById('cart-drawer');
+
+    // This form can itself be inside a drawer — quick view, most often.
+    // Two drawers open at once fight over the same focus trap and the same
+    // Escape listener, and the cart drawer sliding in on top of an
+    // unrelated one reads as a glitch, not a confirmation. So that drawer
+    // closes first, and the cart drawer opens only once its own slide-out
+    // transition has actually finished — not layered underneath it.
+    // Excluded: the cart drawer's own upsell cards render a <product-form>
+    // too, and closing the cart drawer to then reopen itself would be a
+    // pointless flicker on an already-open drawer.
+    const ownDrawer = this.closest('loam-drawer');
+
+    if (ownDrawer && ownDrawer !== cartDrawer && ownDrawer.open) {
+      ownDrawer.hide();
+      const delay = PREFERS_REDUCED_MOTION.matches ? 0 : DRAWER_TRANSITION_MS;
+      window.setTimeout(() => cartDrawer?.show?.(), delay);
+    } else {
+      cartDrawer?.show?.();
+    }
   }
 }
 
@@ -1494,13 +1519,29 @@ class VariantPicker extends HTMLElement {
 
     if (!variant) return;
 
-    // Keep the URL shareable and the back button honest.
-    const url = new URL(window.location.href);
-    url.searchParams.set('variant', String(variant.id));
-    window.history.replaceState({}, '', url.toString());
+    // Quick view fetches this same buy box into a drawer over a collection
+    // or homepage URL. Rewriting THAT page's address with a product variant
+    // query string would break its back button, and there is no stacked
+    // gallery in a quick view for product-gallery to scroll within — so a
+    // quick view swaps its one image directly instead, and skips the URL
+    // sync a real PDP still wants.
+    const inQuickView = root.hasAttribute('data-quick-view');
 
-    if (variant.featured_media?.id) {
-      root.querySelector('product-gallery')?.show(variant.featured_media.id);
+    if (!inQuickView) {
+      // Keep the URL shareable and the back button honest.
+      const url = new URL(window.location.href);
+      url.searchParams.set('variant', String(variant.id));
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    if (inQuickView) {
+      const image = root.querySelector('[data-quick-view-media] img');
+      if (image && variant.featured_image?.src) {
+        image.src = variant.featured_image.src;
+        image.srcset = '';
+      }
+    } else if (variant.featured_image?.id) {
+      root.querySelector('product-gallery')?.show(variant.featured_image.id);
     }
 
     document.dispatchEvent(
@@ -1602,6 +1643,145 @@ class StickyAtc extends HTMLElement {
 
 if (!customElements.get('sticky-atc')) {
   customElements.define('sticky-atc', StickyAtc);
+}
+
+/* --------------------------------------------------------------------------
+   <pickup-availability>
+   store_availabilities belongs to the variant, not the product, so this
+   fetches its own tiny section — once on load for the starting variant,
+   again on every variant:change — rather than trying to pre-render every
+   variant's pickup state into the initial page. Same reasoning
+   sticky-atc listens for variant:change rather than owning a second
+   source of truth: one event, several elements react to it independently.
+   -------------------------------------------------------------------------- */
+
+class PickupAvailability extends HTMLElement {
+  connectedCallback() {
+    this.rootUrl = this.dataset.rootUrl || '';
+
+    this.onVariantChange = this.onVariantChange.bind(this);
+    document.addEventListener('variant:change', this.onVariantChange);
+
+    this.load(this.dataset.variantId);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('variant:change', this.onVariantChange);
+    this.controller?.abort();
+  }
+
+  /** @param {CustomEvent} event */
+  onVariantChange(event) {
+    const variant = event.detail?.variant;
+    if (variant?.id) this.load(variant.id);
+  }
+
+  /** @param {string|number} variantId */
+  async load(variantId) {
+    if (!this.rootUrl || !variantId) return;
+
+    this.controller?.abort();
+    this.controller = new AbortController();
+
+    try {
+      const url = `${this.rootUrl}variants/${variantId}/?section_id=pickup-availability`;
+      const response = await fetch(url, { signal: this.controller.signal });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const next = parsed.querySelector('[data-pickup-availability]');
+      // Nothing announced on either branch: this row is not a promise the
+      // shopper is owed an update about, only a fact that may or may not
+      // apply to what they have selected.
+      this.innerHTML = next ? next.innerHTML : '';
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('[Loam] Pickup availability could not be loaded:', error);
+      this.innerHTML = '';
+    }
+  }
+}
+
+if (!customElements.get('pickup-availability')) {
+  customElements.define('pickup-availability', PickupAvailability);
+}
+
+/* --------------------------------------------------------------------------
+   <quick-view-trigger>
+   Fetches `sections/quick-view.liquid` for one product into the shared
+   `#quick-view-drawer` shell. The drawer opens immediately on click — a
+   product card has nothing worth dimming yet on a first open, so there is
+   no content to protect from a second click the way the cart guards
+   itself — and the fetched markup replaces the empty body once it lands.
+   -------------------------------------------------------------------------- */
+
+class QuickViewTrigger extends HTMLElement {
+  connectedCallback() {
+    this.url = this.dataset.url || '';
+    this.errorMessage = this.dataset.errorMessage || '';
+    this.button = this.querySelector('button');
+
+    this.onClick = this.onClick.bind(this);
+    this.button?.addEventListener('click', this.onClick);
+  }
+
+  disconnectedCallback() {
+    this.button?.removeEventListener('click', this.onClick);
+    this.controller?.abort();
+  }
+
+  async onClick() {
+    const drawer = document.getElementById('quick-view-drawer');
+    const body = drawer?.querySelector('[data-quick-view-body]');
+    if (!this.url || !drawer || !body || typeof drawer.show !== 'function') return;
+
+    drawer.opener = this.button;
+    drawer.show();
+    body.setAttribute('aria-busy', 'true');
+
+    // A shopper who quick-views a second product before the first response
+    // lands must not see the first product's buy box flash in afterward.
+    this.controller?.abort();
+    this.controller = new AbortController();
+
+    try {
+      // Not string concatenation: `this.url` is `product.url`, and a product
+      // reached through `recommendations.products` (related-products,
+      // complementary-products — both live only on the PDP) already carries
+      // Shopify's own recommendation-tracking query string
+      // (`?pr_prod_strat=...&pr_seq=uniform`). `url + '?section_id=quick-view'`
+      // on that kind of URL produces a second `?`, which the request line
+      // treats as part of the LAST real parameter's value rather than a new
+      // one — so `section_id` never actually reaches Shopify, the fetch
+      // silently returns the full product page instead of the quick-view
+      // section, that page has no `[data-quick-view]` anywhere in it, and
+      // the drawer opens to a permanently empty body. `URL` + `searchParams`
+      // handles both "no query string yet" and "already has one" the same
+      // way, which string-building cannot.
+      const url = new URL(this.url, window.location.origin);
+      url.searchParams.set('section_id', 'quick-view');
+
+      const response = await fetch(url, { signal: this.controller.signal });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const content = parsed.querySelector('[data-quick-view]');
+      if (!content) throw new Error('Quick view content missing from response');
+
+      body.replaceChildren(content);
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('[Loam] Quick view could not be loaded:', error);
+      body.replaceChildren();
+      announce(this.errorMessage);
+    } finally {
+      body.removeAttribute('aria-busy');
+    }
+  }
+}
+
+if (!customElements.get('quick-view-trigger')) {
+  customElements.define('quick-view-trigger', QuickViewTrigger);
 }
 
 /* The sticky bar mirrors the price region, which is swapped in after the
@@ -2282,4 +2462,379 @@ if (analyticsOn) {
       value: items.reduce((total, item) => total + (item.price || 0) * (item.quantity || 1), 0),
     });
   });
+}
+
+/* ==========================================================================
+   Compare
+   Client-side only, like recently-viewed above: comparison is not the cart
+   and the server never needs it back, so localStorage is the right tool
+   rather than a rule §16 is warning against. Every reader and writer goes
+   through Compare.*, and every UI piece — every toggle button on the page,
+   the tray, the drawer's table — reacts to the same `compare:change` event
+   rather than keeping its own copy of the list, so none of them can drift
+   out of sync with what is actually stored.
+   ========================================================================== */
+
+const COMPARE_KEY = 'loam:compare';
+const COMPARE_MAX = 3;
+
+const Compare = {
+  /** @returns {Array<object>} */
+  read() {
+    try {
+      const raw = window.localStorage.getItem(COMPARE_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** @param {Array<object>} list */
+  write(list) {
+    try {
+      window.localStorage.setItem(COMPARE_KEY, JSON.stringify(list));
+    } catch {
+      // Private browsing or storage disabled: compare simply does not
+      // persist, but toggling still dispatches below so the UI stays honest
+      // about what is selected for the rest of this page view.
+    }
+    document.dispatchEvent(new CustomEvent('compare:change', { detail: { list } }));
+  },
+
+  /** @param {string} handle */
+  has(handle) {
+    return this.read().some((item) => item.handle === handle);
+  },
+
+  /**
+   * @param {object} item
+   * @returns {'added'|'removed'|'full'}
+   */
+  toggle(item) {
+    const list = this.read();
+    const index = list.findIndex((existing) => existing.handle === item.handle);
+
+    if (index > -1) {
+      list.splice(index, 1);
+      this.write(list);
+      return 'removed';
+    }
+
+    if (list.length >= COMPARE_MAX) return 'full';
+
+    list.push(item);
+    this.write(list);
+    return 'added';
+  },
+
+  /** @param {string} handle */
+  remove(handle) {
+    this.write(this.read().filter((item) => item.handle !== handle));
+  },
+
+  clear() {
+    this.write([]);
+  },
+};
+
+/* --------------------------------------------------------------------------
+   <compare-toggle>
+   The per-card button. Reads its product's data once from its own
+   data-compare attribute — captured server-side in card-product.liquid,
+   using the merchant's real money format, never re-implemented here — and
+   otherwise only ever talks to Compare.
+   -------------------------------------------------------------------------- */
+
+class CompareToggle extends HTMLElement {
+  connectedCallback() {
+    this.button = this.querySelector('button');
+    this.item = this.readItem();
+
+    this.onClick = this.onClick.bind(this);
+    this.onCompareChange = this.onCompareChange.bind(this);
+
+    this.button?.addEventListener('click', this.onClick);
+    document.addEventListener('compare:change', this.onCompareChange);
+
+    this.sync();
+  }
+
+  disconnectedCallback() {
+    this.button?.removeEventListener('click', this.onClick);
+    document.removeEventListener('compare:change', this.onCompareChange);
+  }
+
+  /** @returns {object} */
+  readItem() {
+    try {
+      return JSON.parse(this.dataset.compare || '{}');
+    } catch {
+      return {};
+    }
+  }
+
+  onClick() {
+    if (!this.item?.handle) return;
+    const result = Compare.toggle(this.item);
+
+    if (result === 'full') {
+      const message = this.dataset.fullMessage || '';
+      // announce() covers a screen reader; it is a visually-hidden live
+      // region by definition, so a sighted shopper needs a real, visible
+      // message too — <compare-tray> shows this event's detail for a few
+      // seconds. Both fire from one click rather than picking one audience.
+      announce(message);
+      document.dispatchEvent(new CustomEvent('compare:full', { detail: { message } }));
+      return;
+    }
+
+    announce((result === 'added' ? this.dataset.addedMessage : this.dataset.removedMessage) || '');
+  }
+
+  onCompareChange() {
+    this.sync();
+  }
+
+  /* Every instance of this product's toggle on the page — the same card
+     rendered in a grid and, say, an upsell row — has to agree, which is why
+     this reads Compare.has() fresh on every change rather than trusting its
+     own last click. */
+  sync() {
+    if (!this.button || !this.item?.handle) return;
+    this.button.setAttribute('aria-pressed', String(Compare.has(this.item.handle)));
+  }
+}
+
+if (!customElements.get('compare-toggle')) {
+  customElements.define('compare-toggle', CompareToggle);
+}
+
+/* --------------------------------------------------------------------------
+   <compare-tray>
+   The persistent bottom bar. Starts `hidden` in the markup so a shopper who
+   has never used the feature never sees it flash in; this only removes the
+   attribute once there is something in storage to show.
+   -------------------------------------------------------------------------- */
+
+class CompareTray extends HTMLElement {
+  connectedCallback() {
+    this.list = this.querySelector('[data-compare-list]');
+    this.countEl = this.querySelector('[data-compare-count]');
+    this.notice = this.querySelector('[data-compare-notice]');
+    this.openButton = this.querySelector('[data-drawer-toggle]');
+
+    this.onCompareChange = this.onCompareChange.bind(this);
+    this.onCompareFull = this.onCompareFull.bind(this);
+    this.onClick = this.onClick.bind(this);
+
+    document.addEventListener('compare:change', this.onCompareChange);
+    document.addEventListener('compare:full', this.onCompareFull);
+    this.addEventListener('click', this.onClick);
+
+    this.render(Compare.read());
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('compare:change', this.onCompareChange);
+    document.removeEventListener('compare:full', this.onCompareFull);
+    this.removeEventListener('click', this.onClick);
+    window.clearTimeout(this.noticeTimer);
+  }
+
+  /** @param {CustomEvent} event */
+  onCompareChange(event) {
+    this.render(event.detail?.list ?? Compare.read());
+  }
+
+  /**
+   * Show the "up to 3" message where a sighted shopper can actually see it.
+   * The tray is guaranteed visible when this fires — hitting the cap is
+   * only possible with 3 items already in it.
+   * @param {CustomEvent} event
+   */
+  onCompareFull(event) {
+    if (!this.notice) return;
+    const message = event.detail?.message;
+    if (!message) return;
+
+    this.notice.textContent = message;
+    this.notice.hidden = false;
+
+    window.clearTimeout(this.noticeTimer);
+    this.noticeTimer = window.setTimeout(() => {
+      if (this.notice) this.notice.hidden = true;
+    }, 4000);
+  }
+
+  /** @param {MouseEvent} event */
+  onClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const remove = target.closest('[data-compare-remove]');
+    if (remove) {
+      Compare.remove(remove.getAttribute('data-compare-remove') || '');
+      return;
+    }
+
+    if (target.closest('[data-compare-clear]')) Compare.clear();
+  }
+
+  /** @param {Array<object>} list */
+  render(list) {
+    this.toggleAttribute('hidden', list.length === 0);
+    if (this.countEl) this.countEl.textContent = String(list.length);
+    this.openButton?.toggleAttribute('disabled', list.length === 0);
+
+    if (!this.list) return;
+    // Built with the DOM API rather than innerHTML: chip text comes from
+    // whatever a merchant has named their products, which is trusted
+    // catalogue data but not worth an escaping mistake to save a few lines.
+    this.list.replaceChildren();
+
+    list.forEach((item) => {
+      const chip = document.createElement('li');
+      chip.className = 'compare-tray__chip';
+
+      const title = document.createElement('span');
+      title.className = 'compare-tray__chip-title';
+      title.textContent = item.title || '';
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'compare-tray__chip-remove icon-button';
+      remove.setAttribute('data-compare-remove', item.handle || '');
+      remove.setAttribute('aria-label', `${this.dataset.removeLabel || ''} ${item.title || ''}`.trim());
+      remove.textContent = '×';
+
+      chip.append(title, remove);
+      this.list.appendChild(chip);
+    });
+  }
+}
+
+if (!customElements.get('compare-tray')) {
+  customElements.define('compare-tray', CompareTray);
+}
+
+/* --------------------------------------------------------------------------
+   <compare-table>
+   Lives inside compare-drawer.liquid. Unlike quick view, nothing here is
+   fetched: every field the table needs was already captured into JSON on
+   each product card when it was added, so this builds straight from
+   Compare.read() with the DOM API — no template-string HTML, so there is
+   nothing here that needs escaping.
+   -------------------------------------------------------------------------- */
+
+class CompareTable extends HTMLElement {
+  connectedCallback() {
+    this.onCompareChange = this.onCompareChange.bind(this);
+    document.addEventListener('compare:change', this.onCompareChange);
+    this.render(Compare.read());
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('compare:change', this.onCompareChange);
+  }
+
+  /** @param {CustomEvent} event */
+  onCompareChange(event) {
+    this.render(event.detail?.list ?? Compare.read());
+  }
+
+  /** @param {Array<object>} list */
+  render(list) {
+    this.replaceChildren();
+
+    if (list.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'text-muted';
+      empty.textContent = this.dataset.emptyMessage || '';
+      this.appendChild(empty);
+      return;
+    }
+
+    const rows = [
+      'image',
+      'title',
+      'price',
+      'material',
+      'footprint',
+      'available',
+      'link',
+    ];
+
+    const table = document.createElement('table');
+    table.className = 'compare-table';
+
+    rows.forEach((key) => {
+      const tr = document.createElement('tr');
+      const th = document.createElement('th');
+      th.scope = 'row';
+
+      const labels = {
+        title: this.dataset.labelProduct,
+        price: this.dataset.labelPrice,
+        material: this.dataset.labelMaterial,
+        footprint: this.dataset.labelFootprint,
+        available: this.dataset.labelAvailability,
+      };
+      if (labels[key]) th.textContent = labels[key];
+      tr.appendChild(th);
+
+      list.forEach((item) => {
+        const td = document.createElement('td');
+        td.appendChild(this.cell(key, item));
+        tr.appendChild(td);
+      });
+
+      table.appendChild(tr);
+    });
+
+    this.appendChild(table);
+  }
+
+  /**
+   * One table cell's content, as a real node rather than a string.
+   * @param {string} key
+   * @param {object} item
+   * @returns {Node}
+   */
+  cell(key, item) {
+    if (key === 'image') {
+      if (!item.image) return document.createDocumentFragment();
+      const img = document.createElement('img');
+      img.src = item.image;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.width = 96;
+      img.height = 120;
+      return img;
+    }
+
+    if (key === 'title' || key === 'link') {
+      const a = document.createElement('a');
+      a.href = item.url || '#';
+      a.className = key === 'link' ? 'button button--secondary button--full' : 'link';
+      a.textContent = key === 'link' ? this.dataset.labelView || '' : item.title || '';
+      return a;
+    }
+
+    const span = document.createElement('span');
+    if (key === 'price') span.textContent = item.price || '';
+    else if (key === 'material') span.textContent = item.material || '—';
+    else if (key === 'footprint') {
+      span.textContent = item.footprint ? `${item.footprint} kg CO2e` : '—';
+    } else if (key === 'available') {
+      span.textContent = item.available
+        ? this.dataset.labelInStock || ''
+        : this.dataset.labelSoldOut || '';
+    }
+    return span;
+  }
+}
+
+if (!customElements.get('compare-table')) {
+  customElements.define('compare-table', CompareTable);
 }

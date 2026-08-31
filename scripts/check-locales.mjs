@@ -38,6 +38,23 @@ const localesDir = join(root, 'locales');
 /** Locales whose CLDR plural rules have a single category. */
 const SINGLE_PLURAL = new Set(['ja', 'zh-CN', 'zh-TW', 'ko', 'th', 'vi']);
 
+/**
+ * A locale re-exported through Shopify's admin language editor (this
+ * theme's `ar.json` is one) carries a `/* ... *\/` banner ahead of the
+ * opening brace — valid to Shopify's own loader, which is why
+ * `shopify theme check` never complains about it, but not valid JSON by
+ * spec, so a plain `JSON.parse` throws on it. Stripped here rather than
+ * hand-edited out of the file: Shopify's own systems regenerate that exact
+ * header, and removing it from the file would just have it reappear on the
+ * next admin-side translation save.
+ * @param {string} raw
+ * @returns {object}
+ */
+function parseLocale(raw) {
+  const withoutBanner = raw.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '');
+  return JSON.parse(withoutBanner);
+}
+
 function flatten(node, prefix = '', out = {}) {
   for (const [key, value] of Object.entries(node)) {
     if (value && typeof value === 'object') flatten(value, `${prefix}${key}.`, out);
@@ -55,7 +72,7 @@ function placeholders(value) {
     .join(',');
 }
 
-const english = flatten(JSON.parse(readFileSync(join(localesDir, 'en.default.json'), 'utf8')));
+const english = flatten(parseLocale(readFileSync(join(localesDir, 'en.default.json'), 'utf8')));
 const englishKeys = Object.keys(english);
 
 const files = readdirSync(localesDir)
@@ -68,7 +85,7 @@ let failures = 0;
 for (const file of files) {
   const code = file.replace(/\.json$/, '');
   const single = SINGLE_PLURAL.has(code);
-  const table = flatten(JSON.parse(readFileSync(join(localesDir, file), 'utf8')));
+  const table = flatten(parseLocale(readFileSync(join(localesDir, file), 'utf8')));
   const keys = Object.keys(table);
 
   const missing = englishKeys.filter((k) => {

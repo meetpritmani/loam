@@ -189,6 +189,19 @@ this number to be slightly lower and more accurate.
 
 No customer data is ever pushed to the layer.
 
+## Step 10 — Three newer settings (5 minutes)
+
+| Setting | Where | What it needs from you |
+|---|---|---|
+| `cart_show_footprint` | Theme settings → Cart | Nothing extra — it sums whichever lines have `custom.carbon_footprint` set, and stays hidden until at least one line does. Turn it off if you would rather not surface a partial total on a catalogue where few products carry the metafield yet |
+| `cro_back_in_stock` | Theme settings → Conversion → Product page | A place to actually watch for the `restock:{variant id}` customer tag — your own process, Shopify Flow, or a restock app. The form captures the email either way; nothing is sent back to the shopper unless you act on the tag |
+| `card_show_compare` | Theme settings → Product cards | Nothing — it is entirely client-side and needs no setup. Worth trying with a catalogue where products genuinely need side-by-side comparison (several similar SKUs); on a small or highly differentiated catalogue it may be more surface than the shopper needs, in which case turn it off |
+
+None of the three change what is displayed elsewhere on the page or add a new
+place a shopper can get stuck — the footprint total and back-in-stock form
+render nothing at all until their underlying data exists, and compare starts
+hidden until a shopper deliberately uses it.
+
 ---
 
 ## What to test first

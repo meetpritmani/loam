@@ -1,0 +1,70 @@
+{%- comment -%}
+  compare-drawer.liquid — the comparison table.
+
+  Same shell pattern as quick-view-drawer.liquid: rendered once from
+  theme.liquid, opened by the "Compare" button in the tray via the ordinary
+  <loam-drawer> data-drawer-toggle contract. Unlike quick view, nothing here
+  is fetched from the server — every field the table needs (title, price,
+  material, footprint, url) was already captured into JSON on each product
+  card when it was added to the tray, so <compare-table> in global.js builds
+  the rows straight from localStorage. There is nothing for Liquid to render
+  here beyond the empty shell.
+
+  A centred dialog, not the lightbox panel main-product.liquid uses for its
+  own image zoom — `.drawer__panel--lightbox` is built for a single image
+  against a near-black scrim (transparent panel, `pointer-events: none` on
+  everything but its direct children), which is exactly wrong for a
+  multi-column data table: no opaque background behind the text, and the
+  page behind the scrim reads straight through it. `.drawer__panel--dialog`
+  centres the same way but wraps an actual opaque card
+  (`.drawer__dialog-card`) that carries the colour scheme.
+{%- endcomment -%}
+
+<loam-drawer id="compare-drawer">
+  <div
+    class="drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="compare-drawer-title"
+  >
+    <div class="drawer__overlay drawer__overlay--dialog" data-drawer-close></div>
+
+    <div class="drawer__panel drawer__panel--dialog">
+      <div class="drawer__dialog-card color-scheme-surface">
+        <div class="drawer__header">
+          <h2 class="h5" id="compare-drawer-title">
+            {{ 'products.product.compare_title' | t }}
+          </h2>
+          <button
+            class="icon-button"
+            type="button"
+            data-drawer-close
+            aria-label="{{ 'accessibility.close_drawer' | t }}"
+          >
+            {%- render 'icon', icon: 'close' -%}
+          </button>
+        </div>
+
+        <div class="drawer__body compare-drawer__body">
+          <compare-table
+            data-empty-message="{{ 'products.product.compare_empty' | t | escape }}"
+            data-label-product="{{ 'products.product.compare_column_product' | t | escape }}"
+            data-label-price="{{ 'products.product.compare_column_price' | t | escape }}"
+            data-label-material="{{ 'products.product.compare_column_material' | t | escape }}"
+            data-label-footprint="{{ 'products.product.compare_column_footprint' | t | escape }}"
+            data-label-availability="{{ 'products.product.compare_column_availability' | t | escape }}"
+            data-label-in-stock="{{ 'products.product.compare_in_stock' | t | escape }}"
+            data-label-sold-out="{{ 'products.product.sold_out' | t | escape }}"
+            data-label-view="{{ 'products.product.view_details' | t | escape }}"
+          ></compare-table>
+        </div>
+      </div>
+    </div>
+  </div>
+</loam-drawer>
+
+{% schema %}
+{
+  "name": "t:sections.compare_drawer.name"
+}
+{% endschema %}
