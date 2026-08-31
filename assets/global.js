@@ -22,6 +22,12 @@
 const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
 const CAN_HOVER = window.matchMedia('(hover: hover) and (pointer: fine)');
 
+// Matches --dur-slow in theme-tokens.liquid, the drawer panel's own
+// slide transition. Used only to sequence one drawer's close against
+// another's open — see <product-form> below — so it has to track that
+// token rather than drift from it.
+const DRAWER_TRANSITION_MS = 420;
+
 // Marks that the module parsed and is running, so CSS can hide the no-JS
 // fallbacks (the localization submit buttons) without a flash.
 document.documentElement.classList.add('js');
@@ -935,7 +941,26 @@ class ProductForm extends HTMLElement {
 
     // Opening the drawer is the confirmation. Only on success, and only when
     // the merchant is running the drawer rather than the cart page.
-    document.getElementById('cart-drawer')?.show?.();
+    const cartDrawer = document.getElementById('cart-drawer');
+
+    // This form can itself be inside a drawer — quick view, most often.
+    // Two drawers open at once fight over the same focus trap and the same
+    // Escape listener, and the cart drawer sliding in on top of an
+    // unrelated one reads as a glitch, not a confirmation. So that drawer
+    // closes first, and the cart drawer opens only once its own slide-out
+    // transition has actually finished — not layered underneath it.
+    // Excluded: the cart drawer's own upsell cards render a <product-form>
+    // too, and closing the cart drawer to then reopen itself would be a
+    // pointless flicker on an already-open drawer.
+    const ownDrawer = this.closest('loam-drawer');
+
+    if (ownDrawer && ownDrawer !== cartDrawer && ownDrawer.open) {
+      ownDrawer.hide();
+      const delay = PREFERS_REDUCED_MOTION.matches ? 0 : DRAWER_TRANSITION_MS;
+      window.setTimeout(() => cartDrawer?.show?.(), delay);
+    } else {
+      cartDrawer?.show?.();
+    }
   }
 }
 

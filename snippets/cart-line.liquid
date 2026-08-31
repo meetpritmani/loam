@@ -12,6 +12,15 @@
   assign prefix = context | default: 'drawer'
   assign line = item.index | plus: 1
   assign input_id = prefix | append: '-quantity-' | append: line
+
+  # Same affordance card-product gives its own image link (§2's merchant
+  # toggle, not a separate decision here) — worth it on the page, where the
+  # image is large enough for the zoom to actually read; skipped in the
+  # drawer, where the thumbnail is too small for it to mean anything.
+  assign zoom_class = ''
+  if prefix == 'page' and settings.enable_image_zoom
+    assign zoom_class = ' media--zoom'
+  endif
 -%}
 
 {%- comment -%}
@@ -34,7 +43,7 @@
   data-key="{{ item.key }}"
   {% if analytics_item != blank %}data-analytics-item="{{ analytics_item | strip | escape }}"{% endif %}
 >
-  <a class="cart-line__media media media--portrait" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+  <a class="cart-line__media media media--portrait{{ zoom_class }}" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
     {%- comment -%}
       The drawer is a narrow column and stays at its original compact
       size (88px, §-documented below in base.css). The page has the
@@ -61,6 +70,17 @@
   <div class="cart-line__body">
     <div class="cart-line__heading">
       <a class="cart-line__title link" href="{{ item.url }}">{{ item.product.title | escape }}</a>
+
+      {%- comment -%}
+        Loam's other signature element (§2) — already on card-product and
+        the PDP, never on the cart. A cart line is exactly the kind of
+        product-identifying spot that element exists for, so its absence
+        here was a real gap, not a deliberate omission.
+      {%- endcomment -%}
+      {%- assign material = item.product.metafields.custom.material -%}
+      {%- if settings.card_show_material and material != blank -%}
+        <p class="material-tag"><span class="material-tag__text">{{ material | escape }}</span></p>
+      {%- endif -%}
 
       {%- unless item.product.has_only_default_variant -%}
         <p class="cart-line__variant text-body-sm text-muted">{{ item.variant.title | escape }}</p>
