@@ -164,11 +164,20 @@
           as <shopify-account> above, the branded control is not ours to
           reskin. Independent of has_social: the merchant's own social
           links can be empty and this still has something real to do.
+
+          Captured rather than printed directly: the filter renders an
+          empty string on any store where Shop following is not currently
+          eligible (this dev store included), and an empty wrapper div is
+          exactly the DOM litter §6's "no bare fallback" reasoning already
+          argues against elsewhere in the theme.
         {%- endcomment -%}
-        {%- if shop.customer_accounts_enabled -%}
-          <div class="footer__shop-follow">
+        {%- capture shop_follow_button -%}
+          {%- if shop.customer_accounts_enabled -%}
             {{ shop | login_button: action: 'follow' }}
-          </div>
+          {%- endif -%}
+        {%- endcapture -%}
+        {%- if shop_follow_button != blank -%}
+          <div class="footer__shop-follow">{{ shop_follow_button }}</div>
         {%- endif -%}
 
         {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
