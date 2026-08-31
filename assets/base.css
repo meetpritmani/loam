@@ -3520,6 +3520,15 @@ recently-viewed {
    here and nowhere else in the theme: a lookbook has no meaningful
    sequence. */
 
+/* Section-level CTA, sits beside the heading rather than inside the grid —
+   see the comment in lookbook-collage.liquid for why. */
+.lookbook__social {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  align-self: flex-start;
+}
+
 .lookbook {
   --lookbook-row: clamp(76px, 11vw, 118px);
   display: grid;

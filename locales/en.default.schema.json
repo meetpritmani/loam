@@ -822,6 +822,16 @@
       "full_width": {
         "label": "Full width"
       },
+      "social": {
+        "content": "Social link",
+        "url": {
+          "label": "Instagram (or other) URL",
+          "info": "Shown beside the heading, whether or not any image below has a hotspot — the section's own call to action when it has no shoppable dots. Leave empty to hide it."
+        },
+        "label": {
+          "label": "Link text"
+        }
+      },
       "hotspot": {
         "content": "Hotspot",
         "info": "Pins a shoppable dot to this image. Leave empty for no hotspot.",
