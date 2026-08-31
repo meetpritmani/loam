@@ -674,6 +674,17 @@ dialog {
   align-items: center;
   gap: var(--sp-2);
   max-width: 100%;
+  /* Every ancestor in cart-line.liquid's grid chain now has its own
+     min-width: 0 (see .cart-line__heading / .cart-line__body), but this
+     element is itself a grid item in that chain too, and grid items
+     default to min-width: auto regardless of what their own ancestors
+     do — each level needs the override independently, not just the ones
+     closer to the root. max-width: 100% alone does not do this job: it
+     bounds the element from above, not its refusal to shrink below its
+     nowrap child's full content width. Set here on the component itself
+     rather than patched into every consumer, since any future nesting
+     context hits the same default. */
+  min-width: 0;
   font-size: var(--t-xs);
   line-height: 1.4;
   letter-spacing: var(--caption-tracking);
