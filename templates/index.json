@@ -41,17 +41,19 @@
       ],
       "settings": {
         "color_scheme": "scheme-ink",
-        "height": "large",
-        "scrim_opacity": 35,
         "image": "shopify://shop_images/demo-hero.webp",
         "image_mobile": "shopify://shop_images/demo-hero-mobile.webp",
+        "height": "large",
+        "scrim_opacity": 35,
         "eyebrow": "New in — Autumn",
         "heading": "Built from things that grow.",
         "text": "Merino wool uppers, eucalyptus fibre knits, and soles pressed from sugarcane. Shoes that feel like nothing and leave close to it.",
+        "heading_tag": "h1",
         "text_position": "end-start",
         "button_label": "Shop men's",
+        "button_link": "",
         "button_label_2": "Shop women's",
-        "heading_tag": "h1"
+        "button_link_2": ""
       }
     },
     "marquee": {
@@ -133,6 +135,7 @@
           "type": "feature",
           "settings": {
             "tag": "Merino wool",
+            "heading": "",
             "text": "Regulates temperature, resists odour, and needs washing about a third as often as cotton."
           }
         },
@@ -140,6 +143,7 @@
           "type": "feature",
           "settings": {
             "tag": "Eucalyptus fibre",
+            "heading": "",
             "text": "Uses 95% less water than conventional cotton knit and breathes in humid heat."
           }
         },
@@ -147,6 +151,7 @@
           "type": "feature",
           "settings": {
             "tag": "Sugarcane foam",
+            "heading": "",
             "text": "A carbon-negative sole that stays springy past 500 miles."
           }
         }
@@ -158,13 +163,14 @@
       ],
       "settings": {
         "color_scheme": "scheme-paper",
+        "image": "shopify://shop_images/demo-material-wool.webp",
         "media_position": "end",
         "image_ratio": "portrait",
-        "image": "shopify://shop_images/demo-material-wool.webp",
         "eyebrow": "Materials",
         "heading": "Three materials. That's the whole shoe.",
         "text": "<p>No mystery blends, no filler. Every Fernway is built from three things that grow back.</p>",
         "button_label": "Read the material notes",
+        "button_link": "",
         "padding_top": 96,
         "padding_bottom": 96
       }
@@ -175,6 +181,7 @@
         "c1": {
           "type": "category",
           "settings": {
+            "collection": "",
             "image": "shopify://shop_images/demo-collection-mens.webp",
             "heading": "Men",
             "text": "Everyday and trail"
@@ -183,6 +190,7 @@
         "c2": {
           "type": "category",
           "settings": {
+            "collection": "",
             "image": "shopify://shop_images/demo-collection-womens.webp",
             "heading": "Women",
             "text": "Everyday and trail"
@@ -191,6 +199,7 @@
         "c3": {
           "type": "category",
           "settings": {
+            "collection": "",
             "image": "shopify://shop_images/demo-collection-active.webp",
             "heading": "Active",
             "text": "Runners and mids"
@@ -199,6 +208,7 @@
         "c4": {
           "type": "category",
           "settings": {
+            "collection": "",
             "image": "shopify://shop_images/demo-collection-lounge.webp",
             "heading": "Lounge",
             "text": "Wool, indoors"
@@ -213,6 +223,7 @@
       ],
       "settings": {
         "color_scheme": "scheme-paper",
+        "eyebrow": "",
         "heading": "Find your pair.",
         "columns": 4,
         "columns_mobile": "2",
@@ -227,33 +238,49 @@
         "l1": {
           "type": "shot",
           "settings": {
-            "span": "large",
             "image": "shopify://shop_images/demo-lookbook-5.webp",
-            "caption": "Coastline Runner in Fog"
+            "span": "large",
+            "caption": "Coastline Runner in Fog",
+            "link": "",
+            "hotspot_product": "",
+            "hotspot_x": 50,
+            "hotspot_y": 70
           }
         },
         "l2": {
           "type": "shot",
           "settings": {
-            "span": "normal",
             "image": "shopify://shop_images/demo-lookbook-2.webp",
-            "caption": "Ridge Lounger in Oat"
+            "span": "normal",
+            "caption": "Ridge Lounger in Oat",
+            "link": "",
+            "hotspot_product": "",
+            "hotspot_x": 50,
+            "hotspot_y": 70
           }
         },
         "l3": {
           "type": "shot",
           "settings": {
-            "span": "normal",
             "image": "shopify://shop_images/demo-lookbook-4.webp",
-            "caption": "Harbour Slip-On in Slate"
+            "span": "normal",
+            "caption": "Harbour Slip-On in Slate",
+            "link": "",
+            "hotspot_product": "",
+            "hotspot_x": 50,
+            "hotspot_y": 70
           }
         },
         "l4": {
           "type": "shot",
           "settings": {
-            "span": "wide",
             "image": "shopify://shop_images/demo-lookbook-6.webp",
-            "caption": "Trail Mid, Snowdonia"
+            "span": "wide",
+            "caption": "Trail Mid, Snowdonia",
+            "link": "",
+            "hotspot_product": "",
+            "hotspot_x": 50,
+            "hotspot_y": 70
           }
         }
       },
@@ -268,6 +295,8 @@
         "eyebrow": "Lookbook",
         "heading": "Autumn, out of doors.",
         "full_width": false,
+        "social_url": "",
+        "social_label": "Follow @fernway",
         "padding_top": 96,
         "padding_bottom": 96
       }
@@ -278,6 +307,7 @@
         "s1": {
           "type": "stat",
           "settings": {
+            "prefix": "",
             "value": "2.1",
             "suffix": "M",
             "text": "pairs made from renewable materials"
@@ -286,6 +316,7 @@
         "s2": {
           "type": "stat",
           "settings": {
+            "prefix": "",
             "value": "95",
             "suffix": "%",
             "text": "less water in every knit upper"
@@ -294,6 +325,7 @@
         "s3": {
           "type": "stat",
           "settings": {
+            "prefix": "",
             "value": "100",
             "suffix": "%",
             "text": "carbon neutral shipping, no offsets bought after the fact"
@@ -302,9 +334,10 @@
         "s4": {
           "type": "stat",
           "settings": {
+            "prefix": "",
             "value": "12400",
-            "text": "reviews averaging 4.8",
-            "suffix": ""
+            "suffix": "",
+            "text": "reviews averaging 4.8"
           }
         }
       },
@@ -367,6 +400,7 @@
       ],
       "settings": {
         "color_scheme": "scheme-sand",
+        "heading": "",
         "card_style": false,
         "padding_top": 72,
         "padding_bottom": 72
@@ -376,10 +410,11 @@
       "type": "video-section",
       "settings": {
         "color_scheme": "scheme-paper",
-        "poster": "shopify://shop_images/demo-hero-poster.webp",
         "eyebrow": "Field notes",
         "heading": "How a shoe gets made.",
         "text": "Four minutes inside the workshop, from raw fleece to finished pair.",
+        "poster": "shopify://shop_images/demo-hero-poster.webp",
+        "video_url": "",
         "full_width": false,
         "padding_top": 96,
         "padding_bottom": 96
@@ -507,6 +542,7 @@
       "type": "newsletter",
       "settings": {
         "color_scheme": "scheme-sand",
+        "eyebrow": "",
         "heading": "Get first access.",
         "text": "New colourways, restocks, and the occasional field note. Two emails a month, no more.",
         "fine_print": "Unsubscribe any time.",

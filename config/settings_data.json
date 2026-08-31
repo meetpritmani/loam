@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "current": {
     "color_schemes": {
@@ -178,6 +187,7 @@
       "card_image_ratio": "portrait",
       "card_hover_image": true,
       "card_show_material": true,
+      "card_show_compare": true,
       "card_show_swatches": true,
       "card_show_sale_badge": true,
       "card_show_sold_out_badge": true,
@@ -185,6 +195,7 @@
       "cart_type": "drawer",
       "cart_show_note": true,
       "cart_show_free_shipping_bar": true,
+      "cart_show_footprint": true,
       "cart_free_shipping_threshold": 75,
       "predictive_search_enabled": true,
       "predictive_search_show_price": true,
@@ -202,6 +213,7 @@
       "cro_sticky_atc": true,
       "cro_dynamic_checkout": true,
       "cro_show_payment_icons_pdp": true,
+      "cro_back_in_stock": true,
       "cro_low_stock_threshold": 10,
       "cro_trust_returns": "Free returns for 30 days",
       "cro_trust_shipping": "Carbon neutral shipping on every order",
@@ -281,6 +293,7 @@
       "card_image_ratio": "portrait",
       "card_hover_image": true,
       "card_show_material": true,
+      "card_show_compare": true,
       "card_show_swatches": true,
       "card_show_sale_badge": true,
       "card_show_sold_out_badge": true,
@@ -288,6 +301,7 @@
       "cart_type": "drawer",
       "cart_show_note": true,
       "cart_show_free_shipping_bar": true,
+      "cart_show_footprint": true,
       "cart_free_shipping_threshold": 75,
       "predictive_search_enabled": true,
       "predictive_search_show_price": true,
@@ -305,6 +319,7 @@
       "cro_sticky_atc": true,
       "cro_dynamic_checkout": true,
       "cro_show_payment_icons_pdp": true,
+      "cro_back_in_stock": true,
       "cro_low_stock_threshold": 10,
       "cro_trust_returns": "Free returns for 30 days",
       "cro_trust_shipping": "Carbon neutral shipping on every order",

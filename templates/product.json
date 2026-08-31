@@ -13,19 +13,24 @@
       "type": "main-product",
       "blocks": {
         "vendor": {
-          "type": "vendor"
+          "type": "vendor",
+          "settings": {}
         },
         "title": {
-          "type": "title"
+          "type": "title",
+          "settings": {}
         },
         "price": {
-          "type": "price"
+          "type": "price",
+          "settings": {}
         },
         "badges": {
-          "type": "badges"
+          "type": "badges",
+          "settings": {}
         },
         "material": {
-          "type": "material"
+          "type": "material",
+          "settings": {}
         },
         "picker": {
           "type": "variant_picker",
@@ -34,7 +39,8 @@
           }
         },
         "low_stock": {
-          "type": "low_stock"
+          "type": "low_stock",
+          "settings": {}
         },
         "buy": {
           "type": "buy_buttons",
@@ -43,13 +49,16 @@
           }
         },
         "pickup": {
-          "type": "pickup"
+          "type": "pickup",
+          "settings": {}
         },
         "trust": {
-          "type": "trust"
+          "type": "trust",
+          "settings": {}
         },
         "carbon": {
-          "type": "carbon"
+          "type": "carbon",
+          "settings": {}
         },
         "acc_materials": {
           "type": "accordion",
@@ -88,7 +97,8 @@
           }
         },
         "share": {
-          "type": "share"
+          "type": "share",
+          "settings": {}
         }
       },
       "block_order": [
