@@ -1889,11 +1889,18 @@ class FacetFilters extends HTMLElement {
     this.onClick = this.onClick.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.onPopState = this.onPopState.bind(this);
+    this.onDocumentClick = this.onDocumentClick.bind(this);
 
     this.addEventListener('change', this.onChange);
     this.addEventListener('click', this.onClick);
     this.form?.addEventListener('submit', this.onSubmit);
     window.addEventListener('popstate', this.onPopState);
+    // <details name="..."> already closes one filter group when a different
+    // one opens — this only has to handle the case native exclusivity does
+    // not: a click that lands outside every group (the product grid, a
+    // chip, blank page), which should close whatever is open the same way
+    // a native <select>'s dropdown does.
+    document.addEventListener('click', this.onDocumentClick);
   }
 
   disconnectedCallback() {
@@ -1901,6 +1908,7 @@ class FacetFilters extends HTMLElement {
     this.removeEventListener('click', this.onClick);
     this.form?.removeEventListener('submit', this.onSubmit);
     window.removeEventListener('popstate', this.onPopState);
+    document.removeEventListener('click', this.onDocumentClick);
     this.controller?.abort();
     window.clearTimeout(this.priceDebounce);
   }
@@ -1926,6 +1934,8 @@ class FacetFilters extends HTMLElement {
     if (!target.closest('[data-facet-form]')) return;
 
     // Typing in a price field fires on every keystroke; wait for a pause.
+    // Left open on change — closing mid-typing on the first keystroke would
+    // fight the shopper still entering the second bound.
     if (target.matches('.facet-price__input')) {
       window.clearTimeout(this.priceDebounce);
       this.priceDebounce = window.setTimeout(() => this.apply(this.query), 500);
@@ -1933,6 +1943,18 @@ class FacetFilters extends HTMLElement {
     }
 
     this.apply(this.query);
+    // A checkbox choosing a value is the one-shot case a <select> models:
+    // pick, and the dropdown closes. Reopening for a second checkbox is one
+    // click away, same as reopening a <select> is. Focus moves back to the
+    // trigger rather than being left on the checkbox this just hid — a
+    // <details> that closes does not blur what was focused inside it, so
+    // without this a keyboard/screen-reader user's focus would silently
+    // land on a control that no longer renders.
+    const group = target.closest('details.facets__group');
+    if (group) {
+      group.removeAttribute('open');
+      group.querySelector('summary')?.focus();
+    }
   }
 
   /** @param {MouseEvent} event */
@@ -1945,6 +1967,16 @@ class FacetFilters extends HTMLElement {
     event.preventDefault();
     const url = new URL(link.href, window.location.origin);
     this.apply(url.searchParams.toString());
+  }
+
+  /** Closes any open filter group when a click lands outside every one. */
+  onDocumentClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    this.querySelectorAll('details.facets__group[open]').forEach((group) => {
+      if (!group.contains(target)) group.removeAttribute('open');
+    });
   }
 
   /** @param {SubmitEvent} event */

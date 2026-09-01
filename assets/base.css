@@ -4913,7 +4913,9 @@ recently-viewed {
 .facet-list__item {
   display: flex;
   align-items: center;
-  padding-inline: var(--sp-2);
+  gap: var(--sp-3);
+  padding-inline: var(--sp-3);
+  padding-block: 2px;
   border-radius: var(--radius-sm);
   transition: background-color var(--dur) var(--ease);
 }
