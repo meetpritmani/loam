@@ -891,6 +891,37 @@ if (!customElements.get('cart-items')) {
 }
 
 /* --------------------------------------------------------------------------
+   Express checkout deferral
+   The cart drawer's express-checkout markup ships inside an inert
+   <template> (see cart-drawer.liquid) rather than live in the DOM. Shopify's
+   checkout SDK is discovered by a client-side scan for the rendered button,
+   not by the Liquid tag being present in the source — so leaving it inert
+   until the drawer is actually opened keeps that SDK off every page load
+   for a shopper who has items in cart but never opens the drawer.
+   -------------------------------------------------------------------------- */
+
+function activateExpressCheckout(root) {
+  const template = root?.querySelector('template[data-express-checkout-template]');
+  if (!template) return;
+  template.replaceWith(template.content.cloneNode(true));
+}
+
+document.addEventListener('drawer:open', (event) => {
+  if (event.target instanceof Element && event.target.id === 'cart-drawer') {
+    activateExpressCheckout(event.target);
+  }
+});
+
+// Cart.render() replaces the drawer's footer wholesale on every add/change,
+// which brings back a fresh, un-activated template even if the shopper had
+// already revealed the button. Only re-activate while the drawer is open —
+// re-activating it behind a closed drawer would defeat the whole deferral.
+document.addEventListener('cart:updated', () => {
+  const drawer = document.getElementById('cart-drawer');
+  if (drawer?.open) activateExpressCheckout(drawer);
+});
+
+/* --------------------------------------------------------------------------
    <product-form>
    Quick add from a product card. Wraps a real <form action="/cart/add">, so
    with JavaScript unavailable the button still posts and the shopper lands on
@@ -1150,11 +1181,15 @@ class MarqueeStrip extends HTMLElement {
 
     this.reset();
 
+    // Both reads happen up front, before any writes, so the repeat count is
+    // computed once instead of re-measuring scrollWidth after every
+    // appendChild — that interleaved read/write is what forces a synchronous
+    // layout recalculation on each pass.
     const target = this.offsetWidth * 2;
-    let guard = 0;
-    // Cap the copies: a single very long message can already exceed the
-    // target, and an unbounded loop here would hang the page.
-    while (this.track.scrollWidth < target && guard < 20) {
+    const baseWidth = this.track.scrollWidth || 1;
+    const repeats = Math.min(Math.max(Math.ceil(target / baseWidth), 1), 20);
+
+    for (let i = 0; i < repeats; i += 1) {
       this.originals.forEach((node) => {
         const copy = node.cloneNode(true);
         copy.setAttribute('aria-hidden', 'true');
@@ -1162,7 +1197,6 @@ class MarqueeStrip extends HTMLElement {
         copy.querySelectorAll('a, button').forEach((el) => el.setAttribute('tabindex', '-1'));
         this.track.appendChild(copy);
       });
-      guard += 1;
     }
 
     // The -50% translate only lands seamlessly if the track is an exact

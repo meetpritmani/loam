@@ -3695,6 +3695,7 @@ recently-viewed {
 /* --- Product card ------------------------------------------------------- */
 
 .card-product__media {
+  position: relative;
   display: block;
 }
 

@@ -161,10 +161,22 @@
               drawer is rendered there too — so the drawer stands down
               rather than emitting it twice, which breaks the buttons
               outright rather than merely duplicating them.
+
+              The markup itself sits inside an inert <template>, not live in
+              the DOM. Shopify's checkout SDK is discovered and fetched by a
+              client-side scan for the rendered button, not by this tag
+              being present in the Liquid source — so a shopper who already
+              has items in cart but never opens this drawer never triggers
+              that fetch. global.js clones the template's content into the
+              slot the first time the drawer opens (and again after every
+              cart update, since Cart.render() replaces this footer with a
+              fresh, un-activated template each time).
             {%- endcomment -%}
             {%- if show_express -%}
-              <div class="cart-drawer__express">
-                {{ content_for_additional_checkout_buttons }}
+              <div class="cart-drawer__express" data-express-checkout-slot>
+                <template data-express-checkout-template>
+                  {{ content_for_additional_checkout_buttons }}
+                </template>
               </div>
             {%- endif -%}
           </form>
