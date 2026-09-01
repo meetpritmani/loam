@@ -319,24 +319,46 @@
       <div class="drawer__overlay" data-drawer-close></div>
       <div class="drawer__panel drawer__panel--top color-{{ section.settings.color_scheme }}">
         <div class="page-width search-drawer__inner">
-          <form class="search-drawer__form" action="{{ routes.search_url }}" method="get" role="search">
-            <label class="visually-hidden" for="search-drawer-input">
-              {{- 'search.placeholder' | t -}}
-            </label>
-            {%- render 'icon', icon: 'search', class: 'search-drawer__icon' -%}
-            <input
-              class="search-drawer__input"
-              id="search-drawer-input"
-              type="search"
-              name="q"
-              placeholder="{{ 'search.placeholder' | t }}"
-              autocomplete="off"
-            >
-            <input type="hidden" name="options[prefix]" value="last">
-            <button class="button button--primary" type="submit">
-              {{- 'search.submit' | t -}}
-            </button>
-          </form>
+          <predictive-search
+            class="search-drawer__predictive"
+            data-url="{{ routes.predictive_search_url }}"
+            data-enabled="{{ settings.predictive_search_enabled }}"
+          >
+            <form class="search-drawer__form" action="{{ routes.search_url }}" method="get" role="search">
+              <label class="visually-hidden" for="search-drawer-input">
+                {{- 'search.placeholder' | t -}}
+              </label>
+              {%- render 'icon', icon: 'search', class: 'search-drawer__icon' -%}
+              <input
+                class="search-drawer__input"
+                id="search-drawer-input"
+                type="search"
+                name="q"
+                placeholder="{{ 'search.placeholder' | t }}"
+                autocomplete="off"
+                aria-controls="search-drawer-results"
+              >
+              <input type="hidden" name="options[prefix]" value="last">
+              <button class="button button--primary" type="submit">
+                {{- 'search.submit' | t -}}
+              </button>
+            </form>
+
+            {%- comment -%}
+              Placeholder with the same data-predictive-search-results hook
+              the fetched section carries, so <predictive-search> in
+              global.js can find it before the first response ever lands.
+              JS replaces its children with the fetched fragment's; it never
+              needs its own empty-state markup here.
+            {%- endcomment -%}
+            <div
+              class="predictive-search__panel"
+              id="search-drawer-results"
+              data-predictive-search-results
+              aria-live="polite"
+              hidden
+            ></div>
+          </predictive-search>
 
           <button
             class="icon-button"

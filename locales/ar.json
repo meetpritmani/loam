@@ -4200,9 +4200,68 @@
       }
     }
   },
+  "general": {
+    "meta": {
+      "tags": "موسوم بـ \"{{ tags }}\"",
+      "page": "صفحة {{ page }}"
+    },
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "label": "مسار التنقل"
+    },
+    "pagination": {
+      "label": "التنقل بين الصفحات",
+      "previous": "السابق",
+      "next": "التالي",
+      "page": "صفحة {{ number }}"
+    },
+    "close": "إغلاق",
+    "menu": "القائمة",
+    "search": "بحث",
+    "cart": "عربة التسوق",
+    "account": "الحساب",
+    "view_all": "عرض الكل",
+    "learn_more": "معرفة المزيد",
+    "loading": "جارٍ التحميل",
+    "share": {
+      "label": "مشاركة",
+      "copied": "تم نسخ الرابط"
+    }
+  },
+  "accessibility": {
+    "skip_to_content": "تخطَّ إلى المحتوى",
+    "new_window": "يفتح في نافذة جديدة.",
+    "announcements": "الإعلانات",
+    "status_messages": "رسائل الحالة",
+    "close_drawer": "إغلاق",
+    "open_menu": "فتح القائمة",
+    "open_cart": "فتح عربة التسوق",
+    "cart_count": {
+      "one": "{{ count }} عنصر في العربة",
+      "other": "{{ count }} عناصر في العربة"
+    },
+    "next_slide": "التالي",
+    "previous_slide": "السابق",
+    "play_video": "تشغيل الفيديو",
+    "pause_marquee": "إيقاف مؤقت",
+    "star_rating": "{{ rating }} من {{ scale }} نجوم",
+    "error": "حدث خطأ ما. يُرجى المحاولة مرة أخرى."
+  },
+  "404": {
+    "title": "الصفحة غير موجودة",
+    "not_found": "الصفحة التي تبحث عنها غير موجودة.",
+    "back_to_shopping": "العودة إلى التسوق"
+  },
   "blog": {
+    "title": "المجلة",
+    "read_more": "قراءة المزيد",
+    "all_posts": "جميع المقالات",
+    "filter_by_tag": "التصفية حسب الموضوع",
+    "empty_heading": "لا توجد مقالات بعد",
+    "empty_text": "لم يُكتب هنا شيء بعد. لكن الأحذية جاهزة.",
     "comment_success": "شكرًا. تم نشر تعليقك.",
     "article_comments": "تعليقات",
+    "article_metadata_html": "{{ date }} بقلم {{ author }}",
     "comment_form_body": "تعليق",
     "comment_form_email": "بريد إلكتروني",
     "comment_form_name": "الاسم",
@@ -4404,7 +4463,8 @@
     "use_at_checkout": "استخدم بطاقة الهدايا هذه عند الدفع",
     "print": "طباعة",
     "copy_code": "رمز النسخ",
-    "code_copied": "تم نسخ الرمز"
+    "code_copied": "تم نسخ الرمز",
+    "qr_alt": "رمز الاستجابة السريعة لبطاقة الهدايا هذه"
   },
   "newsletter": {
     "label": "بريد إلكتروني",
@@ -4500,6 +4560,17 @@
     "articles": "مقالات",
     "pages": "صفحات",
     "view_all_results": "عرض كافة النتائج"
+  },
+  "sections": {
+    "faq": {
+      "title": "الأسئلة الشائعة"
+    },
+    "recently_viewed": {
+      "title": "شوهد مؤخرًا"
+    },
+    "related_products": {
+      "title": "قد يعجبك أيضًا"
+    }
   },
   "announcement": {
     "label": "إعلان",

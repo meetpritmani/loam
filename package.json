@@ -14,6 +14,7 @@
     "seed:catalog": "node scripts/3-seed-catalog.mjs",
     "seed:content": "node scripts/4-seed-content.mjs",
     "seed:theme": "node scripts/5-write-theme-json.mjs",
+    "build:submission": "node scripts/6-build-store-submission.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:sections": "node scripts/check-sections.mjs",

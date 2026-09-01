@@ -271,7 +271,8 @@
     "use_at_checkout": "Usa esta tarjeta regalo al finalizar la compra",
     "print": "Imprimir",
     "copy_code": "Copiar el código",
-    "code_copied": "Código copiado"
+    "code_copied": "Código copiado",
+    "qr_alt": "Código QR para esta tarjeta regalo"
   },
   "newsletter": {
     "label": "Correo electrónico",

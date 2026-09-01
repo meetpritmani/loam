@@ -271,7 +271,8 @@
     "use_at_checkout": "Utilisez cette carte cadeau lors de la commande",
     "print": "Imprimer",
     "copy_code": "Copier le code",
-    "code_copied": "Code copié"
+    "code_copied": "Code copié",
+    "qr_alt": "Code QR pour cette carte cadeau"
   },
   "newsletter": {
     "label": "E-mail",

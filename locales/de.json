@@ -271,7 +271,8 @@
     "use_at_checkout": "Lösen Sie diese Geschenkkarte an der Kasse ein",
     "print": "Drucken",
     "copy_code": "Code kopieren",
-    "code_copied": "Code kopiert"
+    "code_copied": "Code kopiert",
+    "qr_alt": "QR-Code für diese Geschenkkarte"
   },
   "newsletter": {
     "label": "E-Mail",

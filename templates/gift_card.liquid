@@ -55,6 +55,18 @@
 
         <p class="h4 gift-card__code">{{ gift_card.code | format_code }}</p>
 
+        {%- if gift_card.qr_identifier -%}
+          <p>
+            <qr-code-image
+              class="gift-card__qr"
+              data-identifier="{{ gift_card.qr_identifier }}"
+              width="120"
+              height="120"
+              alt="{{ 'gift_card.qr_alt' | t }}"
+            ></qr-code-image>
+          </p>
+        {%- endif -%}
+
         {%- if gift_card.pass_url -%}
           <p>
             <a href="{{ gift_card.pass_url }}">
@@ -74,5 +86,9 @@
         </p>
       </div>
     </main>
+
+    {%- if gift_card.qr_identifier -%}
+      <script type="module" src="{{ 'qr-code.js' | asset_url }}"></script>
+    {%- endif -%}
   </body>
 </html>

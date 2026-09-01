@@ -271,7 +271,8 @@
     "use_at_checkout": "Usa questa carta regalo alla cassa",
     "print": "Stampa",
     "copy_code": "Copia il codice",
-    "code_copied": "Codice copiato"
+    "code_copied": "Codice copiato",
+    "qr_alt": "Codice QR per questa carta regalo"
   },
   "newsletter": {
     "label": "Email",

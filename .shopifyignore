@@ -20,6 +20,7 @@ scripts/
 demo-media-raw/
 demo-media/
 demo-store-export/
+store-submission-build/
 node_modules/
 package.json
 package-lock.json

@@ -73,6 +73,17 @@
   if image == blank and fallback != blank and settings.demo_images
     assign use_fallback = true
   endif
+
+  comment
+    Every cover-cropped media box in the theme (aspect-ratio + object-fit:
+    cover) otherwise always center-crops, ignoring whatever focal point a
+    merchant picked in the media picker. object-position has no visible
+    effect on an image that isn't being cropped, so setting it
+    unconditionally here is safe everywhere image-fallback is used.
+  endcomment
+  assign focal_x = image.presentation.focal_point.x | default: 50
+  assign focal_y = image.presentation.focal_point.y | default: 50
+  assign focal_style = 'object-position: ' | append: focal_x | append: '% ' | append: focal_y | append: '%;'
 -%}
 
 {%- if image != blank -%}
@@ -90,7 +101,8 @@
       alt: image_alt,
       class: img_class,
       loading: image_loading,
-      fetchpriority: image_priority
+      fetchpriority: image_priority,
+      style: focal_style
   }}
 
 {%- else -%}

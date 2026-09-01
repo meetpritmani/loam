@@ -265,7 +265,8 @@
     "use_at_checkout": "レジでこのギフトカードをご利用ください",
     "print": "印刷",
     "copy_code": "コードをコピー",
-    "code_copied": "コードをコピーしました"
+    "code_copied": "コードをコピーしました",
+    "qr_alt": "このギフトカードのQRコード"
   },
   "newsletter": {
     "label": "メールアドレス",

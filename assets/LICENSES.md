@@ -7,10 +7,17 @@ line of it is original work covered by the theme licence in `LICENSE.md`.
 |---|---|---|
 | `base.css` | Written for Loam | Theme licence |
 | `global.js` | Written for Loam | Theme licence |
+| `qr-code.js` | Vendored: [QR Code generator library](https://www.nayuki.io/page/qr-code-generator-library) by Project Nayuki, compiled from the TypeScript source; the `QrCodeImage` custom element at the bottom of the file is written for Loam | MIT (Project Nayuki) for the encoder; theme licence for the custom element |
 
-No third-party code. No framework, no jQuery, no utility library, no polyfill
-copied from a gist. The bundle has zero dependencies, which is why this table
-is two rows long.
+`global.js` — the one script the main storefront experience loads — has zero
+dependencies, per build spec §4. `qr-code.js` is the one exception: it loads
+only from `templates/gift_card.liquid`, a standalone page outside
+`theme.liquid` that no other template pulls in, so it costs nothing on any
+page a shopper actually shops from. A correct QR encoder needs Reed-Solomon
+error correction and mask-pattern scoring — real, easy-to-get-subtly-wrong
+math — so this vendors a well-known, actively maintained MIT implementation
+rather than a hand-rolled one, the same call Shopify's own Horizon theme
+makes for the same feature.
 
 ## No photography ships in the theme
 

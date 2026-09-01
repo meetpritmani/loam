@@ -2036,6 +2036,117 @@ if (!customElements.get('facet-filters')) {
 
 
 /* ==========================================================================
+   SEARCH
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   <predictive-search>
+   Progressive enhancement over the header's plain GET search form, same
+   relationship <facet-filters> has to collection filtering: without this
+   class the form still submits to routes.search_url and main-search.liquid
+   still answers it (§4's "search works with JavaScript unavailable"
+   promise), so a fetch failure here degrades to nothing worse than "no
+   dropdown yet" rather than a broken search.
+
+   Fetches predictive-search.liquid through the Section Rendering API on a
+   debounced keystroke rather than Shopify's raw /search/suggest.json, for
+   the same reason cart and facet updates go through Section Rendering
+   elsewhere in this file (§4): the result markup — price formatting,
+   image-fallback, material tags if they ever get added here — comes from
+   the theme's own Liquid, not reconstructed from JSON in JS.
+   -------------------------------------------------------------------------- */
+
+class PredictiveSearch extends HTMLElement {
+  connectedCallback() {
+    this.input = this.querySelector('input[type="search"]');
+    this.results = this.querySelector('[data-predictive-search-results]');
+    this.enabled = this.dataset.enabled === 'true';
+    if (!this.input || !this.results || !this.enabled) return;
+
+    this.onInput = this.onInput.bind(this);
+    this.onFocusOut = this.onFocusOut.bind(this);
+    this.input.addEventListener('input', this.onInput);
+    this.addEventListener('focusout', this.onFocusOut);
+  }
+
+  disconnectedCallback() {
+    this.input?.removeEventListener('input', this.onInput);
+    this.removeEventListener('focusout', this.onFocusOut);
+    window.clearTimeout(this.debounce);
+    this.controller?.abort();
+  }
+
+  onInput() {
+    window.clearTimeout(this.debounce);
+    const query = this.input.value.trim();
+
+    if (query.length < 2) {
+      this.controller?.abort();
+      this.close();
+      return;
+    }
+
+    this.debounce = window.setTimeout(() => this.search(query), 300);
+  }
+
+  /** A click or tab that leaves the whole element closes the dropdown. */
+  onFocusOut() {
+    window.requestAnimationFrame(() => {
+      if (!this.contains(document.activeElement)) this.close();
+    });
+  }
+
+  close() {
+    this.results.hidden = true;
+    this.results.replaceChildren();
+  }
+
+  /** @param {string} query */
+  async search(query) {
+    this.controller?.abort();
+    this.controller = new AbortController();
+    this.results.setAttribute('aria-busy', 'true');
+
+    try {
+      const url = new URL(this.dataset.url, window.location.origin);
+      url.searchParams.set('q', query);
+      url.searchParams.set('resources[type]', 'product,collection,page,article');
+      url.searchParams.set('resources[limit]', '4');
+      url.searchParams.set('resources[limit_scope]', 'each');
+      url.searchParams.set('resources[options][unavailable_products]', 'last');
+      url.searchParams.set('section_id', 'predictive-search');
+
+      const response = await fetch(url, { signal: this.controller.signal });
+      if (!response.ok) throw new Error(response.statusText);
+
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const next = parsed.querySelector('[data-predictive-search-results]');
+      if (!next) throw new Error('Predictive search content missing from response');
+
+      // The query can outrun the response (a fast typist, a slow request),
+      // so the query that started this request is checked against the
+      // input's current value before the swap — an AbortController only
+      // guards against an in-flight request being superseded, not a
+      // stale-but-already-finished one that lost the race after resolving.
+      if (this.input.value.trim() !== query) return;
+
+      this.results.replaceChildren(...next.childNodes);
+      this.results.hidden = false;
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      console.warn('[Loam] Predictive search failed:', error);
+      this.close();
+    } finally {
+      this.results.removeAttribute('aria-busy');
+    }
+  }
+}
+
+if (!customElements.get('predictive-search')) {
+  customElements.define('predictive-search', PredictiveSearch);
+}
+
+/* ==========================================================================
    Product discovery
    Two rows that live below the fold on the product page and cost nothing
    until the shopper approaches them.

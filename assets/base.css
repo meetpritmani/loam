@@ -1695,6 +1695,77 @@ loam-drawer {
   color: var(--c-ink-70);
 }
 
+.search-drawer__predictive {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.predictive-search__panel {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 1;
+  margin-block-start: var(--sp-3);
+  max-height: 70vh;
+  overflow-y: auto;
+  display: grid;
+  gap: var(--sp-5);
+  padding: var(--sp-4);
+  background-color: var(--c-surface);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+}
+
+.predictive-search__panel[hidden] {
+  display: none;
+}
+
+.predictive-search__group-title {
+  margin-block-end: var(--sp-2);
+  color: var(--c-ink-70);
+}
+
+.predictive-search__list {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.predictive-search__list--text {
+  gap: var(--sp-2);
+}
+
+.predictive-search__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--c-ink);
+}
+
+.predictive-search__item-media {
+  flex: 0 0 auto;
+  width: 48px;
+}
+
+.predictive-search__item-body {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.predictive-search__item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.predictive-search__text-link {
+  display: block;
+}
+
+.predictive-search__view-all {
+  justify-self: start;
+}
+
 /* --- Cart drawer -------------------------------------------------------- */
 
 .cart-drawer__empty {
@@ -3256,6 +3327,17 @@ recently-viewed {
   overflow-wrap: anywhere;
 }
 
+.gift-card__qr {
+  /* Reserves the exact box the custom element's own width/height attributes
+     render at, so there's no shift once qr-code.js upgrades the element. */
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  padding: var(--sp-3);
+  background-color: #ffffff;
+  border-radius: var(--radius);
+}
+
 /* --- Footer ------------------------------------------------------------- */
 
 .footer {
@@ -3415,7 +3497,29 @@ recently-viewed {
 }
 
 .hero__scrim {
-  background-color: rgb(var(--c-ink-rgb) / var(--scrim, 0.35));
+  /* The flat scrim alone is a uniform darken, so contrast for the text sitting
+     on top of it depends entirely on what part of the photo lands underneath
+     — a bright sky is fine, bright sand or grass under the stat row isn't. A
+     merchant can crop or swap the image at any time, so text legibility can't
+     depend on what happens to be there. Percentage stops were tried first and
+     weren't reliable: they're a fraction of the *box*, not of the content, so
+     a taller box (a tall viewport, "full" height) thins the dark zone out to
+     nothing right where the text sits. Fixed pixel stops instead pool a dark
+     band sized to the actual content stack's height, independent of the box
+     around it, so whichever edge the merchant's chosen text position sits
+     against always clears contrast. */
+  background:
+    linear-gradient(
+      to top,
+      rgb(var(--c-ink-rgb) / 0.7) 0,
+      transparent 420px
+    ),
+    linear-gradient(
+      to bottom,
+      rgb(var(--c-ink-rgb) / 0.5) 0,
+      transparent 280px
+    ),
+    rgb(var(--c-ink-rgb) / var(--scrim, 0.35));
   pointer-events: none;
 }
 
@@ -3492,6 +3596,44 @@ recently-viewed {
      already the smaller number) untouched. */
   .hero {
     min-height: min(var(--hero-height, 70vh), 72vw);
+  }
+}
+
+@media (min-width: 990px) {
+  /* The content stack (eyebrow + h0 heading + body + buttons + stats) is a
+     grid item sized to its own content, so .hero grows past --hero-height
+     whenever that stack is taller than the box — which the full stack with
+     three stat blocks reliably is. On common laptop window heights that
+     pushed the CTA and stat row below the fold. Tightening the stack's own
+     rhythm here (desktop only, so mobile's already-correct spacing is
+     untouched) claims back that space without shrinking the heading. */
+  .hero__inner {
+    gap: var(--sp-4);
+    padding-block: var(--sp-6);
+  }
+
+  .hero__content {
+    gap: var(--sp-3);
+  }
+
+  .hero__stats {
+    padding-block-start: var(--sp-4);
+  }
+
+  /* The stack is bottom-anchored (align-content: end) inside a box sized by
+     --hero-height, a flat vh value with no awareness of the header eating
+     into the viewport above it. On real desktop browser chrome (tab strip +
+     bookmarks bar can easily claim 120px+) the default "large" box still put
+     the CTA and stat row past the fold even after the rhythm tightened
+     above — the box itself was too tall, not just the content inside it.
+     Shrinking the box height here (desktop only) pulls the whole
+     bottom-anchored stack up with it. */
+  .hero--large {
+    --hero-height: 58vh;
+  }
+
+  .hero--medium {
+    --hero-height: 50vh;
   }
 }
 

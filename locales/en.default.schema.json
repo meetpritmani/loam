@@ -628,6 +628,9 @@
     "quick_view": {
       "name": "Quick view"
     },
+    "predictive_search": {
+      "name": "Predictive search"
+    },
     "pickup_availability": {
       "name": "Pickup availability"
     },

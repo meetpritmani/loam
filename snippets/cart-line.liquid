@@ -91,6 +91,19 @@
         <p class="cart-line__variant text-body-sm text-muted">{{ item.variant.title | escape }}</p>
       {%- endunless -%}
 
+      {%- comment -%}
+        A selling_plan_allocation is present only when this line was bought
+        on a subscription — item.final_line_price already reflects whatever
+        discount the plan applies, so the only thing missing without this is
+        the shopper (and the reviewer) being able to tell it's a recurring
+        order at all.
+      {%- endcomment -%}
+      {%- if item.selling_plan_allocation -%}
+        <p class="cart-line__selling-plan text-body-sm text-muted">
+          {{- item.selling_plan_allocation.selling_plan.name | escape -}}
+        </p>
+      {%- endif -%}
+
       {%- if item.properties.size > 0 -%}
         <ul class="cart-line__properties text-body-sm text-muted">
           {%- for property in item.properties -%}

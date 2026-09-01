@@ -271,7 +271,8 @@
     "use_at_checkout": "Use este cartão-presente ao finalizar a compra",
     "print": "Imprimir",
     "copy_code": "Copiar o código",
-    "code_copied": "Código copiado"
+    "code_copied": "Código copiado",
+    "qr_alt": "Código QR para este cartão-presente"
   },
   "newsletter": {
     "label": "E-mail",

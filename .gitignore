@@ -35,3 +35,11 @@ PROGRESS.md
 
 # Build output of `shopify theme package`.
 *.zip
+
+# Build output of scripts/6-build-store-submission.mjs — a stripped copy for
+# Theme Store submission, regenerated from the working theme, never source.
+store-submission-build/
+
+# gitbook-docs/ is its own repo, pushed separately to the public
+# meetpritmani/Loam-Overview — it never belongs in this private repo's history.
+gitbook-docs/

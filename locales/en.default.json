@@ -271,7 +271,8 @@
     "use_at_checkout": "Use this gift card at checkout",
     "print": "Print",
     "copy_code": "Copy code",
-    "code_copied": "Code copied"
+    "code_copied": "Code copied",
+    "qr_alt": "QR code for this gift card"
   },
   "newsletter": {
     "label": "Email",
