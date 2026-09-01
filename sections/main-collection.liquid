@@ -67,7 +67,7 @@
                     <details class="facets__group" data-facet-group>
                       <summary class="facets__summary">
                         <span>{{ filter.label | escape }}</span>
-                        {%- render 'icon', icon: 'chevron-down', size: 14 -%}
+                        {%- render 'icon', icon: 'chevron-down', size: 14, class: 'facets__chevron' -%}
                       </summary>
                       <div class="facets__panel">
                         {%- render 'facet-controls', filter: filter, section_id: section_id -%}
@@ -83,7 +83,7 @@
 
               {%- if section.settings.show_sort -%}
                 {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
-                <div class="facets__sort">
+                <div class="facets__sort select-wrap">
                   <label class="visually-hidden" for="sort-{{ section_id }}">
                     {{- 'collections.sort_by' | t -}}
                   </label>
@@ -94,6 +94,7 @@
                       </option>
                     {%- endfor -%}
                   </select>
+                  {%- render 'icon', icon: 'chevron-down', size: 14 -%}
                 </div>
               {%- endif -%}
 

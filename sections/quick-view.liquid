@@ -39,9 +39,22 @@
   padding (base.css:962), so it is zeroed here rather than left to stack:
   the exact double-application §4 already warns against elsewhere, just
   arrived at from a drawer instead of a second component class.
+
+  No `color-scheme-*` class here, for the same reason: this content is
+  always fetched into quick-view-drawer.liquid's `.drawer__panel`, which
+  already carries `color-scheme-surface` — the custom properties it sets
+  cascade to every descendant on their own. Re-applying the class here
+  used to re-declare `background-color` a second time on top of the
+  panel's own, and `.drawer__panel`'s rule (base.css) reads `--c-surface`
+  while the scheme class's own rule reads `--c-paper` — two different
+  variables that happen to match for every other scheme but are the
+  opposite of each other by design for "surface" (the one scheme whose
+  whole point is being scheme-paper with those two swapped), which is
+  what produced a visibly different white block starting exactly where
+  this element's own background painted over its parent's.
 {%- endcomment -%}
 <div
-  class="section quick-view__content color-scheme-surface"
+  class="section quick-view__content"
   style="--section-padding-block-start: 0; --section-padding-block-end: 0; --section-padding-block-start-desktop: 0; --section-padding-block-end-desktop: 0;"
   data-quick-view
 >

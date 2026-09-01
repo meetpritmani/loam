@@ -114,23 +114,26 @@
         <label class="caption" for="{{ section_id }}-variant-select">
           {{- 'products.product.choose_variant' | t -}}
         </label>
-        <select
-          class="select"
-          id="{{ section_id }}-variant-select"
-          name="id"
-          form="{{ section_id }}-form"
-        >
-          {%- for variant in product.variants -%}
-            <option
-              value="{{ variant.id }}"
-              {% if variant == current %}selected{% endif %}
-              {% unless variant.available %}disabled{% endunless %}
-            >
-              {{ variant.title }}
-              {%- unless variant.available %} — {{ 'products.product.sold_out' | t }}{% endunless -%}
-            </option>
-          {%- endfor -%}
-        </select>
+        <span class="select-wrap">
+          <select
+            class="select"
+            id="{{ section_id }}-variant-select"
+            name="id"
+            form="{{ section_id }}-form"
+          >
+            {%- for variant in product.variants -%}
+              <option
+                value="{{ variant.id }}"
+                {% if variant == current %}selected{% endif %}
+                {% unless variant.available %}disabled{% endunless %}
+              >
+                {{ variant.title }}
+                {%- unless variant.available %} — {{ 'products.product.sold_out' | t }}{% endunless -%}
+              </option>
+            {%- endfor -%}
+          </select>
+          {%- render 'icon', icon: 'chevron-down', size: 14 -%}
+        </span>
       </div>
     </noscript>
   </variant-picker>

@@ -3294,21 +3294,6 @@ recently-viewed {
   gap: var(--sp-2);
 }
 
-.localization__select {
-  min-height: 44px;
-  padding: var(--sp-1) var(--sp-2);
-  border: var(--border-hairline) solid transparent;
-  border-radius: var(--radius);
-  background: none;
-  color: inherit;
-  font-size: var(--t-xs);
-  cursor: pointer;
-}
-
-.localization__select:hover {
-  border-color: var(--c-ink-12);
-}
-
 /* The submit button only exists for the no-JavaScript case; global.js adds
    `.js` to <html> and submits on change instead. */
 .js .localization__submit {
@@ -4843,24 +4828,38 @@ recently-viewed {
   align-items: center;
   gap: var(--sp-2);
   min-height: 44px;
-  padding-inline: var(--sp-3);
+  padding-inline: var(--sp-4);
   border: var(--border-hairline) solid var(--c-ink-12);
   border-radius: var(--radius);
+  background-color: var(--c-surface);
   font-size: var(--t-sm);
   cursor: pointer;
   list-style: none;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
 
 .facets__summary::-webkit-details-marker {
   display: none;
 }
 
+.facets__summary:hover {
+  border-color: var(--c-ink-45);
+}
+
 .facets__group[open] .facets__summary {
   border-color: var(--c-ink);
 }
 
+.facets__chevron {
+  transition: transform var(--dur) var(--ease);
+}
+
+.facets__group[open] .facets__chevron {
+  transform: rotate(180deg);
+}
+
 .facets__panel {
-  padding-block: var(--sp-3);
+  padding: var(--sp-2);
 }
 
 .facets__count {
@@ -4908,30 +4907,82 @@ recently-viewed {
 
 .facet-list {
   display: grid;
-  gap: var(--sp-1);
-  min-width: 200px;
+  gap: 2px;
+  min-width: 220px;
 }
 
 .facet-list__item {
   display: flex;
   align-items: center;
+  padding-inline: var(--sp-2);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.facet-list__item:hover {
+  background-color: var(--c-paper);
 }
 
 .facet-list__label {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
   width: 100%;
   min-height: 44px;
   cursor: pointer;
   font-size: var(--t-sm);
 }
 
+/* A real checkbox, restyled rather than hidden behind a fake element — full
+   native keyboard, screen-reader and form behaviour stays intact, only the
+   paint changes. */
+.facet-list__input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: var(--border-hairline) solid var(--c-ink-45);
+  border-radius: var(--radius-sm);
+  background-color: var(--c-surface);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.facet-list__input::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  transition: transform var(--dur-fast) var(--ease);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  background-color: var(--c-paper);
+}
+
+.facet-list__input:checked {
+  border-color: var(--c-accent);
+  background-color: var(--c-accent);
+}
+
+.facet-list__input:checked::before {
+  transform: scale(1);
+}
+
 /* The checkbox stays a real focusable control; the ring is drawn on the label
-   so it wraps the whole row rather than a 16px box. */
+   so it wraps the whole row rather than an 18px box. */
 .facet-list__input:focus-visible + .facet-list__label {
   outline: var(--focus-width) solid var(--c-accent);
   outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.facet-list__input:disabled {
+  border-color: var(--c-ink-12);
+  background-color: var(--c-paper);
+  cursor: not-allowed;
 }
 
 .facet-list__input:disabled + .facet-list__label {
@@ -4941,16 +4992,26 @@ recently-viewed {
 
 .facet-list__count {
   margin-inline-start: auto;
-  color: var(--c-ink-70);
+  color: var(--c-ink-45);
   font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .facet-list__swatch {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
   border: var(--border-hairline) solid var(--c-ink-12);
   border-radius: 50%;
   background-color: var(--swatch, var(--c-sand));
+  transition: outline-color var(--dur) var(--ease);
+  outline: var(--border-hairline) solid transparent;
+  outline-offset: 2px;
+}
+
+.facet-list__input:checked + .facet-list__label .facet-list__swatch {
+  outline-color: var(--c-accent);
+  outline-width: 2px;
 }
 
 .facet-price {
@@ -5034,9 +5095,50 @@ recently-viewed {
 
 /* Form controls sized for a thumb. The sort select measured 25px tall and the
    quantity stepper 36px — both below the 44px that makes a control reliably
-   hittable on a phone. */
+   hittable on a phone.
+
+   One `.select` treatment, used by every <select> in the theme — the sort
+   dropdown, both localization selects, the no-JS variant fallback — rather
+   than each spot growing its own slightly-different border/radius/hover.
+   The native appearance is removed and redrawn to match `.facets__summary`
+   and the other bordered controls; `.select-wrap` supplies the chevron,
+   since a <select> itself can't take pseudo-element content. */
+.select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select-wrap .icon {
+  position: absolute;
+  inset-inline-end: var(--sp-3);
+  color: var(--c-ink-70);
+  pointer-events: none;
+}
+
 .select {
+  appearance: none;
+  -webkit-appearance: none;
   min-height: 44px;
+  padding-inline-start: var(--sp-3);
+  padding-inline-end: calc(var(--sp-3) * 2 + 14px);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+  background-color: var(--c-surface);
+  color: var(--c-ink);
+  font: inherit;
+  font-size: var(--t-sm);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.select:hover {
+  border-color: var(--c-ink-45);
+}
+
+.select:focus-visible {
+  outline: var(--focus-width) solid var(--c-accent);
+  outline-offset: 2px;
 }
 
 .quantity__button {
