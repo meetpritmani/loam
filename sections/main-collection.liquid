@@ -64,7 +64,15 @@
 
                 <div class="facets__inline" data-facet-inline>
                   {%- for filter in collection.filters -%}
-                    <details class="facets__group" data-facet-group>
+                    {%- comment -%}
+                      `name` makes the whole row a native exclusive-open
+                      group — opening one filter closes any other already
+                      open, browser-managed, no JS. Scoped to this section
+                      instance so a search page's facet bar (a second
+                      <facet-filters> elsewhere on the same document) never
+                      shares a group with this one.
+                    {%- endcomment -%}
+                    <details class="facets__group" name="{{ section_id }}-facets" data-facet-group>
                       <summary class="facets__summary">
                         <span>{{ filter.label | escape }}</span>
                         {%- render 'icon', icon: 'chevron-down', size: 14, class: 'facets__chevron' -%}

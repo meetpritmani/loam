@@ -4908,7 +4908,6 @@ recently-viewed {
 .facet-list {
   display: grid;
   gap: 2px;
-  min-width: 220px;
 }
 
 .facet-list__item {
@@ -5075,12 +5074,10 @@ recently-viewed {
     z-index: 5;
     inset-inline-start: 0;
     top: calc(100% + var(--sp-1));
-    min-width: 220px;
     padding: var(--sp-3);
     border: var(--border-hairline) solid var(--c-ink-12);
     border-radius: var(--radius);
     background-color: var(--c-surface);
-    box-shadow: 0 12px 32px rgb(var(--c-shadow-rgb) / 0.1);
   }
 }
 
