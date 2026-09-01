@@ -577,6 +577,50 @@ if (!customElements.get('announcement-bar')) {
   customElements.define('announcement-bar', AnnouncementBar);
 }
 
+/* --------------------------------------------------------------------------
+   Announcement bar dismiss (§9.4: "optional dismiss persisting for the
+   session"). Lives outside the <announcement-bar> custom element above
+   because dismissing has to remove the whole bar, localization selectors
+   included, not just the rotator. sessionStorage rather than localStorage —
+   a new tab or the next visit sees the bar again, which is what "for the
+   session" means. Keyed per section id so more than one announcement bar
+   on a page dismisses independently.
+   -------------------------------------------------------------------------- */
+
+function hideDismissedAnnouncements(root) {
+  root.querySelectorAll?.('[data-announcement-root]').forEach((bar) => {
+    try {
+      if (sessionStorage.getItem(`loam:announcement-dismissed:${bar.dataset.announcementRoot}`) === 'true') {
+        bar.remove();
+      }
+    } catch {
+      // Storage unavailable (private mode, disabled) — bar just stays visible.
+    }
+  });
+}
+
+hideDismissedAnnouncements(document);
+document.addEventListener('shopify:section:load', (event) => {
+  hideDismissedAnnouncements(event.target ?? document);
+});
+
+document.addEventListener('click', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const button = target.closest('[data-announcement-dismiss]');
+  if (!button) return;
+
+  const bar = button.closest('[data-announcement-root]');
+  if (!bar) return;
+
+  try {
+    sessionStorage.setItem(`loam:announcement-dismissed:${bar.dataset.announcementRoot}`, 'true');
+  } catch {
+    // Storage unavailable — dismissal just won't persist across navigations.
+  }
+  bar.remove();
+});
+
 /* ==========================================================================
    <quantity-input>
    The <input type="number"> stays the source of truth so the control still

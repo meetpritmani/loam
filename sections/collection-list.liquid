@@ -38,21 +38,37 @@
       {%- for block in section.blocks -%}
         {%- liquid
           assign block_collection = collections[block.settings.collection]
+
+          comment
+            §9.4: "Every card links to a non-empty collection." A blank
+            picker is the fresh-install demo path (§10's comment above) and
+            still renders — it is not "empty" in the sense this guards
+            against. A collection the merchant actually picked that
+            currently holds zero products is the case that must not render:
+            it would be a live, clickable card leading nowhere.
+          endcomment
+          assign skip_card = false
+          if block.settings.collection != blank and block_collection.products_count == 0
+            assign skip_card = true
+          endif
+
           assign position = forloop.index0 | modulo: 4
           assign title = block.settings.heading | default: block_collection.title | default: demo_titles[position]
           assign url = block_collection.url | default: routes.all_products_collection_url
           assign fallback_image = demo_images[position]
         -%}
-        <li class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;" {{ block.shopify_attributes }}>
-          {%- render 'card-collection',
-            url: url,
-            title: title,
-            text: block.settings.text,
-            image: block.settings.image,
-            fallback: fallback_image,
-            ratio: section.settings.image_ratio
-          -%}
-        </li>
+        {%- unless skip_card -%}
+          <li class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;" {{ block.shopify_attributes }}>
+            {%- render 'card-collection',
+              url: url,
+              title: title,
+              text: block.settings.text,
+              image: block.settings.image,
+              fallback: fallback_image,
+              ratio: section.settings.image_ratio
+            -%}
+          </li>
+        {%- endunless -%}
       {%- endfor -%}
     </ul>
   </div>

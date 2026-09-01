@@ -4575,7 +4575,8 @@
   "announcement": {
     "label": "إعلان",
     "previous": "إعلان سابق",
-    "next": "الإعلان التالي"
+    "next": "الإعلان التالي",
+    "dismiss": "إغلاق الإعلان"
   },
   "localization": {
     "country_label": "البلد/المنطقة",

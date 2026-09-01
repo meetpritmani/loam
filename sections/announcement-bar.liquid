@@ -21,6 +21,7 @@
   <div
     class="announcement-bar color-{{ scheme }}"
     style="--announcement-padding: {{ section.settings.padding }}px;"
+    {% if section.settings.show_dismiss %}data-announcement-root="{{ section.id }}"{% endif %}
   >
     <div class="page-width announcement-bar__inner">
       {%- if block_count > 0 -%}
@@ -82,6 +83,17 @@
         show_language: section.settings.show_language,
         id_prefix: 'announcement'
       -%}
+
+      {%- if section.settings.show_dismiss -%}
+        <button
+          class="announcement-bar__dismiss icon-button"
+          type="button"
+          data-announcement-dismiss
+          aria-label="{{ 'announcement.dismiss' | t }}"
+        >
+          {%- render 'icon', icon: 'close', size: 16 -%}
+        </button>
+      {%- endif -%}
     </div>
   </div>
 {%- endif -%}
@@ -131,6 +143,13 @@
       "step": 1,
       "unit": "t:sections.announcement_bar.rotate_interval.unit",
       "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dismiss",
+      "label": "t:sections.announcement_bar.show_dismiss.label",
+      "info": "t:sections.announcement_bar.show_dismiss.info",
+      "default": true
     },
     {
       "type": "header",

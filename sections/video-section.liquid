@@ -89,6 +89,23 @@
         {%- endif -%}
       </div>
     </video-player>
+
+    {%- comment -%}
+      §9.4: "CTA below the video." The poster already carries the message
+      for a shopper who never presses play (§9.4's other clause) — this is
+      the section's one next step, not a caption restating what the poster
+      already said.
+    {%- endcomment -%}
+    {%- if section.settings.button_label != blank -%}
+      <p class="video-section__cta">
+        <a
+          class="button button--secondary"
+          href="{{ section.settings.button_link | default: routes.all_products_collection_url }}"
+        >
+          {{- section.settings.button_label | escape -}}
+        </a>
+      </p>
+    {%- endif -%}
   </div>
 </div>
 
@@ -142,6 +159,17 @@
       "label": "t:sections.video.video_url.label",
       "info": "t:sections.video.video_url.info",
       "accept": ["youtube", "vimeo"]
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.hero.button_label.label",
+      "default": "Shop the collection"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.hero.button_link.label"
     },
     {
       "type": "checkbox",

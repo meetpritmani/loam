@@ -377,7 +377,8 @@
   "announcement": {
     "label": "お知らせ",
     "previous": "前のお知らせ",
-    "next": "次のお知らせ"
+    "next": "次のお知らせ",
+    "dismiss": "お知らせを閉じる"
   },
   "localization": {
     "country_label": "国・地域",

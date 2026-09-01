@@ -383,7 +383,8 @@
   "announcement": {
     "label": "Annuncio",
     "previous": "Annuncio precedente",
-    "next": "Annuncio successivo"
+    "next": "Annuncio successivo",
+    "dismiss": "Chiudi annuncio"
   },
   "localization": {
     "country_label": "Paese/area geografica",

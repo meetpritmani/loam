@@ -89,6 +89,16 @@
       </div>
     {%- endif -%}
 
+    {%- comment -%}
+      §9.4 footer row: returns window belongs here, not only at the ATC/
+      checkout friction points — the footer is the last thing a shopper
+      sees before leaving, and an unstated returns policy is a reason to
+      abandon. Payment marks are skipped here (show_payment: false):
+      footer.liquid already renders its own payment icon row below from
+      shop.enabled_payment_types, and trust-row would otherwise duplicate it.
+    {%- endcomment -%}
+    {%- render 'trust-row', class: 'footer__trust', show_payment: false -%}
+
     <div class="footer__bottom">
       <div class="footer__bottom-start">
         <p class="footer__copyright caption">

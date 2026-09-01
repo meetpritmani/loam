@@ -603,6 +603,10 @@
         "label": "Change every",
         "unit": "s"
       },
+      "show_dismiss": {
+        "label": "Allow shoppers to dismiss",
+        "info": "Stays dismissed for the rest of their visit."
+      },
       "localization": {
         "content": "Country and language"
       },
