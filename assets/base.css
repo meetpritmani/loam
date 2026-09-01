@@ -3358,17 +3358,6 @@ recently-viewed {
   min-height: 44px;
 }
 
-.footer__trust {
-  margin-block-start: var(--sp-6);
-  /* .footer__bottom immediately follows and already carries its own top
-     border + padding as the divider down to the bottom bar — trust-row's
-     own bottom half would double that gap with nothing in it. Its top
-     half stays: that is the only divider between this and the columns
-     above. */
-  padding-block-end: 0;
-  border-block-end: 0;
-}
-
 .footer__bottom {
   display: flex;
   flex-direction: column;
