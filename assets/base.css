@@ -5119,6 +5119,17 @@ recently-viewed {
   align-items: center;
 }
 
+/* <theme-select> (global.js) hides this wrapper via the `hidden` attribute
+   once it has built its own trigger + listbox in its place — but the
+   `display: inline-flex` above already beats the browser's default
+   `[hidden] { display: none }`, since an author rule wins over the user-
+   agent stylesheet at equal specificity. Without this, `hidden = true` is a
+   no-op and both controls render stacked side by side, which is exactly
+   what shipped until this was caught. */
+.select-wrap[hidden] {
+  display: none;
+}
+
 .select-wrap .icon {
   position: absolute;
   inset-inline-end: var(--sp-3);
