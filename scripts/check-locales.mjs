@@ -96,7 +96,19 @@ for (const file of files) {
     return true;
   });
 
-  const extra = keys.filter((k) => !(k in english));
+  /* The same admin re-export that adds the /* ... *\/ banner (see
+     parseLocale above) also injects Shopify's own `shopify.*` (checkout,
+     payment methods, and similar system copy) and `customer_accounts.*`
+     namespaces into that locale file — thousands of keys the theme never
+     authored and en.default.json was never meant to carry, since English is
+     the base locale those systems fall back to rather than something they
+     re-export into. Flagging them as "extra" would mean either deleting
+     content Shopify's own systems regenerate on the next admin save, or the
+     check staying permanently red on every admin-exported locale — neither
+     is drift worth catching, so both namespaces are excluded here. */
+  const extra = keys.filter(
+    (k) => !(k in english) && !k.startsWith('shopify.') && !k.startsWith('customer_accounts.')
+  );
 
   const mismatched = keys
     .filter((k) => k in english && placeholders(english[k]) !== placeholders(table[k]))

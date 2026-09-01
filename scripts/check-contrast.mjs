@@ -108,7 +108,10 @@ function pairsFor(scheme) {
 
 /* --- run --------------------------------------------------------------- */
 
-const data = JSON.parse(readFileSync(join(root, 'config', 'settings_data.json'), 'utf8'));
+// Shopify prefixes settings_data.json with a /* ... */ comment (see the file
+// itself) that plain JSON.parse rejects — has to come off first.
+const settingsRaw = readFileSync(join(root, 'config', 'settings_data.json'), 'utf8');
+const data = JSON.parse(settingsRaw.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
 
 const styles = [['current', data.current]];
 for (const [name, preset] of Object.entries(data.presets ?? {})) {

@@ -37,21 +37,55 @@ const sectionsDir = join(root, 'sections');
 
 /* Sections a merchant never inserts from the editor's Add section list: the
    template mains, and the four that theme.liquid or a section group renders
-   at a fixed position. */
-const NO_PRESET = new Set(['header', 'footer', 'cart-drawer', 'cart-count']);
+   at a fixed position, plus the shells rendered once from theme.liquid
+   (compare-bar, compare-drawer, quick-view-drawer, same reasoning as
+   cart-drawer's own comment) and the pure Section Rendering API targets
+   fetched into one of those shells or into a PDP region — never on any
+   template's own sections list, so a presets block would offer the merchant
+   a section that does nothing wherever they placed it (pickup-availability,
+   predictive-search, quick-view — each says so in its own file comment). */
+const NO_PRESET = new Set([
+  'header',
+  'footer',
+  'cart-drawer',
+  'cart-count',
+  'compare-bar',
+  'compare-drawer',
+  'pickup-availability',
+  'predictive-search',
+  'quick-view',
+  'quick-view-drawer',
+]);
 
-/* Product-context only. Both read `product` or `recommendations`, so a preset
-   would offer the merchant a section that renders nothing wherever they put
-   it. They live in product.json and nowhere else. */
-const NO_PRESET_CONTEXTUAL = new Set(['recently-viewed', 'related-products']);
+/* Product-context only. Each reads `product` or `recommendations`, so a
+   preset would offer the merchant a section that renders nothing wherever
+   they put it. They live in product.json and nowhere else. */
+const NO_PRESET_CONTEXTUAL = new Set([
+  'recently-viewed',
+  'related-products',
+  'complementary-products',
+]);
 
 /* No visual box of its own — it renders the header's cart bubble for the
-   Section Rendering API and inherits the header's scheme. */
-const NO_SCHEME = new Set(['cart-count']);
+   Section Rendering API and inherits the header's scheme. Same for the other
+   fetched-shell sections: each inherits its opener's scheme rather than
+   carrying its own (compare-drawer explicitly says so; the rest are single-
+   purpose fragments with no independent surface to colour). */
+const NO_SCHEME = new Set([
+  'cart-count',
+  'compare-bar',
+  'compare-drawer',
+  'pickup-availability',
+  'predictive-search',
+  'quick-view',
+  'quick-view-drawer',
+]);
 
 /* Not `.section` boxes, so vertical section padding has nothing to set on:
-   the hero sizes itself from its own height setting, and the password page is
-   a centred full-height layout. */
+   the hero sizes itself from its own height setting, the password page is a
+   centred full-height layout, and the fetched-shell/Section-Rendering-only
+   sections above render inside a drawer or an existing page region that
+   already owns its own spacing. */
 const NO_PADDING = new Set([
   'header',
   'footer',
@@ -60,6 +94,12 @@ const NO_PADDING = new Set([
   'announcement-bar',
   'hero',
   'main-password',
+  'compare-bar',
+  'compare-drawer',
+  'pickup-availability',
+  'predictive-search',
+  'quick-view',
+  'quick-view-drawer',
 ]);
 
 const files = readdirSync(sectionsDir)
