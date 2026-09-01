@@ -4930,6 +4930,17 @@ recently-viewed {
   min-height: 44px;
   cursor: pointer;
   font-size: var(--t-sm);
+  /* Removing the panel's old flat 220px floor (it was forcing every list to
+     that width whether it needed it or not — the actual bug behind the
+     count sitting far off to the right) also removed the one thing that
+     had been keeping this text on one line: shrink-to-fit sizing is free to
+     pick a narrower box and let a label wrap instead, which is what then
+     happened here. white-space: nowrap removes that option — the box is
+     now sized to whatever its longest single-line label actually needs,
+     which is the correct fix for both bugs at once rather than a return to
+     a fixed number that was already wrong for one filter and would still
+     be wrong for a longer translated label in another. */
+  white-space: nowrap;
 }
 
 /* A real checkbox, restyled rather than hidden behind a fake element — full
