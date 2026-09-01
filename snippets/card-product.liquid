@@ -51,6 +51,15 @@
   if settings.enable_image_zoom
     assign zoom_class = ' media--zoom'
   endif
+
+  comment
+    image-fallback's shared default srcset (360,540,720,…) is tuned for
+    full-bleed media — a card thumbnail never renders anywhere near that
+    wide, and the 360-to-540 jump overshoots a mobile grid cell by 2-3x once
+    device pixel ratio is applied. This list adds the finer low-end steps a
+    card actually needs and caps out well short of a hero image's ceiling.
+  endcomment
+  assign card_widths = '200,280,360,450,540,650,780,940,1130,1360'
 -%}
 
 {%- if product != blank and product.id -%}
@@ -110,6 +119,7 @@
         image: product.featured_media,
         alt: product.title,
         sizes: sizes,
+        widths: card_widths,
         loading: loading
       -%}
 
@@ -118,7 +128,8 @@
           {%- render 'image-fallback',
             image: second_image,
             alt: product.title,
-            sizes: sizes
+            sizes: sizes,
+            widths: card_widths
           -%}
         </span>
       {%- endif -%}
@@ -302,6 +313,7 @@
         fallback: demo_image,
         alt: demo_name,
         sizes: sizes,
+        widths: card_widths,
         loading: loading,
         width: 1200,
         height: 1500,
@@ -314,6 +326,7 @@
             fallback: demo_image_alt,
             alt: demo_name,
             sizes: sizes,
+            widths: card_widths,
             width: 1200,
             height: 1500,
             placeholder: 'product-2'
