@@ -2179,6 +2179,231 @@ if (!customElements.get('predictive-search')) {
 }
 
 /* ==========================================================================
+   FORM CONTROLS
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   <theme-select>
+   Progressive enhancement over a real <select> — same relationship every
+   other enhanced control in this file has to its plain-HTML fallback. The
+   select inside keeps working (value, form submission, the no-JS case)
+   whether or not this runs; what this adds is the one thing CSS genuinely
+   cannot reach. `.select`/`.select-wrap` (base.css) already restyle the
+   *closed* control with `appearance: none` and a chevron, but the popup a
+   browser paints for an *open* native select is OS chrome — no stylesheet
+   touches it, in any browser.
+
+   Follows the WAI-ARIA "select-only combobox" pattern: focus never leaves
+   the trigger button, the listbox is a plain (non-focusable) popup, and the
+   currently-highlighted option is communicated with aria-activedescendant
+   rather than by moving focus into the list. Choosing an option sets the
+   real select's value and dispatches a real `change` event on it, so every
+   existing listener — <facet-filters>' sort handler, the localization
+   form's submit-on-change — keeps working unchanged; neither had to know
+   this exists.
+   -------------------------------------------------------------------------- */
+
+class ThemeSelect extends HTMLElement {
+  connectedCallback() {
+    if (this.trigger) return; // already built — a stray reconnect, not a fresh mount
+
+    this.select = this.querySelector('select');
+    if (!this.select) return;
+
+    this.onTriggerClick = this.onTriggerClick.bind(this);
+    this.onTriggerKeydown = this.onTriggerKeydown.bind(this);
+    this.onOptionClick = this.onOptionClick.bind(this);
+    this.onDocumentClick = this.onDocumentClick.bind(this);
+    this.onSelectChange = this.onSelectChange.bind(this);
+
+    this.build();
+
+    this.select.addEventListener('change', this.onSelectChange);
+    document.addEventListener('click', this.onDocumentClick);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('click', this.onDocumentClick);
+  }
+
+  build() {
+    const select = this.select;
+    const wrap = this.querySelector('.select-wrap');
+    const labelText = (document.querySelector(`label[for="${select.id}"]`)?.textContent || '').trim();
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'theme-select__trigger select';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+    if (labelText) trigger.setAttribute('aria-label', labelText);
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'theme-select__label';
+    trigger.appendChild(labelSpan);
+
+    // Reuse the same chevron the no-JS fallback already renders rather than
+    // building a second one — one icon, one place it's drawn (icon.liquid).
+    const chevron = wrap?.querySelector('.icon')?.cloneNode(true);
+    if (chevron) trigger.appendChild(chevron);
+
+    const listbox = document.createElement('ul');
+    listbox.className = 'theme-select__listbox';
+    listbox.setAttribute('role', 'listbox');
+    listbox.hidden = true;
+
+    const listId = `${select.id || 'theme-select'}-listbox`;
+    listbox.id = listId;
+    trigger.setAttribute('aria-controls', listId);
+
+    this.optionEls = Array.from(select.options).map((option, index) => {
+      const li = document.createElement('li');
+      li.className = 'theme-select__option';
+      li.id = `${listId}-${index}`;
+      li.setAttribute('role', 'option');
+      li.textContent = option.textContent.trim();
+      li.dataset.value = option.value;
+      if (option.disabled) li.setAttribute('aria-disabled', 'true');
+      listbox.appendChild(li);
+      return li;
+    });
+
+    this.trigger = trigger;
+    this.listbox = listbox;
+    this.updateTriggerLabel();
+
+    trigger.addEventListener('click', this.onTriggerClick);
+    trigger.addEventListener('keydown', this.onTriggerKeydown);
+    listbox.addEventListener('click', this.onOptionClick);
+
+    // The native select's own wrapper (label + select + its static chevron)
+    // is the entire control until this line — hiding it, not the select
+    // alone, is what keeps the old chevron from doubling up with this one.
+    if (wrap) wrap.hidden = true;
+
+    this.append(trigger, listbox);
+  }
+
+  updateTriggerLabel() {
+    const selected = this.select.options[this.select.selectedIndex];
+    const labelEl = this.trigger.querySelector('.theme-select__label');
+    if (labelEl) labelEl.textContent = selected ? selected.textContent.trim() : '';
+
+    this.optionEls.forEach((li, index) => {
+      li.setAttribute('aria-selected', String(index === this.select.selectedIndex));
+    });
+  }
+
+  /** The select changed from outside this element — keep the trigger honest. */
+  onSelectChange() {
+    this.updateTriggerLabel();
+  }
+
+  onTriggerClick() {
+    if (this.listbox.hidden) this.open();
+    else this.close();
+  }
+
+  open() {
+    if (!this.listbox.hidden) return;
+    this.listbox.hidden = false;
+    this.trigger.setAttribute('aria-expanded', 'true');
+    const active = this.optionEls.find((li) => li.getAttribute('aria-selected') === 'true') || this.optionEls[0];
+    this.setActive(active);
+  }
+
+  close() {
+    if (this.listbox.hidden) return;
+    this.listbox.hidden = true;
+    this.trigger.setAttribute('aria-expanded', 'false');
+    this.trigger.removeAttribute('aria-activedescendant');
+  }
+
+  /** @param {HTMLLIElement} [option] */
+  setActive(option) {
+    this.activeOption?.classList.remove('is-active');
+    if (!option) return;
+    option.classList.add('is-active');
+    option.scrollIntoView({ block: 'nearest' });
+    this.trigger.setAttribute('aria-activedescendant', option.id);
+    this.activeOption = option;
+  }
+
+  /** @param {HTMLLIElement} option */
+  choose(option) {
+    if (this.select.value !== option.dataset.value) {
+      this.select.value = option.dataset.value;
+      this.select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    this.updateTriggerLabel();
+    this.close();
+    this.trigger.focus();
+  }
+
+  /** @param {KeyboardEvent} event */
+  onTriggerKeydown(event) {
+    if (this.listbox.hidden) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+        event.preventDefault();
+        this.open();
+      }
+      return;
+    }
+
+    const enabled = this.optionEls.filter((li) => li.getAttribute('aria-disabled') !== 'true');
+    const currentIndex = enabled.indexOf(this.activeOption);
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.setActive(enabled[Math.min(currentIndex + 1, enabled.length - 1)] ?? enabled[0]);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.setActive(enabled[Math.max(currentIndex - 1, 0)] ?? enabled[0]);
+        break;
+      case 'Home':
+        event.preventDefault();
+        this.setActive(enabled[0]);
+        break;
+      case 'End':
+        event.preventDefault();
+        this.setActive(enabled[enabled.length - 1]);
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (this.activeOption) this.choose(this.activeOption);
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.close();
+        break;
+      case 'Tab':
+        this.close();
+        break;
+      default:
+    }
+  }
+
+  /** @param {MouseEvent} event */
+  onOptionClick(event) {
+    const option = event.target instanceof Element ? event.target.closest('.theme-select__option') : null;
+    if (!option || option.getAttribute('aria-disabled') === 'true') return;
+    this.choose(option);
+  }
+
+  /** @param {MouseEvent} event */
+  onDocumentClick(event) {
+    if (event.target instanceof Element && !this.contains(event.target)) this.close();
+  }
+}
+
+if (!customElements.get('theme-select')) {
+  customElements.define('theme-select', ThemeSelect);
+}
+
+/* ==========================================================================
    Product discovery
    Two rows that live below the fold on the product page and cost nothing
    until the shopper approaches them.

@@ -5151,6 +5151,74 @@ recently-viewed {
   outline-offset: 2px;
 }
 
+/* <theme-select> (global.js) — replaces the closed control's static chevron
+   with a real trigger button, and the browser's own unstyleable open-list
+   chrome with this listbox. `theme-select` bare (no class) covers the
+   localization selects; `.facets__sort` already supplies its own
+   position:relative + flex layout for the sort instance, so only the
+   properties this needs beyond that are added there instead of fighting it. */
+theme-select {
+  position: relative;
+  display: inline-flex;
+}
+
+.theme-select__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  /* .select reserves space for .select-wrap's absolutely-positioned
+     chevron; this chevron is a normal flex child instead, so that reserved
+     space would just be a dead gap after it. */
+  padding-inline-end: var(--sp-3);
+}
+
+.theme-select__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-select__listbox {
+  position: absolute;
+  z-index: 5;
+  inset-inline-start: 0;
+  top: calc(100% + var(--sp-1));
+  min-width: 100%;
+  max-height: 320px;
+  margin: 0;
+  padding: var(--sp-2);
+  overflow-y: auto;
+  list-style: none;
+  background-color: var(--c-surface);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+}
+
+.theme-select__option {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--t-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.theme-select__option.is-active {
+  background-color: var(--c-paper);
+}
+
+.theme-select__option[aria-selected='true'] {
+  color: var(--c-accent);
+  font-weight: 600;
+}
+
+.theme-select__option[aria-disabled='true'] {
+  color: var(--c-ink-45);
+  cursor: not-allowed;
+}
+
 .quantity__button {
   min-width: 44px;
   min-height: 44px;

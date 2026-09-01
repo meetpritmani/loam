@@ -91,19 +91,21 @@
 
               {%- if section.settings.show_sort -%}
                 {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
-                <div class="facets__sort select-wrap">
-                  <label class="visually-hidden" for="sort-{{ section_id }}">
-                    {{- 'collections.sort_by' | t -}}
-                  </label>
-                  <select class="select" id="sort-{{ section_id }}" name="sort_by" data-facet-sort>
-                    {%- for option in collection.sort_options -%}
-                      <option value="{{ option.value }}" {% if option.value == sort_by %}selected{% endif %}>
-                        {{ option.name | escape }}
-                      </option>
-                    {%- endfor -%}
-                  </select>
-                  {%- render 'icon', icon: 'chevron-down', size: 14 -%}
-                </div>
+                <theme-select class="facets__sort">
+                  <div class="select-wrap">
+                    <label class="visually-hidden" for="sort-{{ section_id }}">
+                      {{- 'collections.sort_by' | t -}}
+                    </label>
+                    <select class="select" id="sort-{{ section_id }}" name="sort_by" data-facet-sort>
+                      {%- for option in collection.sort_options -%}
+                        <option value="{{ option.value }}" {% if option.value == sort_by %}selected{% endif %}>
+                          {{ option.name | escape }}
+                        </option>
+                      {%- endfor -%}
+                    </select>
+                    {%- render 'icon', icon: 'chevron-down', size: 14 -%}
+                  </div>
+                </theme-select>
               {%- endif -%}
 
               {%- comment -%}
