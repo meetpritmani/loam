@@ -72,6 +72,32 @@ dd {
   margin: 0;
 }
 
+/* Every heading, paragraph, and richtext block can hold either a locale
+   string or free-form merchant-entered text — a hero heading, a section's
+   body copy, a testimonial quote — and merchant text is never machine-
+   translated, so on an RTL storefront it is frequently English sitting
+   inside an ancestor set to dir="rtl" (theme.liquid). Inherited RTL paragraph
+   direction pulls trailing punctuation on that English text to the wrong
+   visual edge (". that grow" instead of "that grow."), even though every
+   layout rule around it is a correct logical-property mirror. unicode-bidi:
+   plaintext makes each of these detect its own direction from its own first
+   strong character instead of inheriting the page's — Arabic content still
+   resolves RTL, English content resolves LTR, both render correctly without
+   Liquid needing to know which one it is. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+span,
+a,
+.rte {
+  unicode-bidi: plaintext;
+}
+
 ul,
 ol {
   margin: 0;
