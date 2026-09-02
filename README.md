@@ -21,7 +21,7 @@ external CDN. Everything a shopper downloads is in this repository.
 | 4 | Templates — product, collection, search, cart, blog, customers | Complete |
 | 5 | Demo store seeding | **Complete** — 48 of 48 demo photos sourced, licensed and uploaded; catalogue, collections and content seeded |
 | 6 | Demo content shipped in the repo | **Complete** — theme JSON fully wired to the seeded media, both presets ship, `assets/` correctly bundles no photography |
-| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | **In progress** — theme check, contrast, section and locale audits automated and passing; JSON-LD validated on every template; RTL verified live (a real bidi bug found and fixed); a fresh, empty dev store confirmed installing to a finished-looking homepage in the seeded time budget; desktop Lighthouse confirmed 90+ repeatably. A VoiceOver pass and the buyer-facing demo screenshots are still open |
+| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | **In progress** — theme check, contrast, section and locale audits automated and passing; JSON-LD validated on every template; RTL verified live (a real bidi bug found and fixed); a fresh, empty dev store confirmed installing to a finished-looking homepage in the seeded time budget; desktop Lighthouse confirmed 90+ repeatably; listing screenshots captured — 10 page states × 3 breakpoints, both theme styles. A VoiceOver pass is the one item still open |
 
 Nothing in this file describes behaviour that does not exist today.
 

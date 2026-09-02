@@ -43,3 +43,9 @@ store-submission-build/
 # gitbook-docs/ is its own repo, pushed separately to the public
 # meetpritmani/Loam-Overview — it never belongs in this private repo's history.
 gitbook-docs/
+
+# Marketing screenshots for the marketplace listing. Large binaries, easily
+# re-captured, not something the theme's own history needs to carry —
+# DEMO-SCREENSHOTS.md (tracked) is the index of what's in here.
+demo-screenshots/*
+!demo-screenshots/.gitkeep
