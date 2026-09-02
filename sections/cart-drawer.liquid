@@ -147,7 +147,11 @@
             </span>
           </div>
 
-          <p class="field__hint">{{ 'cart.taxes_and_shipping_note' | t }}</p>
+          {%- if cart.taxes_included -%}
+            <p class="field__hint">{{ 'cart.taxes_included_shipping_note' | t }}</p>
+          {%- else -%}
+            <p class="field__hint">{{ 'cart.taxes_and_shipping_note' | t }}</p>
+          {%- endif -%}
 
           <form action="{{ routes.cart_url }}" method="post" novalidate>
             <button class="button button--primary button--full" type="submit" name="checkout">

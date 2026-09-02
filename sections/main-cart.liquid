@@ -186,9 +186,16 @@
               {%- comment -%}
                 §9.4: stated before the checkout button, never revealed at
                 checkout. A shopper should know shipping and tax are still to
-                come while they are still deciding.
+                come while they are still deciding. Theme Store requirement:
+                a tax-inclusive store must say so here rather than implying
+                tax is still to be calculated, which cart.taxes_included
+                would make false.
               {%- endcomment -%}
-              <p class="field__hint">{{ 'cart.taxes_and_shipping_note' | t }}</p>
+              {%- if cart.taxes_included -%}
+                <p class="field__hint">{{ 'cart.taxes_included_shipping_note' | t }}</p>
+              {%- else -%}
+                <p class="field__hint">{{ 'cart.taxes_and_shipping_note' | t }}</p>
+              {%- endif -%}
 
               <button class="button button--primary button--full" type="submit" name="checkout">
                 {{ 'cart.checkout' | t }}

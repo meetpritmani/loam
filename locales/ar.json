@@ -4279,6 +4279,7 @@
     "remove": "إزالة",
     "subtotal": "المجموع الفرعي",
     "taxes_and_shipping_note": "تُحسب الضرائب وتكاليف الشحن عند الدفع.",
+    "taxes_included_shipping_note": "شامل الضريبة. تُحسب تكلفة الشحن عند الدفع.",
     "quantity": "الكمية",
     "note": "مذكرة الطلب",
     "note_placeholder": "تعليمات التسليم، رسالة الهدية، أي شيء آخر.",
@@ -4525,7 +4526,8 @@
         "sale_price": "سعر البيع",
         "regular_price": "السعر الاعتيادي",
         "unit_price": "سعر الوحدة",
-        "savings_percent": "وفّر {{ percent }}%"
+        "savings_percent": "وفّر {{ percent }}%",
+        "tax_included": "شامل الضريبة"
       },
       "quantity": "الكمية",
       "quick_add_label": "أضف {{ title }} إلى سلة التسوق",

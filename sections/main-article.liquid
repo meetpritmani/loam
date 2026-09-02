@@ -133,30 +133,42 @@
       <div class="article-comments">
         {%- if article.comments_count > 0 -%}
           <h2 class="h4">{{ 'blog.article_comments' | t }}</h2>
-          <ul class="article-comments__list">
-            {%- for comment in article.comments -%}
-              <li class="article-comments__item">
-                <div class="rte text-body-sm">{{ comment.content }}</div>
-                <p class="caption">
-                  {{- comment.author | escape }}
-                  <span aria-hidden="true">·</span>
-                  <time datetime="{{ comment.created_at | date: '%Y-%m-%d' }}">
-                    {{- comment.created_at | date: format: 'date' -}}
-                  </time>
-                </p>
-              </li>
-            {%- endfor -%}
-          </ul>
+          {%- paginate article.comments by section.settings.comments_per_page -%}
+            <ul class="article-comments__list">
+              {%- for comment in article.comments -%}
+                <li class="article-comments__item">
+                  <div class="rte text-body-sm">{{ comment.content }}</div>
+                  <p class="caption">
+                    {{- comment.author | escape }}
+                    <span aria-hidden="true">·</span>
+                    <time datetime="{{ comment.created_at | date: '%Y-%m-%d' }}">
+                      {{- comment.created_at | date: format: 'date' -}}
+                    </time>
+                  </p>
+                </li>
+              {%- endfor -%}
+            </ul>
+            {%- render 'pagination', paginate: paginate, anchor: '#main' -%}
+          {%- endpaginate -%}
         {%- endif -%}
 
         {%- form 'new_comment', article, class: 'article-comments__form' -%}
           <h2 class="h5">{{ 'blog.comment_form_title' | t }}</h2>
 
+          {%- comment -%}
+            Same pattern as contact-form.liquid: loop every failed field
+            rather than hardcoding one, so a name/body validation error is
+            never silently swallowed.
+          {%- endcomment -%}
           {%- if form.errors -%}
-            <p class="field__error" role="alert">
-              {{- form.errors.translated_fields.email | capitalize }}
-              {{ form.errors.messages.email -}}
-            </p>
+            <ul class="article-comments__errors" role="alert">
+              {%- for field in form.errors -%}
+                <li class="field__error">
+                  {{- form.errors.translated_fields[field] | capitalize }}
+                  {{ form.errors.messages[field] -}}
+                </li>
+              {%- endfor -%}
+            </ul>
           {%- elsif form.posted_successfully? -%}
             <p class="field__hint" role="status">{{ 'blog.comment_success' | t }}</p>
           {%- endif -%}
@@ -330,6 +342,15 @@
       "id": "newsletter_fine_print",
       "label": "t:sections.footer.blocks.newsletter.fine_print.label",
       "default": "Unsubscribe any time."
+    },
+    {
+      "type": "range",
+      "id": "comments_per_page",
+      "label": "t:sections.main_article.comments_per_page.label",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "default": 20
     },
     {
       "type": "header",

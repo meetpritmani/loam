@@ -195,7 +195,7 @@
 
               {%- when 'price' -%}
                 <div class="product__price" data-price-target {{ block.shopify_attributes }}>
-                  {%- render 'price', product: product, variant: current -%}
+                  {%- render 'price', product: product, variant: current, show_tax_note: true -%}
                 </div>
 
               {%- when 'material' -%}

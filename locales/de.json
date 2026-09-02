@@ -87,6 +87,7 @@
     "remove": "Entfernen",
     "subtotal": "Zwischensumme",
     "taxes_and_shipping_note": "Steuern und Versand werden an der Kasse berechnet.",
+    "taxes_included_shipping_note": "Inkl. MwSt. Versand wird an der Kasse berechnet.",
     "quantity": "Menge",
     "note": "Anmerkung zur Bestellung",
     "note_placeholder": "Lieferhinweise, Geschenknachricht, sonstiges.",
@@ -333,7 +334,8 @@
         "sale_price": "Aktionspreis",
         "regular_price": "Regulärer Preis",
         "unit_price": "Grundpreis",
-        "savings_percent": "{{ percent }} % sparen"
+        "savings_percent": "{{ percent }} % sparen",
+        "tax_included": "inkl. MwSt."
       },
       "quantity": "Menge",
       "quick_add_label": "{{ title }} in den Warenkorb legen",

@@ -1,13 +1,12 @@
 {%- comment -%}
   card-article.liquid — one journal post, as a card.
 
-  §9.6: "excerpt is a real excerpt, not truncated body text." So the summary
-  line renders `article.excerpt` and nothing else. The tempting shortcut is
-  `article.excerpt_or_content | strip_html | truncate`, which produces a
-  sentence that stops mid-word and usually reads as the article's first
-  sentence rather than its point. A blank excerpt renders no summary line at
-  all — a card with a heading, a date and a route through is honest; a card
-  with a mangled half-sentence is not.
+  §9.6: "excerpt is a real excerpt, not truncated body text." So a set
+  `article.excerpt` always renders as-is. Only when it is blank does this
+  fall back to `article.excerpt_or_content` (Theme Store requirement — a
+  card must display something here) — and even then via `truncatewords`,
+  not the character-based `truncate`, so the fallback stops on a whole word
+  rather than mid-word.
 
   Author and date are on by default: §9.5 asks for both, for credibility.
 
@@ -72,10 +71,27 @@
         <a class="card__link" href="{{ article.url }}">{{ article.title | escape }}</a>
       </{{ title_tag }}>
 
-      {%- if with_excerpt and article.excerpt != blank -%}
-        <p class="article-card__excerpt text-muted">
-          {{- article.excerpt | strip_html | escape -}}
-        </p>
+      {%- if with_excerpt -%}
+        {%- comment -%}
+          Theme Store requirement: article.excerpt_or_content, never a blank
+          field. A real excerpt renders as-is; only an article with no
+          excerpt set falls back to content, and truncatewords (word-safe)
+          rather than truncate (character-based) so it never cuts mid-word —
+          the original objection to `excerpt_or_content | truncate` per
+          §9.6, not to a fallback existing at all.
+        {%- endcomment -%}
+        {%- if article.excerpt != blank -%}
+          <p class="article-card__excerpt text-muted">
+            {{- article.excerpt | strip_html | escape -}}
+          </p>
+        {%- else -%}
+          {%- assign fallback_excerpt = article.excerpt_or_content | strip_html | truncatewords: 30 -%}
+          {%- if fallback_excerpt != blank -%}
+            <p class="article-card__excerpt text-muted">
+              {{- fallback_excerpt | escape -}}
+            </p>
+          {%- endif -%}
+        {%- endif -%}
       {%- endif -%}
 
       {%- comment -%}

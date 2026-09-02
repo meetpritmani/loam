@@ -365,6 +365,9 @@
         "label": "Products in this article"
       },
       "related_paragraph": "Set these per article with the custom.related_products metafield. Anything chosen here is the fallback for articles that do not have it. Only add products the article actually mentions.",
+      "comments_per_page": {
+        "label": "Comments per page"
+      },
       "headers": {
         "related": "Related products"
       }

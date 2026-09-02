@@ -87,6 +87,7 @@
     "remove": "Retirer",
     "subtotal": "Sous-total",
     "taxes_and_shipping_note": "Taxes et frais de livraison calculés à la commande.",
+    "taxes_included_shipping_note": "Taxes incluses. Frais de livraison calculés à la commande.",
     "quantity": "Quantité",
     "note": "Note de commande",
     "note_placeholder": "Instructions de livraison, message cadeau, autre.",
@@ -333,7 +334,8 @@
         "sale_price": "Prix promotionnel",
         "regular_price": "Prix habituel",
         "unit_price": "Prix unitaire",
-        "savings_percent": "Économisez {{ percent }} %"
+        "savings_percent": "Économisez {{ percent }} %",
+        "tax_included": "Taxes incluses"
       },
       "quantity": "Quantité",
       "quick_add_label": "Ajouter {{ title }} au panier",

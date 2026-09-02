@@ -86,6 +86,7 @@
     "remove": "削除",
     "subtotal": "小計",
     "taxes_and_shipping_note": "税金と送料はレジで計算されます。",
+    "taxes_included_shipping_note": "税込み。送料はレジで計算されます。",
     "quantity": "数量",
     "note": "注文メモ",
     "note_placeholder": "配送のご希望、ギフトメッセージ、そのほかご要望。",
@@ -327,7 +328,8 @@
         "sale_price": "セール価格",
         "regular_price": "通常価格",
         "unit_price": "単価",
-        "savings_percent": "{{ percent }}%オフ"
+        "savings_percent": "{{ percent }}%オフ",
+        "tax_included": "税込"
       },
       "quantity": "数量",
       "quick_add_label": "{{ title }}をカートに追加",

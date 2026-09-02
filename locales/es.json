@@ -87,6 +87,7 @@
     "remove": "Quitar",
     "subtotal": "Subtotal",
     "taxes_and_shipping_note": "Impuestos y envío se calculan al finalizar la compra.",
+    "taxes_included_shipping_note": "Impuestos incluidos. Envío calculado al finalizar la compra.",
     "quantity": "Cantidad",
     "note": "Nota del pedido",
     "note_placeholder": "Instrucciones de entrega, mensaje de regalo, lo que sea.",
@@ -333,7 +334,8 @@
         "sale_price": "Precio de oferta",
         "regular_price": "Precio habitual",
         "unit_price": "Precio por unidad",
-        "savings_percent": "Ahorra un {{ percent }} %"
+        "savings_percent": "Ahorra un {{ percent }} %",
+        "tax_included": "Impuestos incluidos"
       },
       "quantity": "Cantidad",
       "quick_add_label": "Añadir {{ title }} al carrito",

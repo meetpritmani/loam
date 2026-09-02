@@ -101,7 +101,19 @@
                 <td>{{ line.sku }}</td>
                 <td class="text-end">{{ line.price | money }}</td>
                 <td class="text-end">{{ line.quantity }}</td>
-                <td class="text-end">{{ line.final_line_price | money }}</td>
+                <td class="text-end">
+                  {{ line.final_line_price | money }}
+                  {%- if line.line_level_discount_allocations.size > 0 -%}
+                    <ul class="order-table__discounts">
+                      {%- for allocation in line.line_level_discount_allocations -%}
+                        <li class="badge">
+                          {{- allocation.discount_application.title | escape }}
+                          (−{{ allocation.amount | money }})
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  {%- endif -%}
+                </td>
               </tr>
             {%- endfor -%}
           </tbody>
@@ -110,6 +122,16 @@
               <th scope="row" colspan="4" class="text-end">{{ 'customers.order.subtotal' | t }}</th>
               <td class="text-end">{{ order.line_items_subtotal_price | money }}</td>
             </tr>
+            {%- if order.cart_level_discount_applications.size > 0 -%}
+              {%- for discount in order.cart_level_discount_applications -%}
+                <tr>
+                  <th scope="row" colspan="4" class="text-end">
+                    <span class="badge">{{ discount.title | escape }}</span>
+                  </th>
+                  <td class="text-end">−{{ discount.total_allocated_amount | money }}</td>
+                </tr>
+              {%- endfor -%}
+            {%- endif -%}
             {%- for shipping in order.shipping_methods -%}
               <tr>
                 <th scope="row" colspan="4" class="text-end">

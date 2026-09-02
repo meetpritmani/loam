@@ -19,6 +19,10 @@
     variant     (variant, optional)  — overrides product's selected variant
     price       (number, optional)   — render this amount directly
     show_from   (boolean, optional)  — "From $X" instead of "$X – $Y"
+    show_tax_note (boolean, optional) — "Tax included" note (Theme Store
+                                        requirement: product page only, not
+                                        cards/cart lines, to avoid repeating
+                                        it everywhere a price appears)
     class       (string, optional)
 {%- endcomment -%}
 
@@ -90,6 +94,12 @@
         {{- target.unit_price_measurement.reference_value -}}
       {%- endif -%}
       {{ target.unit_price_measurement.reference_unit }}
+    </span>
+  {%- endif -%}
+
+  {%- if show_tax_note and cart.taxes_included -%}
+    <span class="price__tax-note text-body-sm text-muted">
+      {{- 'products.product.price.tax_included' | t -}}
     </span>
   {%- endif -%}
 </div>

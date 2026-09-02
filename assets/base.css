@@ -1851,6 +1851,12 @@ loam-drawer {
   gap: var(--sp-1);
 }
 
+.cart-line__variant {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-2);
+}
+
 .cart-line__controls {
   display: flex;
   align-items: center;
@@ -2416,6 +2422,13 @@ cart-items[aria-busy] {
 
 .order-table tbody th {
   font-weight: var(--f-body-weight-bold);
+}
+
+.order-table__discounts {
+  display: grid;
+  gap: var(--sp-1);
+  margin-block-start: var(--sp-1);
+  justify-items: end;
 }
 
 .order-status {

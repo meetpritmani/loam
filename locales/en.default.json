@@ -87,6 +87,7 @@
     "remove": "Remove",
     "subtotal": "Subtotal",
     "taxes_and_shipping_note": "Taxes and shipping calculated at checkout.",
+    "taxes_included_shipping_note": "Tax included. Shipping calculated at checkout.",
     "quantity": "Quantity",
     "note": "Order note",
     "note_placeholder": "Delivery instructions, gift message, anything else.",
@@ -333,7 +334,8 @@
         "sale_price": "Sale price",
         "regular_price": "Regular price",
         "unit_price": "Unit price",
-        "savings_percent": "Save {{ percent }}%"
+        "savings_percent": "Save {{ percent }}%",
+        "tax_included": "Tax included"
       },
       "quantity": "Quantity",
       "quick_add_label": "Add {{ title }} to cart",
