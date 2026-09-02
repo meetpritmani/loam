@@ -21,7 +21,7 @@ external CDN. Everything a shopper downloads is in this repository.
 | 4 | Templates — product, collection, search, cart, blog, customers | Complete |
 | 5 | Demo store seeding | **Complete** — 48 of 48 demo photos sourced, licensed and uploaded; catalogue, collections and content seeded |
 | 6 | Demo content shipped in the repo | **Complete** — theme JSON fully wired to the seeded media, both presets ship, `assets/` correctly bundles no photography |
-| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | **In progress** — theme check, contrast, section and locale audits automated and passing; JSON-LD validated on every template; Lighthouse, a VoiceOver pass, an RTL spot-check and a fresh-install test are still open |
+| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | **In progress** — theme check, contrast, section and locale audits automated and passing; JSON-LD validated on every template; RTL verified live (a real bidi bug found and fixed); a fresh, empty dev store confirmed installing to a finished-looking homepage in the seeded time budget; desktop Lighthouse confirmed 90+ repeatably. A VoiceOver pass and the buyer-facing demo screenshots are still open |
 
 Nothing in this file describes behaviour that does not exist today.
 
@@ -68,8 +68,8 @@ Twelve groups under **Online Store → Themes → Customize → Theme settings**
 | **Typography** | Heading and body fonts from Shopify's library, heading/body scale, letter spacing, uppercase toggle |
 | **Layout** | Page width, section spacing, corner radius, border weight |
 | **Animations** | Scroll reveal, image zoom on hover |
-| **Product cards** | Image ratio, hover image, swatches, badges, material tag, quick add |
-| **Cart** | Drawer or page, order note, free-shipping bar and its threshold |
+| **Product cards** | Image ratio, hover image, swatches, badges, material tag, quick add, quick view, compare |
+| **Cart** | Drawer or page, order note, free-shipping bar and its threshold, running carbon footprint total |
 | **Search** | Predictive search, prices in results |
 | **Currency format** | Show currency codes |
 | **Brand** | Logo, logo width, favicon, social share image |
@@ -134,6 +134,7 @@ there; this section is the reference.
 | `cro_low_stock_threshold` | 10 | Low-stock message at or below this quantity. `0` disables |
 | `cro_trust_returns` | "Free returns for 30 days" | Shown beside Add to Cart |
 | `cro_trust_shipping` | "Carbon neutral shipping on every order" | Shown beside Add to Cart |
+| `cro_back_in_stock` | on | "Email me when this is back" capture on a genuinely sold-out variant — never on an unavailable combination, which is a different state with nothing to be notified about |
 | `cro_cart_upsell_products` | — | Up to three products offered in the cart and drawer |
 | `cro_empty_cart_collection` | — | Drives empty-cart, 404, search and blog recovery routes |
 | `cro_datalayer` | **off** | GA4-shaped events to `window.dataLayer` |
@@ -173,7 +174,7 @@ claim you can stand behind.
 | Section | Notes |
 |---|---|
 | Announcement bar | Rotating messages, optional country and language selectors |
-| Header | Mega menu with feature card, sticky, mobile drawer, cart count |
+| Header | Mega menu with feature card, sticky, mobile drawer, cart count, account entry point that adapts to new or classic customer accounts automatically |
 | Hero | Image or video, separate mobile media, 9-way text position, scrim, two CTAs, stat row |
 | Marquee | Seamless loop, pauses on hover, plain scroll under reduced motion |
 | Featured collection | Grid or slider, quick add, view-all link |
@@ -189,7 +190,8 @@ claim you can stand behind.
 | Newsletter | Shopify customer form with inline success and error states |
 | Rich text | Heading, text and button blocks |
 | Multicolumn | Two to four columns, each ending in a link |
-| Footer | Menu blocks, newsletter, social, payment icons, locale and currency |
+| Footer | Menu blocks, newsletter, social, payment icons, locale and currency, Follow on Shop where your store is eligible |
+| Custom Liquid | Drop into any JSON template — a `type: "liquid"` setting in the theme's own colour-scheme and padding wrapper, so raw Liquid or an app snippet gets the same section chrome as everything else |
 | Cart drawer | Free-shipping progress, inline quantity, order note |
 
 ### Product page
@@ -222,6 +224,35 @@ Behaviour worth knowing:
 - **The quantity stepper disables itself** along with Add to Cart when
   there is no purchasable variant — sold out or unavailable never leaves
   an active-looking control with nothing to submit.
+- **Back-in-stock capture appears only on a genuinely sold-out variant** —
+  `variant.inventory_management` set and quantity at zero — never on an
+  unavailable colour/size combination that was simply never stocked.
+  Controlled by `cro_back_in_stock`.
+- **Pickup availability** re-fetches per variant, since store availability is
+  variant-scoped and cannot be pre-rendered with the rest of the page. Shows
+  nothing until at least one location has local pickup turned on.
+- **Shop Pay Installments** renders through `payment_terms` inside the same
+  form Add to Cart submits — it has to sit inside that exact form context to
+  have anything to bind to. Shows nothing unless Shop Pay is active and
+  eligible for your store's region and order value.
+
+### Product cards
+
+Every card can carry two extra actions beyond quick add, each its own tab
+stop so neither steals a click from the other or from the card's own
+title link:
+
+- **Quick view** fetches the product into a drawer through the Section
+  Rendering API — gallery, price, variant picker, Add to Cart — without
+  leaving the grid. Distinct from quick add: quick add is for the
+  single-variant case that needs no decision, quick view is for the case
+  that does.
+- **Compare** holds up to three products in a persistent tray (your own
+  browser only, never sent to you) and opens a side-by-side table —
+  price, material, carbon footprint, availability.
+
+Both are switches, not always-on: `card_quick_view` and
+`card_show_compare`.
 
 ### Other templates
 
@@ -241,10 +272,14 @@ Behaviour worth knowing:
 | Customer accounts | `main-login`, `main-register`, `main-account`, `main-order`, `main-addresses`, `main-reset-password`, `main-activate-account` | All seven templates |
 | Gift card | `templates/gift_card.liquid` | Balance, code, print and Apple Wallet |
 
-Two rows load only as you approach them, so they cost nothing above the fold:
+Three rows load only as you approach them, so they cost nothing above the fold:
 
 - **Related products** — from Shopify's recommendations, never a slice of the
   same collection. Hidden entirely below three results.
+- **Complementary products** — Shopify's "goes well with" recommendations, a
+  separate row from related rather than a toggle on it: related answers
+  "shoppers who liked this also liked," complementary answers "pairs with
+  this specific item." Same three-result minimum.
 - **Recently viewed** — held in the shopper's own browser, never sent to you or
   joined to a customer record. Hidden when empty, and it never shows the
   product currently open.
@@ -333,8 +368,8 @@ Budgets are enforced, not aspirational:
 
 | Budget | Limit | Current |
 |---|---|---|
-| CSS, gzipped | 60KB | 19.8KB |
-| JavaScript, gzipped | 40KB | 21.2KB |
+| CSS, gzipped | 60KB | 27.0KB |
+| JavaScript, gzipped | 40KB | 31.2KB |
 | Stylesheets | 1 | 1 |
 | Scripts | 1 | 1 |
 | External requests | 0 | 0 |
@@ -446,8 +481,8 @@ config/      settings_schema.json, settings_data.json
 layout/      theme.liquid, password.liquid
 locales/     en.default.json (storefront), en.default.schema.json (editor),
              plus fr de es it ja pt-PT (storefront strings)
-sections/    30 sections plus header-group.json and footer-group.json
-snippets/    24 snippets
+sections/    49 sections plus header-group.json and footer-group.json
+snippets/    36 snippets
 templates/   JSON templates
 ```
 
