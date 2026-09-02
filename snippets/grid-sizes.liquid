@@ -1,0 +1,50 @@
+{%- comment -%}
+  grid-sizes.liquid — an accurate `sizes` attribute for a card inside
+  `.grid` (base.css).
+
+  A flat `25vw`/`33vw`/`50vw` guess — used verbatim in several sections
+  before this existed — ignores three things base.css actually applies to
+  every grid: `.page-width`'s inline padding (`--page-gutter`), the grid's
+  own column gap (`--grid-gap`), and `.page-width`'s max-width cap
+  (`--page-width`) once the viewport outgrows it. Each one shrinks the
+  true card width below the flat percentage, so the browser picks one
+  srcset step larger than the card ever displays — small per image, real
+  in aggregate across a whole row (this is what Lighthouse's "improve
+  image delivery" was flagging on featured-collection's card grid).
+
+  Mirrors `.grid`'s own breakpoints exactly: 2 columns below 750px, then
+  `columns | at_most: 3` from 750px, then the full `columns` count from
+  990px, with `.page-width`'s cap folded in via `min()` so a wide desktop
+  viewport doesn't overshoot the container that actually bounds the grid.
+
+  Params:
+    columns         (number)           — the desktop column count (same
+                                          value passed to --grid-cols)
+    tablet_columns  (number, optional) — defaults to columns capped at 3;
+                                          pass explicitly when a caller's
+                                          own --grid-cols-tablet is a fixed
+                                          number rather than that same cap
+{%- endcomment -%}
+
+{%- liquid
+  assign gutter = settings.page_gutter | default: 24
+  assign gap = settings.grid_gap | default: 24
+  assign page_width = settings.page_width | default: 1440
+
+  assign mobile_cols = 2
+  assign tablet_cols = columns | at_most: 3
+  if tablet_columns != blank
+    assign tablet_cols = tablet_columns
+  endif
+  assign desktop_cols = columns
+
+  assign mobile_gap_total = mobile_cols | minus: 1 | times: gap
+  assign mobile_px = gutter | times: 2 | plus: mobile_gap_total
+
+  assign tablet_gap_total = tablet_cols | minus: 1 | times: gap
+  assign tablet_px = gutter | times: 2 | plus: tablet_gap_total
+
+  assign desktop_gap_total = desktop_cols | minus: 1 | times: gap
+  assign desktop_px = gutter | times: 2 | plus: desktop_gap_total
+-%}
+(min-width: 990px) calc((min({{ page_width }}px, 100vw) - {{ desktop_px }}px) / {{ desktop_cols }}), (min-width: 750px) calc((100vw - {{ tablet_px }}px) / {{ tablet_cols }}), calc((100vw - {{ mobile_px }}px) / {{ mobile_cols }})

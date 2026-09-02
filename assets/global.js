@@ -382,6 +382,44 @@ if (!customElements.get('loam-drawer')) {
   customElements.define('loam-drawer', LoamDrawer);
 }
 
+/* --------------------------------------------------------------------------
+   Lazy sections
+   quick-view-drawer and compare-drawer are closed dialogs most sessions
+   never open, shipped inert inside `<template data-lazy-section="...">` in
+   theme.liquid instead of live in the initial DOM (Lighthouse's dom-size
+   audit was counting their markup on every single page load, opened or
+   not). This runs in the capture phase — before <quick-view-trigger>'s own
+   click handler and before <loam-drawer>'s own document-level listener,
+   both added the moment their element connects — so by the time either
+   runs, the real element is already in the DOM exactly as if it had been
+   there all along. Neither piece of code above needed to change to know
+   this exists; a drawer already present (every other one — cart, menu,
+   search, size guide) is a no-op here.
+   -------------------------------------------------------------------------- */
+document.addEventListener(
+  'click',
+  (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const trigger = target.closest('quick-view-trigger, [data-drawer-toggle]');
+    if (!trigger) return;
+
+    const id =
+      trigger.localName === 'quick-view-trigger'
+        ? 'quick-view-drawer'
+        : trigger.getAttribute('aria-controls');
+    if (!id || document.getElementById(id)) return;
+
+    const template = document.querySelector(`template[data-lazy-section="${id}"]`);
+    if (!template) return;
+
+    document.body.appendChild(template.content.cloneNode(true));
+    template.remove();
+  },
+  true
+);
+
 /* ==========================================================================
    <mega-menu>
    Progressive enhancement over native <details>/<summary>. The menu already
@@ -2386,6 +2424,16 @@ class ThemeSelect extends HTMLElement {
     if (!this.listbox.hidden) return;
     this.listbox.hidden = false;
     this.trigger.setAttribute('aria-expanded', 'true');
+
+    // Flip above the trigger when the panel would otherwise run off the
+    // bottom of the viewport and there is more room above than below —
+    // the same overflow-avoidance a native <select> gives for free.
+    const triggerRect = this.trigger.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+    const opensUp = spaceBelow < this.listbox.offsetHeight && spaceAbove > spaceBelow;
+    this.listbox.classList.toggle('theme-select__listbox--up', opensUp);
+
     const active = this.optionEls.find((li) => li.getAttribute('aria-selected') === 'true') || this.optionEls[0];
     this.setActive(active);
   }

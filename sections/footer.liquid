@@ -96,6 +96,23 @@
           {%- if section.settings.copyright_extra != blank %} — {{ section.settings.copyright_extra | escape }}{% endif -%}
         </p>
 
+        {%- comment -%}
+          §9.4: footer carries a returns-window line. Deliberately not a
+          render of trust-row.liquid here — that snippet supplies its own
+          border-block + padding-block for its usual job (a standalone strip
+          next to Add to Cart), which duplicates `.footer__bottom`'s own
+          border-block-start and re-stacks a double gap. This is one more
+          flex child in the bottom-start row the copyright already lives in,
+          same caption typography, so it reads as part of that row rather
+          than a strip glued on top of it.
+        {%- endcomment -%}
+        {%- if settings.cro_trust_returns != blank -%}
+          <p class="footer__returns caption">
+            {%- render 'icon', icon: 'return', size: 14 -%}
+            <span>{{ settings.cro_trust_returns | escape }}</span>
+          </p>
+        {%- endif -%}
+
         {%- render 'localization-form',
           show_country: section.settings.show_country,
           show_language: section.settings.show_language,

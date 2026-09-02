@@ -58,8 +58,14 @@
     wide, and the 360-to-540 jump overshoots a mobile grid cell by 2-3x once
     device pixel ratio is applied. This list adds the finer low-end steps a
     card actually needs and caps out well short of a hero image's ceiling.
+
+    Low end tightened further after grid-sizes.liquid started reporting a
+    real width: a 2-column mobile grid cell lands around 170px, and even
+    with an accurate `sizes` hint, a bare 280/360 jump still overshoots it
+    by a full step once DPR is applied. 160/240/320 close that gap without
+    stretching the ladder past what a card ever legitimately needs.
   endcomment
-  assign card_widths = '200,280,360,450,540,650,780,940,1130,1360'
+  assign card_widths = '160,200,240,280,320,360,450,540,650,780,940,1130,1360'
 -%}
 
 {%- if product != blank and product.id -%}

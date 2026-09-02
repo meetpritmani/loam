@@ -24,6 +24,11 @@
   endif
 
   assign columns = section.settings.columns
+
+  capture card_sizes
+    render 'grid-sizes', columns: columns
+  endcapture
+  assign card_sizes = card_sizes | strip
 -%}
 
 <div
@@ -72,7 +77,7 @@
           <div class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;">
             {%- render 'card-product',
               product: product,
-              sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
+              sizes: card_sizes,
               loading: 'lazy'
             -%}
           </div>
@@ -82,7 +87,7 @@
           <div class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;">
             {%- render 'card-product',
               demo_index: i,
-              sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
+              sizes: card_sizes,
               loading: 'lazy'
             -%}
           </div>

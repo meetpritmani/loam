@@ -32,6 +32,11 @@
   endcomment
   assign related_count = related.size
 
+  capture card_sizes
+    render 'grid-sizes', columns: 4, tablet_columns: 3
+  endcapture
+  assign card_sizes = card_sizes | strip
+
   assign share_url = request.origin | append: article.url
   assign article_date = article.published_at | date: format: 'date'
   assign article_image_alt = article.image.alt | default: article.title
@@ -113,7 +118,7 @@
             {%- render 'card-product',
               product: product,
               heading_tag: 'h3',
-              sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+              sizes: card_sizes
             -%}
           </li>
         {%- endfor -%}

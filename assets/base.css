@@ -1315,8 +1315,15 @@ loam-drawer {
   min-width: 0;
 }
 
+/* Every message shares the same grid cell (crossfade rotation) so the track
+   is always as tall as the tallest configured message. Without align-items
+   here, a shorter one-line message stretches to fill that height and its
+   text sits at the top of the box instead of centring in it — visibly
+   off-centre against the arrow controls beside it, which centre on the
+   track's full height via .announcement-bar__inner's own align-items. */
 .announcement-bar__track {
   display: grid;
+  align-items: center;
   flex: 0 1 auto;
   min-width: 0;
 }
@@ -3375,6 +3382,12 @@ recently-viewed {
   flex-wrap: wrap;
 }
 
+.footer__returns {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
 .footer__social {
   gap: var(--sp-1);
 }
@@ -4154,6 +4167,11 @@ recently-viewed {
 .video-section__play-icon {
   /* The play triangle is optically off-centre in its own box. */
   margin-inline-start: 3px;
+}
+
+.video-section__cta {
+  margin-block-start: var(--sp-6);
+  text-align: center;
 }
 
 @media (hover: hover) {
@@ -5206,6 +5224,13 @@ theme-select {
   background-color: var(--c-surface);
   border: var(--border-hairline) solid var(--c-ink-12);
   border-radius: var(--radius);
+}
+
+/* JS-toggled once open(), per global.js, when the panel would otherwise
+   run off the bottom of the viewport and there is more room above. */
+.theme-select__listbox--up {
+  top: auto;
+  bottom: calc(100% + var(--sp-1));
 }
 
 .theme-select__option {

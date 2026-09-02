@@ -33,6 +33,11 @@
   if search.performed
     assign results_count = search.results_count
   endif
+
+  capture card_sizes
+    render 'grid-sizes', columns: section.settings.columns, tablet_columns: 3
+  endcapture
+  assign card_sizes = card_sizes | strip
 -%}
 
 <recently-viewed
@@ -58,7 +63,7 @@
                 {%- render 'card-product',
                   product: result,
                   heading_tag: 'h3',
-                  sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+                  sizes: card_sizes
                 -%}
               </li>
             {%- endif -%}

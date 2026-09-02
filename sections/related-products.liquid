@@ -32,6 +32,11 @@
   if recommendations.performed and recommendations.products_count >= minimum
     assign render_row = true
   endif
+
+  capture card_sizes
+    render 'grid-sizes', columns: section.settings.columns, tablet_columns: 3
+  endcapture
+  assign card_sizes = card_sizes | strip
 -%}
 
 <lazy-section data-url="{{ fetch_url }}" data-name="related-products">
@@ -51,7 +56,7 @@
               {%- render 'card-product',
                 product: recommendation,
                 heading_tag: 'h3',
-                sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+                sizes: card_sizes
               -%}
             </li>
           {%- endfor -%}

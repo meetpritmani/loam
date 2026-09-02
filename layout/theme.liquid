@@ -92,22 +92,33 @@
     {%- endif -%}
 
     {%- comment -%}
-      Same reasoning as the cart drawer above: has to exist on every
-      template so any product card can open it, never loaded at all when
-      the merchant has quick view switched off.
+      Quick view has to be reachable from any product card on any template,
+      but unlike the cart it is a closed dialog nobody sees or needs until
+      they click it — most sessions never do. Shipped inert inside a
+      <template> instead of live in the initial DOM; global.js's lazy
+      section loader clones it in on the first click, before
+      <quick-view-trigger>'s own handler runs, so the behaviour is identical
+      either way. Still gated on the same setting, so it costs nothing at
+      all — not even an inert template — when quick view is switched off.
     {%- endcomment -%}
     {%- if settings.card_quick_view -%}
-      {% section 'quick-view-drawer' %}
+      <template data-lazy-section="quick-view-drawer">
+        {% section 'quick-view-drawer' %}
+      </template>
     {%- endif -%}
 
     {%- comment -%}
-      Same reasoning again: the compare tray and its drawer have to exist on
-      every template so any product card can add to them, and neither loads
-      at all when compare is switched off.
+      The tray itself stays live on every page — it has to keep listening
+      for compare:change regardless of whether anyone opens it, which is
+      exactly why it starts hidden and costs almost nothing. The drawer
+      behind it is the same story as quick view above: a closed dialog with
+      real DOM weight that no shopper who never opens it should pay for.
     {%- endcomment -%}
     {%- if settings.card_show_compare -%}
       {% section 'compare-bar' %}
-      {% section 'compare-drawer' %}
+      <template data-lazy-section="compare-drawer">
+        {% section 'compare-drawer' %}
+      </template>
     {%- endif -%}
 
     {%- comment -%}
