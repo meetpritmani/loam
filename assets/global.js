@@ -1040,13 +1040,19 @@ class ProductForm extends HTMLElement {
     // rather than assuming either shape.
     const quantity = Number(this.form?.querySelector('[name="quantity"]')?.value) || 1;
 
-    // Gift card recipient fields (buy-buttons.liquid). The checkbox IS the
+    // FormData picks up more than this.form's own descendants: both the
+    // gift-card recipient fields (buy-buttons.liquid, nested inside the
+    // form) and selling-plan-selector.liquid's radios (outside it,
+    // associated purely via form="…") are form-associated elements per the
+    // HTML spec, so a single FormData(this.form) call sees all of them.
+    const formData = this.form ? new FormData(this.form) : null;
+    let extra;
+
+    // Gift card recipient fields. The checkbox IS the
     // `properties[__shopify_send_gift_card_to_recipient]` field, so its
     // presence in FormData already means "checked" — no gift-card purchase
     // reaches here with anything extra to send.
-    const formData = this.form ? new FormData(this.form) : null;
     const sendAsGift = formData?.get('properties[__shopify_send_gift_card_to_recipient]');
-    let extra;
     if (sendAsGift) {
       const recipient = {};
       ['email', 'name', 'message', 'send_on'].forEach((key) => {
@@ -1054,6 +1060,13 @@ class ProductForm extends HTMLElement {
         if (value) recipient[key] = value;
       });
       extra = { properties: { __shopify_send_gift_card_to_recipient: true }, recipient };
+    }
+
+    // Selling plan (selling-plan-selector.liquid). Blank value means
+    // "one-time purchase" was picked — nothing extra to send for that case.
+    const sellingPlan = formData?.get('selling_plan');
+    if (sellingPlan) {
+      extra = { ...extra, selling_plan: sellingPlan };
     }
 
     // aria-disabled rather than disabled: a disabled button loses focus, and
@@ -1655,10 +1668,8 @@ class VariantPicker extends HTMLElement {
 
     // Quick view fetches this same buy box into a drawer over a collection
     // or homepage URL. Rewriting THAT page's address with a product variant
-    // query string would break its back button, and there is no stacked
-    // gallery in a quick view for product-gallery to scroll within — so a
-    // quick view swaps its one image directly instead, and skips the URL
-    // sync a real PDP still wants.
+    // query string would break its back button — so only a quick view skips
+    // the URL sync a section actually on the page still wants.
     const inQuickView = root.hasAttribute('data-quick-view');
 
     if (!inQuickView) {
@@ -1668,14 +1679,34 @@ class VariantPicker extends HTMLElement {
       window.history.replaceState({}, '', url.toString());
     }
 
-    if (inQuickView) {
-      const image = root.querySelector('[data-quick-view-media] img');
-      if (image && variant.featured_image?.src) {
-        image.src = variant.featured_image.src;
+    // Two gallery shapes exist in the theme: main-product.liquid's full
+    // stacked grid (<product-gallery>, every image already in the DOM —
+    // sync scrolls the right one into view) and the single-media slot
+    // quick-view.liquid and featured-product.liquid both use
+    // (`[data-media-target]` — sync swaps its one image directly, since
+    // there's nothing to scroll within).
+    const gallery = root.querySelector('product-gallery');
+    const mediaTarget = root.querySelector('[data-media-target]');
+
+    if (gallery && variant.featured_image?.id) {
+      gallery.show(variant.featured_image.id);
+    } else if (mediaTarget && variant.featured_image?.src) {
+      const src = variant.featured_image.src;
+      const image = mediaTarget.querySelector('img');
+      if (image) {
+        image.src = src;
         image.srcset = '';
+      } else {
+        // The slot opened on a video/3D model (no <img> to update in place)
+        // — a variant with its own image still needs to show, so the rich
+        // media is replaced rather than left stuck on screen.
+        mediaTarget.innerHTML = '';
+        const img = document.createElement('img');
+        img.className = 'image-fallback__img';
+        img.src = src;
+        img.alt = variant.featured_image.alt ?? '';
+        mediaTarget.appendChild(img);
       }
-    } else if (variant.featured_image?.id) {
-      root.querySelector('product-gallery')?.show(variant.featured_image.id);
     }
 
     document.dispatchEvent(

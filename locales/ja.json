@@ -326,6 +326,8 @@
       "media_gallery": "商品画像",
       "new": "新着",
       "on_sale": "セール",
+      "one_time_purchase": "都度購入",
+      "purchase_option": "購入オプション",
       "pickup": {
         "title": "店舗受け取り可能",
         "available_at_html": "<strong>{{ location }}</strong>で店舗受け取り可能",

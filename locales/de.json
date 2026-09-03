@@ -332,6 +332,8 @@
       "media_gallery": "Produktmedien",
       "new": "Neu",
       "on_sale": "Sale",
+      "one_time_purchase": "Einmalkauf",
+      "purchase_option": "Kaufoption",
       "pickup": {
         "title": "Abholung verfügbar",
         "available_at_html": "Abholung verfügbar bei <strong>{{ location }}</strong>",

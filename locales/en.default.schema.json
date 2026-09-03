@@ -539,6 +539,9 @@
         "low_stock": {
           "name": "Low stock message"
         },
+        "selling_plan": {
+          "name": "Purchase option"
+        },
         "buy_buttons": {
           "name": "Buy buttons",
           "show_quantity": {
@@ -756,6 +759,12 @@
       },
       "show_view_all": {
         "label": "Show \"view all\" link"
+      }
+    },
+    "featured_product": {
+      "name": "Featured product",
+      "show_view_details": {
+        "label": "Show \"view details\" link"
       }
     },
     "image_with_text": {

@@ -332,6 +332,8 @@
       "media_gallery": "Product media",
       "new": "New",
       "on_sale": "Sale",
+      "one_time_purchase": "One-time purchase",
+      "purchase_option": "Purchase option",
       "pickup": {
         "title": "Pickup available",
         "available_at_html": "Pickup available at <strong>{{ location }}</strong>",

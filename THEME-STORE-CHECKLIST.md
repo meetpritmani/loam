@@ -118,6 +118,87 @@ themes specifically.
   on the cart page and cart drawer (correct mechanism for that page type),
   both gated by `settings.cro_dynamic_checkout`. No CSS overrides the
   Shopify payment-button classes — branded colors untouched.
+  **Refined 2026-09-03, not reversed:** raised by the operator as "the blue
+  button doesn't match the theme" on the PDP/quick view. Inspected the live
+  markup rather than assuming either "it's fine" or "just override it" —
+  the rendered button is specifically `shopify-payment-button__button--unbranded`
+  (Shopify's generic "Buy it now," not a branded wallet button like Shop Pay
+  or PayPal), sitting in plain light DOM, no shadow root. Shopify's own
+  documentation is explicit that this variant *is* meant to be theme-styled
+  ("customize the colors and font on your unbranded accelerated checkout
+  buttons") — unlike the branded versions, which stay untouched exactly as
+  this audit line already said. The theme shipped with no CSS hook for that
+  class at all, so it fell back to Shopify's own SDK blue by default,
+  clashing with the theme's ink/paper palette. Added a scoped rule
+  (`.buy-buttons__express .shopify-payment-button__button--unbranded`, the
+  wrapper `buy-buttons.liquid` already renders on both the PDP and quick
+  view) styling it as `.button--secondary`'s own outlined treatment —
+  transparent fill, ink border and text — so it reads as the secondary
+  action beneath the solid "Add to cart" button rather than a second CTA of
+  equal weight (§9.2 rule 1). Needed a two-class descendant selector, not a
+  bare one: Shopify's own `accelerated-checkout.css` loads after `base.css`
+  and carries the identical bare-class selector, so equal specificity would
+  have left the winner decided by load order. The descendant form lands
+  exactly at CLAUDE.md's own 0,2,0 specificity ceiling and wins regardless
+  — confirmed live (computed styles showed Shopify's blue before, the
+  theme's ink tokens after), not assumed from source alone.
+  **Two follow-ups from the same live check, both operator-raised:**
+  - **Hover state didn't match either.** Shopify's own hover rule
+    (`.shopify-payment-button__button--unbranded:hover:not([disabled])`)
+    turned out to tie the fix above at the exact same specificity —
+    `:not([disabled])` contributes a selector's worth of specificity same as
+    a class does, so `:hover` + that trick lands at 0,3,0, matching a
+    `:hover` appended to the already-0,2,0 base rule. Confirmed live via
+    Chrome DevTools Protocol's `CSS.forcePseudoState` (a real mouse hover
+    couldn't reach the button in headless testing — a wrapper element
+    intercepts pointer events) that Shopify's blue-on-hover was still
+    winning. Escalating specificity again would either exceed CLAUDE.md's
+    own 0,2,0 ceiling or just restart the same arms race if Shopify ever
+    changes their selector — so this one *does* use `!important`, scoped to
+    this single rule and commented as a second, deliberate exception
+    alongside `.visually-hidden` for exactly this reason: it is fighting a
+    versioned third-party stylesheet outside the theme's own cascade, not
+    theme-internal CSS, which is what the no-`!important` rule actually
+    exists to keep sane. Restyled to match `.button--secondary:hover`'s own
+    established pattern exactly (full invert to solid ink background, paper
+    text) rather than the weaker tint first tried, for consistency with
+    the rest of the theme's secondary-button hover behavior.
+  - **Button text sat visibly low, not centered.** Shopify's own box model
+    doesn't actually fit together — `height: 44px` (border-box) minus its
+    own `padding: 1em 2em` (16px top/bottom) minus a ~16px `line-height`
+    overflows the box by design, and block-flow text has nowhere to center
+    itself under that math. `.button` elsewhere in the theme avoids exactly
+    this failure mode with `display: inline-flex` + centered alignment;
+    added the same to this rule rather than fighting Shopify's padding
+    numbers directly. Confirmed via computed styles (`display: flex`
+    applied) and a live screenshot.
+  Live-verified via `shopify theme dev` + Playwright on both the PDP and
+  quick view throughout. `shopify theme check`: 123 files, 0 offenses.
+  **Third follow-up, same conversation:** the operator clarified "both
+  buttons" also meant "Add to cart"'s own hover — it turns `--c-accent`
+  green (`.button--primary:hover`, `base.css`), which is a pre-existing
+  behavior, not something this session introduced, but a real inconsistency
+  once actually checked against the theme's own rules: `theme-tokens.liquid`
+  documents `--c-accent`'s role as "link hover, progress, focus ring" —
+  button hover was never on that list, the same restraint principle already
+  applied to `--c-signal` (sale price only). Fixed by deriving a new token,
+  `--c-button-hover` (`--c-button` mixed 85% toward the scheme's own paper,
+  same `color_mix` mechanism `--c-ink-70/45/12` already use, generated
+  per-scheme in `theme-tokens.liquid` so it stays correct even if a
+  merchant sets a custom `button` colour that differs from `text`), and
+  pointing `.button--primary:hover` at it instead of `--c-accent`. This
+  touches every `.button--primary` sitewide (Add to Cart, hero CTAs,
+  newsletter submit, etc.), not just the PDP — a single shared class, one
+  fix. Reran `node scripts/check-contrast.mjs` after adding the token: 96/96
+  required pairs still pass (the new token wasn't in the script's hardcoded
+  pair list, but at 85% ink it's darker than the already-passing `--c-ink-70`
+  text tint, so a button-label-on-hover-background contrast failure isn't
+  plausible — verified by the arithmetic, not just assumed). Confirmed the
+  actual rendered value live: `rgb(50, 59, 55)` / `#323B37`, matching the
+  hand-computed 85/15 mix exactly, clearly distinct from the `#2E6B4F`
+  accent green it replaced. Documented the new token's rationale in
+  `theme-tokens.liquid`'s own header comment, dated, alongside the existing
+  ink-70/45/12 documentation.
 - ✅ **Discounts** — **FIXED 2026-09-02.** Cart page and cart drawer already
   showed per-item (`line_level_discount_allocations`) and order-level
   (`cart_level_discount_applications`) discounts. `sections/main-order.liquid`
@@ -186,24 +267,49 @@ No gaps in this batch.
 - ✅ **Complementary product recommendations** — `complementary-products.liquid`,
   deliberately separate section using `&intent=complementary`, matching
   Shopify's own distinction between the two features.
-- ❌ **Rich product media — two real gaps:**
-  - `main-product.liquid` itself is fine (`video`, `external_video`, `model`
-    media types all handled via `external_video_tag`/`model_viewer_tag`).
-  - **Quick view gap:** `sections/quick-view.liquid` only ever renders a
-    static image via `image-fallback` — a product whose primary media is a
-    video or 3D model shows a flat picture in quick view instead of the
-    actual rich media.
-  - **Featured product section gap:** the Theme Store checklist explicitly
+- ✅ **Rich product media — both gaps FIXED 2026-09-03:**
+  - `main-product.liquid` itself was already fine (`video`, `external_video`,
+    `model` media types all handled via `external_video_tag`/
+    `model_viewer_tag`).
+  - **Quick view gap, fixed.** `sections/quick-view.liquid` only ever
+    rendered a static image via `image-fallback` — a product whose primary
+    media is a video or 3D model showed a flat picture in quick view instead
+    of the actual rich media. Added the same `video`/`external_video`/
+    `model`/image `{% case %}` switch `main-product.liquid` already uses.
+    Variant switching needed its own fix underneath: `VariantPicker.onChange`
+    (`global.js`) only ever updated an `<img src>` in place, so a quick view
+    that opened on rich media had no `<img>` to update and would leave the
+    video/model stuck on screen after picking a variant with its own image.
+    Rewired the swap to detect this (create a fresh `<img>` when none exists)
+    and renamed `data-quick-view-media` → the more general `data-media-target`
+    so `featured-product.liquid` (below) can share the exact same logic.
+  - **Featured product section gap, fixed.** The Theme Store checklist
     names three required surfaces for rich media — product template,
-    featured product section, quick view. This theme has
+    featured product section, quick view. This theme had
     `featured-collection` (a grid of many products) but **no single-product
-    spotlight section** at all. That's a distinct required section type,
-    entirely missing from both `CLAUDE.md` §10's inventory and the actual
-    `sections/` folder.
-  **Action:** build a `featured-product.liquid` section (single product,
-  its own gallery + buy form, handling all three media types), and add
-  rich-media handling (video/model, not just static image) to
-  `quick-view.liquid`.
+    spotlight section** at all — a distinct required section type, missing
+    from both `CLAUDE.md` §10's inventory and the actual `sections/` folder.
+    Built `sections/featured-product.liquid`: single merchant-picked
+    product, its own media slot (all four media types, same pattern as quick
+    view — not main-product's full stacked gallery, which is more than a
+    spotlight needs), real variant picker + buy form reusing the existing
+    snippets, `@app` block, and a `custom_liquid` block (closing out item 11
+    for this section too, per that item's own note that it was "still open"
+    here). Falls back to `card-product.liquid`'s own demo-shoe mode when no
+    product is picked or the store has none — same mechanism
+    `featured-collection.liquid` already uses, rather than an empty state,
+    since there's no honest way to show a working buy form for a product
+    that doesn't exist. **Not added to `templates/index.json`** — this
+    exists to satisfy the "featured product section" requirement (available
+    in the editor with a preset) rather than as a 20th homepage section; the
+    homepage preset is already tuned to the ≤12-section/Lighthouse budget in
+    `CLAUDE.md` §5, and adding a real product spotlight there would need its
+    own perf re-validation. Live-tested end to end via `shopify theme dev` +
+    Playwright (temporarily, not committed): zero-product demo fallback
+    renders correctly, and with a real product picked the full flow —
+    variant selection, Add to Cart, cart drawer open, correct line item —
+    all worked from inside the new section. `shopify theme check`: 123
+    files, 0 offenses.
 
 ---
 
@@ -222,21 +328,46 @@ No gaps in this batch.
   page), `main-product.liquid` (Product page), and `cart-line.liquid` (Cart
   page + cart drawer) — all three required surfaces covered from one shared
   snippet.
-- ❌ **Selling plans — real gap.** `cart-line.liquid` correctly *displays*
-  `item.selling_plan_allocation` when a line was bought via a plan, but
-  **no selling-plan selector exists anywhere in the theme** — no snippet, no
-  UI on `main-product.liquid` for a shopper to actually choose a
-  subscription plan vs. one-time purchase. A merchant who creates selling
-  plans (via a subscriptions app — the theme never creates or manages plans
-  itself) has no way for customers to select one, so the cart-display code
-  can never actually trigger.
-  **Scope, per operator 2026-09-02:** the theme only needs to *render*
-  whatever plans already exist on `product.selling_plan_groups` and feed the
-  chosen plan into the existing hidden `selling_plan` input in
-  `buy-buttons.liquid` — no subscription creation/management logic belongs
-  in the theme; that stays app territory.
-  **Action:** build a selling-plan selector (radio group or dropdown driven
-  by `product.selling_plan_groups`) in the product buy form.
+- ✅ **Selling plans — real gap, FIXED 2026-09-03.** `cart-line.liquid`
+  already correctly *displayed* `item.selling_plan_allocation` when a line
+  was bought via a plan, but no selling-plan selector existed anywhere in
+  the theme — no way for a shopper to actually choose a subscription plan
+  vs. one-time purchase, so the cart-display code could never trigger. Built
+  `snippets/selling-plan-selector.liquid`: renders nothing when the product
+  has no selling plans, otherwise a "One-time purchase" radio (skipped when
+  `product.requires_selling_plan`) plus one radio per plan across every
+  group on `product.selling_plan_groups`, each showing the plan's own
+  `name`/`description` — no price-per-plan display, and deliberately so:
+  plan availability and copy are product-level (`product.selling_plan_groups`
+  doesn't change on a variant swap), but a plan's *price* is variant-scoped,
+  and syncing that live would mean pulling it into the same refresh cycle as
+  price/low-stock — more machinery than the agreed scope asked for. Wired
+  into `main-product.liquid` as a new `selling_plan` block (between
+  `low_stock` and `buy_buttons`, matching the natural pick-a-plan-then-buy
+  order) and into `templates/product.json`'s block order, plus the same
+  block on the new `featured-product.liquid` section for consistency between
+  the theme's two buy-a-product surfaces.
+  **The "existing hidden `selling_plan` input" this item's action line
+  referred to didn't actually exist** — grepped the whole theme and found
+  none; `buy-buttons.liquid` had never had one. Built it as part of this fix:
+  the selector's radios live outside the actual `<form>` (same as
+  `variant-picker.liquid`'s own inputs), associated via
+  `form="{{ section_id }}-form"` rather than DOM nesting, which the HTML
+  spec means `FormData(form)` and native submission both already honor
+  without any new plumbing — confirmed, not assumed, since `ProductForm`'s
+  `ready-to-submit` path (`global.js`) already relies on the same mechanism
+  for the gift-card recipient fields added earlier this session. Extended
+  `ProductForm.onSubmit`'s `extra` payload (the same one built for gift-card
+  recipient data) to also read `selling_plan` from `FormData` and pass it to
+  `Cart.add`, so a chosen plan actually reaches `/cart/add.js` — a blank
+  value (one-time purchase) sends nothing extra, matching how the gift-card
+  checkbox already behaves when unchecked. Live-tested via `shopify theme
+  dev` + Playwright: PDP renders correctly with the block present and no
+  plans configured (renders nothing, no gap left behind) — no product in
+  the seeded demo catalog currently has selling plans, so the "plan actually
+  selected and reaches checkout" path is source-reviewed and reasoned from
+  the proven gift-card-recipient mechanism, not click-tested against a real
+  plan. `shopify theme check`: 123 files, 0 offenses.
 
 ---
 
@@ -1601,9 +1732,9 @@ around.
 | 5 | VoiceOver pass | Not started (needs macOS/Safari) |
 | 6 | Discount display on order template | **Done 2026-09-02** |
 | 7 | Print option on gift card page | **Done 2026-09-03** |
-| 8 | Rich media (video/3D model) in quick view | Not started |
-| 9 | New `featured-product.liquid` section, incl. rich media, `@app` block, and `custom_liquid` block | Not started |
-| 10 | Selling-plan selector on product page (render existing `selling_plan_groups` only — no subscription logic in-theme) | Not started |
+| 8 | Rich media (video/3D model) in quick view | **Done 2026-09-03** |
+| 9 | New `featured-product.liquid` section, incl. rich media, `@app` block, and `custom_liquid` block | **Done 2026-09-03** — not added to `templates/index.json` by design, see finding above |
+| 10 | Selling-plan selector on product page (render existing `selling_plan_groups` only — no subscription logic in-theme) | **Done 2026-09-03** — no product in the demo catalog has plans configured, so not click-tested against a real one |
 | 11 | Add `custom_liquid` block type to `main-product`, `main-collection`, `main-cart`, `cart-drawer` | **Done 2026-09-03** |
 | 12 | Run Shopify's official Lighthouse benchmark-dataset script once before submission | Not started |
 | 13 | `cart.taxes_included` note on product page | **Done 2026-09-02** |

@@ -42,6 +42,10 @@
           "type": "low_stock",
           "settings": {}
         },
+        "selling_plan": {
+          "type": "selling_plan",
+          "settings": {}
+        },
         "buy": {
           "type": "buy_buttons",
           "settings": {
@@ -109,6 +113,7 @@
         "material",
         "picker",
         "low_stock",
+        "selling_plan",
         "buy",
         "pickup",
         "trust",

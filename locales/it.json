@@ -332,6 +332,8 @@
       "media_gallery": "Immagini del prodotto",
       "new": "Novità",
       "on_sale": "Saldo",
+      "one_time_purchase": "Acquisto singolo",
+      "purchase_option": "Opzione di acquisto",
       "pickup": {
         "title": "Ritiro disponibile",
         "available_at_html": "Ritiro disponibile presso <strong>{{ location }}</strong>",

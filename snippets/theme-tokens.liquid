@@ -31,6 +31,14 @@
                 separator glyphs.
     --c-ink-12  hairlines and borders only.
 
+  --c-button-hover (added 2026-09-03) is a fourth: `--c-button` mixed 85%
+  toward the scheme's own paper. Primary-button hover used `--c-accent`
+  before this, which reads against the palette's own documented role for
+  that colour ("link hover, progress, focus ring" — never button hover) and
+  diluted it from a restrained signal into decoration. Deriving from
+  `--c-button` rather than hardcoding ink keeps this correct even for a
+  scheme where a merchant sets a `button` colour that differs from `text`.
+
   `node scripts/check-contrast.mjs` measures every pair in every scheme of
   every shipped preset and exits non-zero on a failure.
 
@@ -166,6 +174,8 @@
       assign ink_45 = ink | color_mix: paper, 45
       assign ink_12 = ink | color_mix: paper, 12
       assign shadow = s.shadow | default: s.text
+      assign button_color = s.button | default: ink
+      assign button_hover = button_color | color_mix: paper, 85
     -%}
     .color-{{ scheme.id }} {
       --c-paper: {{ paper }};
@@ -179,8 +189,9 @@
       --c-ink-45: {{ ink_45 }};
       --c-ink-12: {{ ink_12 }};
 
-      --c-button: {{ s.button | default: ink }};
+      --c-button: {{ button_color }};
       --c-button-label: {{ s.button_label | default: paper }};
+      --c-button-hover: {{ button_hover }};
 
       --c-ink-rgb: {{ ink.red }} {{ ink.green }} {{ ink.blue }};
       --c-paper-rgb: {{ paper.red }} {{ paper.green }} {{ paper.blue }};

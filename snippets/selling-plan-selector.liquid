@@ -1,0 +1,81 @@
+{%- comment -%}
+  selling-plan-selector.liquid — subscribe-or-buy-once, when a subscriptions
+  app has already created selling plans for this product.
+
+  Scope, per operator: this renders whatever already exists on
+  `product.selling_plan_groups` and feeds the chosen plan into
+  buy-buttons.liquid's form via a `selling_plan` field — creating or
+  managing plans is app territory, not this theme's.
+
+  These inputs live outside the actual `<form>` in the DOM (same as
+  variant-picker.liquid's own inputs) and use `form="{{ section_id }}-form"`
+  to associate anyway, so they submit correctly regardless of block order.
+
+  Plan names/descriptions are product-level, not variant-level —
+  `product.selling_plan_groups` does not change when a shopper switches
+  color/size, so unlike price and low-stock this needs no refresh wiring on
+  variant change.
+
+  Renders nothing when the product has no selling plans at all.
+
+  Params:
+    product     (product, required)
+    section_id  (string, required)
+{%- endcomment -%}
+
+{%- if product.selling_plan_groups.size > 0 -%}
+  <fieldset class="selling-plan-selector">
+    <legend class="caption">{{ 'products.product.purchase_option' | t }}</legend>
+
+    <div class="selling-plan-selector__options">
+      {%- unless product.requires_selling_plan -%}
+        {%- liquid
+          assign onetime_id = section_id | append: '-selling-plan-onetime'
+        -%}
+        <input
+          class="visually-hidden"
+          type="radio"
+          id="{{ onetime_id }}"
+          name="selling_plan"
+          value=""
+          form="{{ section_id }}-form"
+          checked
+          data-selling-plan-option
+        >
+        <label class="selling-plan-selector__option" for="{{ onetime_id }}">
+          <span>{{ 'products.product.one_time_purchase' | t }}</span>
+        </label>
+      {%- endunless -%}
+
+      {%- for group in product.selling_plan_groups -%}
+        {%- for plan in group.selling_plans -%}
+          {%- liquid
+            assign plan_input_id = section_id | append: '-selling-plan-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0
+            assign is_checked = false
+            if product.requires_selling_plan and forloop.parentloop.first and forloop.first
+              assign is_checked = true
+            endif
+          -%}
+          <input
+            class="visually-hidden"
+            type="radio"
+            id="{{ plan_input_id }}"
+            name="selling_plan"
+            value="{{ plan.id }}"
+            form="{{ section_id }}-form"
+            {% if is_checked %}checked{% endif %}
+            data-selling-plan-option
+          >
+          <label class="selling-plan-selector__option" for="{{ plan_input_id }}">
+            <span>{{ plan.name | escape }}</span>
+            {%- if plan.description != blank -%}
+              <span class="selling-plan-selector__description text-muted">
+                {{- plan.description | escape -}}
+              </span>
+            {%- endif -%}
+          </label>
+        {%- endfor -%}
+      {%- endfor -%}
+    </div>
+  </fieldset>
+{%- endif -%}

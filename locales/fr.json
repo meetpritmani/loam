@@ -332,6 +332,8 @@
       "media_gallery": "Médias du produit",
       "new": "Nouveau",
       "on_sale": "Promo",
+      "one_time_purchase": "Achat unique",
+      "purchase_option": "Option d'achat",
       "pickup": {
         "title": "Retrait disponible",
         "available_at_html": "Retrait disponible à <strong>{{ location }}</strong>",

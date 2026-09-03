@@ -465,12 +465,15 @@ dialog {
 }
 
 .media > img,
-.media > video {
+.media > video,
+.media > iframe,
+.media > model-viewer {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border: 0;
 }
 
 /* placeholder_svg_tag ships fixed illustration colors that ignore theme
@@ -591,8 +594,8 @@ dialog {
 
 @media (hover: hover) {
   .button--primary:hover {
-    background-color: var(--c-accent);
-    border-color: var(--c-accent);
+    background-color: var(--c-button-hover);
+    border-color: var(--c-button-hover);
   }
 
   .button--secondary:hover {
@@ -3967,6 +3970,58 @@ recently-viewed {
   }
 }
 
+/* --- Featured product ----------------------------------------------------
+   A single-media spotlight (see featured-product.liquid), not the PDP's
+   stacked gallery — media-then-info in DOM order, matching main-product.liquid
+   rather than image-with-text's text-first editorial framing. */
+
+.featured-product {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.featured-product__media {
+  width: 100%;
+}
+
+.featured-product__info {
+  display: grid;
+  align-content: center;
+  gap: var(--sp-4);
+}
+
+.featured-product__title a {
+  text-decoration: none;
+}
+
+.featured-product__details {
+  justify-self: start;
+}
+
+.featured-product--demo {
+  max-width: 360px;
+  margin-inline: auto;
+}
+
+@media (min-width: 750px) {
+  .featured-product {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--sp-8);
+  }
+
+  .featured-product__media,
+  .featured-product__info {
+    flex: 1 1 50%;
+    min-width: 0;
+  }
+
+  .featured-product--media-end .featured-product__media {
+    order: 1;
+  }
+}
+
 /* --- Value props -------------------------------------------------------- */
 
 .value-props {
@@ -4680,6 +4735,51 @@ recently-viewed {
   gap: var(--sp-2);
 }
 
+/* --- Selling plan selector -----------------------------------------------
+   Radio cards rather than variant-picker's pills — a plan's name plus an
+   optional description runs longer than a size or color name, so each
+   option gets its own row instead of sitting inline. */
+
+.selling-plan-selector {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.selling-plan-selector__options {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.selling-plan-selector__option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-height: 44px;
+  padding: var(--sp-3);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+  font-size: var(--t-sm);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease);
+}
+
+[data-selling-plan-option]:checked + .selling-plan-selector__option {
+  border-color: var(--c-ink);
+  border-width: 2px;
+}
+
+[data-selling-plan-option]:focus-visible + .selling-plan-selector__option {
+  outline: var(--focus-width) solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.selling-plan-selector__description {
+  font-size: var(--t-xs);
+}
+
 /* --- Buy buttons -------------------------------------------------------- */
 
 .buy-buttons {
@@ -4698,6 +4798,55 @@ recently-viewed {
 .buy-buttons__express {
   display: grid;
   gap: var(--sp-2);
+}
+
+/* Shopify's own "Buy it now" express button — the UNBRANDED variant only
+   (`shopify-payment-button__button--unbranded`). Branded wallet buttons
+   (Shop Pay, PayPal, Apple/Google Pay) are deliberately never targeted here
+   and stay exactly as Shopify renders them — recoloring those is what
+   Theme Store review actually flags, and they carry required brand marks
+   this selector doesn't touch. The unbranded button is explicitly meant to
+   be theme-styled (Shopify's own docs: "customize the colors and font on
+   your unbranded accelerated checkout buttons") — it ships with no theme
+   hook by default and falls back to Shopify's SDK blue until one exists.
+   Styled as a secondary action (outlined, not filled) so it reads as the
+   second choice beneath the solid Add to Cart button above it, not a
+   second CTA of equal weight (§9.2 rule 1). */
+/* Scoped as a descendant selector, not a bare class: Shopify's own
+   accelerated-checkout.css loads after base.css and carries the identical
+   bare-class selector, so equal specificity would leave the winner decided
+   by load order rather than by us. `.buy-buttons__express …` matches
+   CLAUDE.md's own 0,2,0 specificity ceiling exactly and wins regardless —
+   the correct fix for a load-order collision, not !important. */
+.buy-buttons__express .shopify-payment-button__button--unbranded {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: var(--border-hairline) solid var(--c-ink);
+  border-radius: var(--radius);
+  color: var(--c-ink);
+  font-family: var(--f-body);
+  font-weight: var(--f-body-weight-bold);
+}
+
+/* Shopify's own height (44px) plus its own padding (1em 2em) and
+   line-height don't actually fit inside each other — 16px + 16px + 16px
+   overflows a 44px border-box — so block-flow text sits low rather than
+   centered. `.button` elsewhere in the theme avoids exactly this with
+   `display: inline-flex` + centered alignment for the same reason; this
+   button gets the same fix rather than fighting Shopify's own padding math. */
+
+/* Shopify's own hover rule (`:hover:not([disabled])`, accelerated-checkout.css)
+   ties this selector's specificity exactly, and it loads after base.css, so
+   it would otherwise win purely on source order. !important is the theme's
+   one other documented exception (alongside .visually-hidden): this is a
+   third-party, versioned stylesheet outside the theme's own cascade, not
+   theme-internal CSS, so chasing it with ever-higher specificity is a fight
+   against a moving target rather than a real fix. */
+.buy-buttons__express .shopify-payment-button__button--unbranded:hover {
+  background-color: var(--c-ink) !important;
+  color: var(--c-paper) !important;
 }
 
 /* --- Gift card recipient --------------------------------------------------

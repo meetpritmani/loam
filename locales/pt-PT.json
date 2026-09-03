@@ -332,6 +332,8 @@
       "media_gallery": "Imagens do produto",
       "new": "Novo",
       "on_sale": "Promoção",
+      "one_time_purchase": "Compra única",
+      "purchase_option": "Opção de compra",
       "pickup": {
         "title": "Levantamento disponível",
         "available_at_html": "Levantamento disponível em <strong>{{ location }}</strong>",

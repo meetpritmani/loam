@@ -332,6 +332,8 @@
       "media_gallery": "وسائط المنتج",
       "new": "جديد",
       "on_sale": "مبيع",
+      "one_time_purchase": "شراء لمرة واحدة",
+      "purchase_option": "خيار الشراء",
       "pickup": {
         "title": "الاستلام متاح",
         "available_at_html": "الاستلام متاح من <strong>{{ location }}</strong>",

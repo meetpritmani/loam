@@ -233,6 +233,11 @@
                   {%- render 'low-stock', variant: current -%}
                 </div>
 
+              {%- when 'selling_plan' -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- render 'selling-plan-selector', product: product, section_id: section_id -%}
+                </div>
+
               {%- when 'buy_buttons' -%}
                 <div class="product__buy" data-buy-block {{ block.shopify_attributes }}>
                   {%- render 'buy-buttons',
@@ -339,6 +344,7 @@
       ]
     },
     { "type": "low_stock", "name": "t:sections.main_product.blocks.low_stock.name", "limit": 1 },
+    { "type": "selling_plan", "name": "t:sections.main_product.blocks.selling_plan.name", "limit": 1 },
     {
       "type": "buy_buttons",
       "name": "t:sections.main_product.blocks.buy_buttons.name",

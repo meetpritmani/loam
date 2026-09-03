@@ -1,0 +1,269 @@
+{%- comment -%}
+  featured-product.liquid — a single merchant-picked product, spotlighted
+  outside its own template (homepage, a landing page, anywhere sections go).
+
+  Theme Store requirement: rich product media (image, video, external_video,
+  model) has to work in three places — the product template, this section,
+  and quick view. `main-product.liquid` covers the first, `quick-view.liquid`
+  the third; this covers the second, sharing quick view's single-media-slot
+  pattern (`data-media-target` in global.js) rather than main-product's full
+  stacked gallery — a spotlight is a preview of the product, not the PDP
+  itself, so it does not need a lightbox or a multi-image grid.
+
+  Renders on a store with no products: with nothing picked, it falls back to
+  card-product.liquid's own demo mode — the same fallback featured-collection
+  uses — rather than an empty state. There's no honest way to show a working
+  buy form for a product that doesn't exist, so the fallback is decorative
+  only, matching the zero-product install state a buyer expects everywhere
+  else in the theme.
+
+  Not added to templates/index.json: this section exists to satisfy the
+  Theme Store's "featured product section" requirement (available in the
+  editor, not necessarily on the shipped homepage) rather than as a 20th
+  homepage section — the homepage preset is already tuned to CLAUDE.md's
+  12-section/Lighthouse budget.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = section.settings.product
+-%}
+
+<div
+  class="section color-{{ section.settings.color_scheme }}"
+  style="--section-pt: {{ section.settings.padding_top }}px; --section-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width">
+    {%- if product == blank -%}
+      <div class="featured-product featured-product--demo">
+        {%- render 'card-product', demo_index: 1 -%}
+      </div>
+    {%- else -%}
+      {%- liquid
+        assign current = product.selected_or_first_available_variant
+        assign section_id = section.id
+        assign media = current.featured_image | default: product.featured_media
+        assign media_type = media.media_type | default: 'image'
+      -%}
+      <div class="featured-product featured-product--media-{{ section.settings.media_position }}">
+        <div class="featured-product__media media media--{{ section.settings.image_ratio }} reveal" data-media-target>
+          {%- case media_type -%}
+            {%- when 'video' -%}
+              {{ media | video_tag: image_size: '1200x', controls: true, muted: true }}
+            {%- when 'external_video' -%}
+              {{ media | external_video_tag }}
+            {%- when 'model' -%}
+              {{ media | model_viewer_tag }}
+            {%- else -%}
+              {%- render 'image-fallback',
+                image: media,
+                fallback: 'demo-product-1.webp',
+                alt: product.title,
+                sizes: '(min-width: 750px) 50vw, 100vw',
+                widths: '400, 600, 800, 1000, 1200',
+                loading: 'lazy'
+              -%}
+          {%- endcase -%}
+        </div>
+
+        <div class="featured-product__info reveal" style="--reveal-delay: 80ms;" data-product-info>
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="caption">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+
+              {%- when 'vendor' -%}
+                {%- if product.vendor != blank -%}
+                  <p class="product__vendor caption" {{ block.shopify_attributes }}>
+                    {{- product.vendor | escape -}}
+                  </p>
+                {%- endif -%}
+
+              {%- when 'title' -%}
+                <h2 class="featured-product__title h2" {{ block.shopify_attributes }}>
+                  <a href="{{ product.url }}">{{ product.title | escape }}</a>
+                </h2>
+
+              {%- when 'price' -%}
+                <div class="featured-product__price" data-price-target {{ block.shopify_attributes }}>
+                  {%- render 'price', product: product, variant: current -%}
+                </div>
+
+              {%- when 'material' -%}
+                {%- assign material = product.metafields.custom.material -%}
+                {%- if material != blank -%}
+                  <div {{ block.shopify_attributes }}>
+                    {%- render 'material-tag',
+                      material: material,
+                      composition: product.metafields.custom.material_composition.value,
+                      story: product.metafields.custom.material_story.value
+                    -%}
+                  </div>
+                {%- endif -%}
+
+              {%- when 'description' -%}
+                {%- if product.description != blank -%}
+                  <div class="featured-product__description rte" {{ block.shopify_attributes }}>
+                    {{- product.description -}}
+                  </div>
+                {%- endif -%}
+
+              {%- when 'variant_picker' -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- render 'variant-picker', product: product, section_id: section_id -%}
+                </div>
+
+              {%- when 'low_stock' -%}
+                <div data-low-stock {{ block.shopify_attributes }}>
+                  {%- render 'low-stock', variant: current -%}
+                </div>
+
+              {%- when 'selling_plan' -%}
+                <div {{ block.shopify_attributes }}>
+                  {%- render 'selling-plan-selector', product: product, section_id: section_id -%}
+                </div>
+
+              {%- when 'buy_buttons' -%}
+                <div class="product__buy" data-buy-block {{ block.shopify_attributes }}>
+                  {%- render 'buy-buttons', product: product, section_id: section_id -%}
+                </div>
+
+              {%- when 'custom_liquid' -%}
+                <div {{ block.shopify_attributes }}>
+                  {{ block.settings.custom_liquid }}
+                </div>
+
+              {%- when '@app' -%}
+                {%- render block -%}
+
+            {%- endcase -%}
+          {%- endfor -%}
+
+          {%- if section.settings.show_view_details -%}
+            <a class="link-underline featured-product__details" href="{{ product.url }}">
+              {{ 'products.product.view_details' | t }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.featured_product.name",
+  "tag": "section",
+  "class": "section-featured-product",
+  "blocks": [
+    { "type": "@app" },
+    { "type": "vendor", "name": "t:sections.main_product.blocks.vendor.name", "limit": 1 },
+    { "type": "title", "name": "t:sections.main_product.blocks.title.name", "limit": 1 },
+    { "type": "price", "name": "t:sections.main_product.blocks.price.name", "limit": 1 },
+    { "type": "material", "name": "t:sections.main_product.blocks.material.name", "limit": 1 },
+    { "type": "variant_picker", "name": "t:sections.main_product.blocks.variant_picker.name", "limit": 1 },
+    { "type": "low_stock", "name": "t:sections.main_product.blocks.low_stock.name", "limit": 1 },
+    { "type": "selling_plan", "name": "t:sections.main_product.blocks.selling_plan.name", "limit": 1 },
+    { "type": "buy_buttons", "name": "t:sections.main_product.blocks.buy_buttons.name", "limit": 1 },
+    { "type": "description", "name": "t:sections.main_product.blocks.description.name", "limit": 1 },
+    {
+      "type": "custom_liquid",
+      "name": "t:sections.custom_liquid.name",
+      "settings": [
+        {
+          "type": "liquid",
+          "id": "custom_liquid",
+          "label": "t:sections.custom_liquid.custom_liquid.label",
+          "info": "t:sections.custom_liquid.custom_liquid.info"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:labels.color_scheme",
+      "default": "scheme-paper"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:general.product"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:sections.hero.eyebrow.label"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:sections.image_with_text.media_position.label",
+      "options": [
+        { "value": "start", "label": "t:options.alignment.left" },
+        { "value": "end", "label": "t:options.alignment.right" }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.product_cards.card_image_ratio.label",
+      "options": [
+        { "value": "portrait", "label": "t:settings.product_cards.card_image_ratio.options.portrait" },
+        { "value": "square", "label": "t:settings.product_cards.card_image_ratio.options.square" },
+        { "value": "landscape", "label": "t:settings.product_cards.card_image_ratio.options.landscape" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_details",
+      "label": "t:sections.featured_product.show_view_details.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "t:settings.layout.page_width.unit",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.featured_product.name",
+      "blocks": [
+        { "type": "vendor" },
+        { "type": "title" },
+        { "type": "price" },
+        { "type": "material" },
+        { "type": "variant_picker" },
+        { "type": "low_stock" },
+        { "type": "selling_plan" },
+        { "type": "buy_buttons" },
+        { "type": "description" }
+      ]
+    }
+  ]
+}
+{% endschema %}
