@@ -132,7 +132,7 @@
         "info": "Reads the product metafield custom.material. Hidden when the metafield is empty."
       },
       "card_show_swatches": {
-        "label": "Show colour swatches"
+        "label": "Show color swatches"
       },
       "card_show_sale_badge": {
         "label": "Show sale badge"
@@ -207,11 +207,11 @@
       },
       "favicon": {
         "label": "Favicon",
-        "info": "Will be scaled down to 32 x 32px."
+        "info": "32 x 32px recommended."
       },
       "share_image": {
         "label": "Social sharing image",
-        "info": "Used when a page without its own image is shared. 1200 x 630px works best."
+        "info": "Used when a page without its own image is shared. 1200 x 630px recommended."
       },
       "brand_description": {
         "label": "Brand description",
@@ -245,7 +245,7 @@
     },
     "cro": {
       "name": "Conversion",
-      "paragraph": "These settings control how clearly your store answers a shopper's objections at the moment they arise. Nothing here fabricates urgency or stock levels — every figure shown to a shopper comes from your real catalogue and cart.",
+      "paragraph": "These settings control how clearly your store answers a shopper's objections at the moment they arise. Nothing here fabricates urgency or stock levels — every figure shown to a shopper comes from your real catalog and cart.",
       "headers": {
         "product": "Product page",
         "trust": "Trust messaging",
@@ -332,7 +332,7 @@
         "info": "Appears after the year and your store name."
       },
       "show_social": {
-        "label": "Show social links",
+        "label": "Show social media icons",
         "info": "Set the links in Theme settings → Social media."
       },
       "blocks": {
@@ -430,7 +430,7 @@
       "show_next_step": {
         "label": "Show the next step"
       },
-      "next_paragraph": "Every page should end somewhere. This block gives a shopper who has finished reading a route back to the catalogue and a way to ask a question.",
+      "next_paragraph": "Every page should end somewhere. This block gives a shopper who has finished reading a route back to the catalog and a way to ask a question.",
       "next_label": {
         "label": "Button label"
       },
@@ -588,7 +588,7 @@
           "name": "Popular search",
           "term": {
             "label": "Search term",
-            "info": "Offered on the no-results page. Use words that lead somewhere in your catalogue."
+            "info": "Offered on the no-results page. Use words that lead somewhere in your catalog."
           }
         }
       }
@@ -663,7 +663,7 @@
         "content": "Media"
       },
       "image": {
-        "info": "Recommended 2400 x 1350px. This is the largest image on your storefront — it decides how fast your homepage feels."
+        "info": "2400 x 1350px recommended. This is the largest image on your storefront — it decides how fast your home page feels."
       },
       "image_mobile": {
         "label": "Mobile image",
@@ -671,7 +671,7 @@
       },
       "video": {
         "label": "Video",
-        "info": "Never loaded on phones. Visitors on mobile see the image instead, which keeps the homepage fast on cellular."
+        "info": "Never loaded on phones. Visitors on mobile see the image instead, which keeps the home page fast on cellular."
       },
       "height": {
         "label": "Height"
@@ -988,7 +988,7 @@
       },
       "minimum_products": {
         "label": "Hide the row below",
-        "info": "A row of one or two products reads as a thin catalogue. Below this count nothing renders at all."
+        "info": "A row of one or two products reads as a thin catalog. Below this count nothing renders at all."
       }
     },
     "complementary_products": {
@@ -1042,6 +1042,8 @@
   },
   "labels": {
     "menu": "Menu",
+    "main_menu": "Main menu",
+    "footer_menu": "Footer menu",
     "customer_account_menu": "Customer account menu",
     "show_payment_icons": "Show payment icons",
     "color_scheme": "Color scheme",
@@ -1081,7 +1083,7 @@
     },
     "layout": {
       "grid": "Grid",
-      "slider": "Slider"
+      "slider": "Slideshow"
     },
     "position": {
       "top_left": "Top left",

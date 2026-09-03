@@ -41,17 +41,21 @@
 {%- liquid
   assign heading_font = settings.heading_font
   assign heading_font_bold = heading_font | font_modify: 'weight', 'bolder'
+  assign heading_font_italic = heading_font | font_modify: 'style', 'italic'
+  # Chained on the already-bold variant, not the base font, so the result
+  # actually carries both properties rather than only the last one applied.
+  assign heading_font_bold_italic = heading_font_bold | font_modify: 'style', 'italic'
   assign body_font = settings.body_font
   assign body_font_bold = body_font | font_modify: 'weight', '600'
   assign body_font_italic = body_font | font_modify: 'style', 'italic'
-  # Chained on the already-bold variant, not the base font, so the result
-  # actually carries both properties rather than only the last one applied.
   assign body_font_bold_italic = body_font_bold | font_modify: 'style', 'italic'
 -%}
 
 {% style %}
   {{ heading_font | font_face: font_display: 'swap' }}
   {{ heading_font_bold | font_face: font_display: 'swap' }}
+  {{ heading_font_italic | font_face: font_display: 'swap' }}
+  {{ heading_font_bold_italic | font_face: font_display: 'swap' }}
   {{ body_font | font_face: font_display: 'swap' }}
   {{ body_font_bold | font_face: font_display: 'swap' }}
   {{ body_font_italic | font_face: font_display: 'swap' }}

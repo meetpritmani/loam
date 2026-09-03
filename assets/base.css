@@ -3492,15 +3492,53 @@ recently-viewed {
   --hero-height: calc(100vh - var(--header-height, 0px));
 }
 
-.hero__media,
-.hero__scrim,
+/* iOS Safari sizes vh against the maximum viewport (behind the
+   collapsed address bar), so every fixed-vh size below can render taller
+   than what's actually visible and push the CTA below the fold at 375px.
+   dvh tracks the actual visible viewport; guarded so browsers without
+   it keep the vh values above rather than getting an invalid custom
+   property. */
+@supports (height: 100dvh) {
+  .hero--small {
+    --hero-height: 48dvh;
+  }
+
+  .hero--medium {
+    --hero-height: 62dvh;
+  }
+
+  .hero--large {
+    --hero-height: 78dvh;
+  }
+
+  .hero--full {
+    --hero-height: calc(100dvh - var(--header-height, 0px));
+  }
+}
+
 .hero__inner {
   grid-area: 1 / 1;
 }
 
+/* Absolutely positioned against .hero (not grid-stacked like .hero__inner
+   above) so they fill whatever height .hero actually resolves to — content
+   height plus the --hero-height floor — rather than the reverse. Grid-area
+   stacking made .hero__media a sizing participant in the grid's auto row,
+   and since its <img> is `height: 100%` against an otherwise-indefinite
+   row, that percentage fell back to the image's own intrinsic aspect
+   ratio, so the photo dictated the box instead of being cropped to it. On
+   any viewport where the mobile crop's natural height (width ÷ 0.75)
+   exceeded --hero-height — landscape phones chiefly, where height is
+   short but width isn't — the whole hero, CTA included, ballooned to
+   match the photo. */
+.hero__media,
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+}
+
 .hero__media {
   display: block;
-  position: relative;
   overflow: hidden;
 }
 
@@ -3544,19 +3582,29 @@ recently-viewed {
      nothing right where the text sits. Fixed pixel stops instead pool a dark
      band sized to the actual content stack's height, independent of the box
      around it, so whichever edge the merchant's chosen text position sits
-     against always clears contrast. */
+     against always clears contrast.
+
+     --c-shadow-rgb, not --c-ink-rgb: "ink" is the scheme's *text* colour,
+     which is deliberately light in a dark scheme (scheme-ink: text #F5F4F0)
+     so it stays readable against that scheme's own dark background. On the
+     hero, the overlaid text is that same light colour — so a scrim tinted
+     with --c-ink-rgb washed the photo *toward white*, not toward black,
+     which is the opposite of "uniform darken" and actively worked against
+     the white heading's contrast rather than for it. --c-shadow-rgb is
+     dark (#101A16/#000000) in every shipped scheme, light or dark, which is
+     what a darkening scrim actually needs. */
   background:
     linear-gradient(
       to top,
-      rgb(var(--c-ink-rgb) / 0.7) 0,
+      rgb(var(--c-shadow-rgb) / 0.7) 0,
       transparent 420px
     ),
     linear-gradient(
       to bottom,
-      rgb(var(--c-ink-rgb) / 0.5) 0,
+      rgb(var(--c-shadow-rgb) / 0.5) 0,
       transparent 280px
     ),
-    rgb(var(--c-ink-rgb) / var(--scrim, 0.35));
+    rgb(var(--c-shadow-rgb) / var(--scrim, 0.35));
   pointer-events: none;
 }
 
@@ -3636,14 +3684,17 @@ recently-viewed {
   }
 }
 
-@media (min-width: 990px) {
+@media (min-width: 990px), (max-height: 500px) {
   /* The content stack (eyebrow + h0 heading + body + buttons + stats) is a
      grid item sized to its own content, so .hero grows past --hero-height
      whenever that stack is taller than the box — which the full stack with
      three stat blocks reliably is. On common laptop window heights that
-     pushed the CTA and stat row below the fold. Tightening the stack's own
-     rhythm here (desktop only, so mobile's already-correct spacing is
-     untouched) claims back that space without shrinking the heading. */
+     pushed the CTA and stat row below the fold; a landscape phone hits the
+     exact same overflow from the other direction (390–430px of height at
+     any width), which is why this also fires on max-height rather than
+     min-width alone. Tightening the stack's own rhythm here (so
+     normal-height portrait mobile keeps its already-correct spacing)
+     claims back that space without shrinking the heading. */
   .hero__inner {
     gap: var(--sp-4);
     padding-block: var(--sp-6);
@@ -3656,21 +3707,70 @@ recently-viewed {
   .hero__stats {
     padding-block-start: var(--sp-4);
   }
+}
 
+/* --hero-height splits from here down: desktop width and short-viewport
+   landscape used to share one set of values, but a landscape phone's
+   380–430px of real height and a desktop window's typical 700px+ don't
+   have the same amount of room to give back, so a bump for one is not
+   automatically safe for the other. */
+
+@media (min-width: 990px) {
   /* The stack is bottom-anchored (align-content: end) inside a box sized by
      --hero-height, a flat vh value with no awareness of the header eating
      into the viewport above it. On real desktop browser chrome (tab strip +
-     bookmarks bar can easily claim 120px+) the default "large" box still put
-     the CTA and stat row past the fold even after the rhythm tightened
+     bookmarks bar can easily claim 120px+) the default "large" box still
+     put the CTA and stat row past the fold even after the rhythm tightened
      above — the box itself was too tall, not just the content inside it.
-     Shrinking the box height here (desktop only) pulls the whole
-     bottom-anchored stack up with it. */
+     Shrinking the box height here pulls the whole bottom-anchored stack up
+     with it. Raised from the original 58vh/50vh on operator request for a
+     visibly taller desktop hero, then raised again to 76vh/63vh on a
+     follow-up "a bit more" — right at the edge of the un-capped 78vh/62vh
+     that caused the original fold problem, so treat this as the practical
+     ceiling rather than pushing further without re-measuring. A genuinely
+     short laptop window (under ~700px of browser viewport height) is
+     closer to the edge than it was before either change. */
+  .hero--large {
+    --hero-height: 76vh;
+  }
+
+  .hero--medium {
+    --hero-height: 63vh;
+  }
+
+  @supports (height: 100dvh) {
+    .hero--large {
+      --hero-height: 76dvh;
+    }
+
+    .hero--medium {
+      --hero-height: 63dvh;
+    }
+  }
+}
+
+@media (max-height: 500px) {
+  /* Landscape phones: left at the original values. See base.css's
+     2026-09-03 landscape-orientation fix — these numbers were verified
+     against real box measurements at 568×320 / 844×390 / 915×412, and nudging
+     them up was explicitly out of scope for the desktop-only height request
+     this block otherwise responds to. */
   .hero--large {
     --hero-height: 58vh;
   }
 
   .hero--medium {
     --hero-height: 50vh;
+  }
+
+  @supports (height: 100dvh) {
+    .hero--large {
+      --hero-height: 58dvh;
+    }
+
+    .hero--medium {
+      --hero-height: 50dvh;
+    }
   }
 }
 
@@ -3901,12 +4001,21 @@ recently-viewed {
      contrast over ANY image, and the caption is 12px so it needs 4.5:1. At
      0.55 over a white image it measured 3.60:1 and failed; 0.62 is the break
      even and 0.7 gives headroom (5.98:1 on white, 6.97:1 on light sand). The
-     mid stop keeps the ramp short so only the caption zone darkens. */
+     mid stop keeps the ramp short so only the caption zone darkens.
+
+     --c-shadow-rgb, not --c-ink-rgb: the caption text above is fixed at
+     `var(--c-paper)` (line ~3956, light, unconditionally — it sits over a
+     photo, not this component's own background), so the scrim behind it
+     must be unconditionally dark to keep that contrast math. --c-ink-rgb
+     is the *scheme's* text colour and flips light on a dark scheme, which
+     would silently invalidate the 5.98:1/6.97:1 figures above the moment a
+     merchant sets this section's colour scheme to scheme-ink — the same
+     bug fixed on .hero__scrim above. */
   background: linear-gradient(
     to top,
-    rgb(var(--c-ink-rgb) / 0.7) 0%,
-    rgb(var(--c-ink-rgb) / 0.45) 30%,
-    rgb(var(--c-ink-rgb) / 0) 62%
+    rgb(var(--c-shadow-rgb) / 0.7) 0%,
+    rgb(var(--c-shadow-rgb) / 0.45) 30%,
+    rgb(var(--c-shadow-rgb) / 0) 62%
   );
   transition: opacity var(--dur) var(--ease);
 }

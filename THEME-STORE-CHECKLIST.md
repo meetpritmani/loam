@@ -439,6 +439,922 @@ covered by data already in `PROGRESS.md`.
 
 ---
 
+## 9. Browser compatibility
+
+Desktop matrix: Safari (latest 2, Mac), Chrome (latest 3, Mac+PC), Firefox
+(latest 3, Mac+PC), Edge (latest 2, PC). Mobile matrix: Mobile Safari
+(latest 2, iOS), Chrome Mobile (latest 3, Android+iOS), Samsung Internet
+(latest 2, Android). Also requires mobile responsiveness.
+
+- ✅ **Source-level audit clean.** No non-standard CSS/JS anywhere:
+  `:has()` deliberately avoided (comment at `base.css` ~line 3293),
+  `ResizeObserver` feature-detected before use, `global.js` is
+  ES2020-era with nothing needing a polyfill.
+- ✅ **Real Edge + real Firefox, actually driven** (Playwright, since no
+  browser-automation tool was otherwise available this session — real
+  installed Edge via `channel: 'msedge'`, Firefox via Playwright's own
+  bundled build). Home/PDP/cart: zero uncaught JS exceptions in either,
+  identical rendering confirmed via screenshot. Console noise present in
+  both was entirely Shopify's own `theme dev`-proxy scaffolding, not
+  theme code.
+- ✅ **Mobile responsive, no horizontal overflow** — verified via
+  emulation (iPhone 13/Pixel 7/375px) on home/PDP/cart, portrait and
+  landscape: `scrollWidth === clientWidth` in every case.
+- ❌ **Two real bugs found and fixed 2026-09-03:**
+  1. `.hero--full`/`--small`/`--medium`/`--large` all sized via bare
+     `vh`, which mobile Safari computes against the viewport *behind*
+     the collapsed address bar. Added `@supports (height: 100dvh)`
+     overrides (and extended the existing ≥990px "shrink + tighten"
+     rule to also fire on `(max-height: 500px)` for landscape phones).
+  2. **Bigger one:** `.hero__media` (the background image) was
+     grid-stacked into the same cell as its content
+     (`grid-area: 1 / 1`), and its `height: 100%` had no definite
+     row to resolve against — so it fell back to the image's own
+     intrinsic aspect ratio, meaning **the photo was sizing the hero
+     box** instead of being cropped to it. Invisible on portrait
+     phones (aspect ratios happened to be close), glaring on landscape
+     (568×320 hero rendered 757px tall — exactly the mobile hero
+     image's 1200:1600 ratio). Fixed by making `.hero__media`/
+     `.hero__scrim` `position: absolute; inset: 0` instead, so
+     `.hero__inner` alone drives the box's content height. Verified via
+     direct box-tree measurement before/after, portrait re-confirmed
+     unregressed. `shopify theme check`: 121 files, 0 offenses.
+- ⚠️ **Residual, not a bug:** at the shortest landscape height tested
+  (568×320) the hero's own content (heading + body + 2 buttons + 3 stat
+  rows) genuinely needs more vertical space than 320px holds. Closing
+  that means hiding content (the stat row) on very short viewports — a
+  product call, not made unilaterally. CLAUDE.md's own hero rule commits
+  to "375px" width only, never pairs it with a height, so this isn't a
+  violation of the written spec.
+- ❌ **Can't be verified from here: real Safari, real Chrome Mobile,
+  real Samsung Internet.** No macOS access (same constraint blocking the
+  VoiceOver pass) and no Android/iOS device or emulator in this
+  environment. Everything above is either a source audit or tested on
+  Blink/Gecko engines standing in for the closest available proxy —
+  genuine WebKit/Mobile Safari and Samsung Internet coverage is still
+  outstanding.
+
+**Action:** real Safari (desktop + iOS) and Samsung Internet passes
+before submission — same blocker as the VoiceOver item, needs macOS or
+a device lab.
+
+---
+
+## Webviews and other application requirements
+
+Themes must support browsing and purchasing actions rendered inside
+in-app browsers (WebViews, not the system browser) for Instagram,
+Facebook, and Pinterest — latest release, Android and iOS.
+
+- ✅ **Source-level audit clean.** No `window.open`, no
+  `target="_blank"`, no eagerly-loaded third-party iframe anywhere
+  (`video-section.liquid`'s YouTube/Vimeo embed only builds on click).
+- ✅ **Storage degrades safely.** `sessionStorage`/`localStorage` used
+  only for announcement dismissal, recently-viewed, and compare — never
+  anything the cart depends on (CLAUDE.md §16) — and every read/write is
+  `try/catch`-wrapped with a graceful no-op fallback
+  (`global.js` ~line 2607). In-app browsers are known to restrict or
+  clear storage inconsistently; this already tolerates that.
+- ✅ **Web Share is feature-detected** (`if (navigator.share)`,
+  `global.js` ~line 1942) with a copy-link fallback — Android WebView
+  support for the API is inconsistent across host apps, but the
+  fallback covers it regardless.
+- ✅ **Accelerated checkout (Apple Pay/Google Pay/Shop Pay)** goes
+  through Shopify's own `payment_button` filter — Shopify's platform
+  code hides wallets unavailable in a given context; not theme-owned
+  behavior.
+- ⚠️ **Noted, not theme-owned:** Shopify's own `login_with_shop`
+  account-menu embed was observed (during the browser-compatibility
+  pass above) attempting a popup-based auth flow that got blocked
+  (`SameSite` cookie rejection). That's Shopify platform code, not
+  theme code, but it's exactly the category of thing genuinely flaky
+  inside Instagram/Facebook in-app browsers industry-wide — flagged for
+  awareness, nothing to fix on the theme side.
+- ❌ **Can't be verified from here.** No Instagram, Facebook, or
+  Pinterest app, and no Android/iOS device, available in this
+  environment. Spoofing a user-agent string in a desktop Chromium
+  instance would not reproduce the real constraints those WebViews
+  impose (storage partitioning, stripped APIs, injected restrictions),
+  so this is a code audit only — not claimed as a real test.
+
+**Action:** an actual pass inside Instagram/Facebook/Pinterest in-app
+browsers (real devices or a device-cloud service) before submission —
+same category of gap as the browser-compatibility item above.
+
+---
+
+## 10. Assets
+
+- ✅ **No Sass** — zero `.scss`/`.scss.liquid` files anywhere in the repo
+  (`assets/` holds only `base.css`, `global.js`, `qr-code.js`,
+  `LICENSES.md` — matches `store-submission-build/assets/` exactly).
+- ✅ **No minified `.css`/`.js`.** `base.css` and `global.js` are fully
+  formatted and commented (checked for the minification tell — any line
+  over 500 characters — zero hits in either file). The one other JS file,
+  `qr-code.js`, is a third-party library (Project Nayuki's MIT-licensed
+  QR generator, used only by `templates/gift_card.liquid` for the
+  balance-page QR code) — unminified (904 readable lines) and loaded as
+  `type="module"`, so it clears the requirement's own ES6/third-party
+  exemption twice over: it wouldn't need the exemption even under a
+  strict reading, since it isn't minified either way.
+- ⚠️ **Noted for awareness, not a §10 gap:** `qr-code.js` existing at all
+  sits in tension with CLAUDE.md's own stricter internal rule (§3 lists
+  only `base.css` + `global.js`; §1 says "zero dependencies"). Shopify's
+  actual requirement here explicitly permits third-party libraries — the
+  exemption text names them directly — so this is compliant with the
+  real Theme Store bar. Flagging the internal-spec tension rather than
+  silently resolving it either direction.
+
+No gaps in this batch.
+
+---
+
+## 11. Search engine optimization (SEO)
+
+- ✅ **Theme SEO metadata snippet** — `snippets/meta-tags.liquid`: `<title>`
+  (with tag/pagination suffixes and a shop-name fallback), `<meta
+  name="description">` (with a full fallback chain — page → shop →
+  `settings.brand_description`, never blank), `<link rel="canonical">`.
+  Rendered from all three `<head>` contexts in the theme: `theme.liquid`,
+  `password.liquid`, and `gift_card.liquid` (its own head, since that
+  template is `layout: none`).
+- ✅ **Google's rich product snippets** — `snippets/structured-data.liquid`
+  emits a `Product` node with one `Offer` per variant (`price`,
+  `priceCurrency`, `availability`, `itemCondition`, `sku`/`gtin` when
+  present), `Organization`/`WebSite` on every page, `BreadcrumbList` on
+  product + collection, `CollectionPage`/`ItemList`, `BlogPosting` on
+  articles. `AggregateRating` only emitted when real review metafields
+  carry a non-zero count (CLAUDE.md §7's own anti-fabrication rule,
+  correctly enforced — `has_reviews` gate at line 113). Every
+  interpolated value goes through `| json`, so nothing is hand-escaped
+  and injectable.
+- ✅ **No `robots.txt.liquid`** — confirmed absent (`find` across the
+  whole repo, zero matches).
+
+No gaps in this batch. Worth an actual pass through Google's Structured
+Data Testing Tool / Rich Results Test on a live product URL before
+submission (CLAUDE.md §7 already asks for this) — not re-verified here
+since it needs a public URL, not something checkable from source alone.
+
+---
+
+## 12. Accessibility
+
+- ✅ **Keyboard accessible, including dropdown navigation** — `MegaMenu`
+  and `<loam-drawer>` (`global.js`) both own their own `keydown`
+  listener with `Escape`-to-close, focus trap, and focus-return-to-
+  opener; real Tab-order pass already logged in `PROGRESS.md` ("cart
+  add/remove/qty works via Section Rendering API, keyboard nav clean,
+  drawer focus trap verified").
+- ✅ **Visible focus state.** `:focus-visible { outline: var(--focus-width)
+  solid var(--c-accent) }` set once, globally. The one `outline: none`
+  that isn't `:not(:focus-visible)`-guarded (`.facet-price__input`) has
+  a real replacement one level up — `.facet-price__field:focus-within`
+  puts the same ring on the whole "$ + input" group instead of clipping
+  it around the bare input — so it's a deliberate relocation, not a
+  removal.
+- ✅ **Every image has `alt`.** Confirmed structurally, not just spot
+  checked: zero bare `<img` tags exist anywhere in the theme (grepped
+  the whole repo) — every image goes through `image-fallback.liquid`,
+  whose `image_tag` call always receives an `alt:` argument (defaulting
+  to `''` only when the caller passes nothing, which is the *correct*
+  WCAG treatment for a genuinely decorative image, not a missing
+  attribute). Every real call site passes a meaningful value — product
+  title, article title, collection title, section heading, shop name —
+  never left on the empty default for actual content images.
+- ✅ **Form inputs: unique ID + matching `for`.** Consistent, deliberate
+  pattern across every form in the theme (address fields, newsletter,
+  contact, login/register/reset, comments, facets, quantity input,
+  variant picker, localization, search). Multi-instance snippets
+  (`newsletter-form`, `quantity-input`) take `id` as a *required* param
+  specifically to prevent collisions when rendered more than once on a
+  page — `newsletter-form.liquid`'s own header comment calls out the
+  exact failure mode ("giving them the same value is invalid HTML and
+  points every `for=` at whichever the parser saw first"). Per-instance
+  callers (`cart-line`, `facet-controls`, `variant-picker`) build the id
+  from `section_id` + line/option index, confirmed at each call site.
+- ✅ **Valid HTML — FIXED gap, actually run 2026-09-03.** Operator
+  shared the live preview URL; fetched the real server-rendered
+  homepage HTML (via Playwright, to get the raw response body rather
+  than the post-JS DOM) and POSTed it to the W3C Nu validator's API
+  directly (`validator.w3.org/nu/?out=json`) rather than sending it the
+  page URL — the URL carries a password-bypass token, and there was no
+  reason to hand that to a third-party service when the page content
+  alone answers the question.
+  **Result: one error, zero warnings that trace back to theme code.**
+  The single error — a `<script type="module" defer="defer">` combo,
+  invalid because module scripts are deferred by spec already — is
+  Shopify's own platform-injected cart-sync loader
+  (`shop-js/modules/v2/loader.init-shop-cart-sync`), not
+  `global.js` (confirmed: `global.js`'s own `<script type="module">` tag
+  carries no `defer` at all). The "trailing slash on void element" info
+  notices all trace to Shopify's own `{% form %}` tag's auto-generated
+  `form_type`/`utf8` hidden inputs — theme markup has zero control over
+  that output. The one "section lacks heading" info note is a section
+  with no heading set, which is by design (optional heading, per the
+  section's own schema) — info-tier, not an error, not a defect.
+  Preview-mode-only scripts (hot-reload client, preview bar) also
+  showed up in this specific fetch and would not appear on the actual
+  published storefront — noted, not counted against the theme either
+  way since neither is theme code regardless.
+  **Scope of what was checked:** homepage only, this pass. PDP,
+  collection, cart, and the rest would need the same treatment for full
+  coverage — same mechanism, just needs those URLs.
+- ✅ **Contrast** — CLAUDE.md's own audit table already confirms
+  ink/paper/surface/accent combinations pass AA (5.73:1–17.78:1).
+  Independently recalculated the one color that table doesn't list —
+  `--c-signal` (#B23A2F, used as text for sale price/errors) — against
+  both paper and surface: 5.40:1 and 5.94:1, both clear the 4.5:1 body-
+  text floor.
+- ✅ **Focus order matches DOM order.** Only one use of CSS `order`
+  in the whole stylesheet (`.image-with-text--media-start`), and its
+  own comment names the exact risk this requirement is about. Confirmed
+  safe: the element being reordered is a plain image with no link, no
+  button, nothing focusable inside it — moving it visually doesn't move
+  anything in the tab sequence.
+- ✅ **Touch targets ≥ 24×24px.** `.icon-button` 44×44, `.quantity__button`
+  36×36, `.variant-picker__value` 44×44 — every interactive control
+  checked clears the floor with margin. (Swatches don't exist on the
+  PDP yet — separate, already-tracked gap, item 15 below — so there's
+  no undersized swatch target to check yet either.)
+- ✅ **Headings visually distinct.** `.h0`–`.h6` utility classes step
+  through seven distinct size tokens. Bare `h1`–`h6` (merchant rich-text
+  content, which doesn't get the utility classes) only has `margin: 0`
+  and `unicode-bidi` touched by the reset — font-size is untouched, so
+  it falls through to the browser's own differentiated UA defaults
+  rather than being flattened to one size.
+
+All nine items check out clean now — zero theme-authored HTML
+validation errors on the homepage, several items also backed by prior
+real-browser verification already logged in `PROGRESS.md`.
+
+---
+
+## 13. Social media
+
+- ✅ **Open Graph + Twitter card tags** — already confirmed under §11:
+  `meta-tags.liquid` emits the full set (`og:site_name`, `og:url`,
+  `og:title`, `og:type`, `og:description`, `og:image` +
+  `image:secure_url`/`width`/`height`/`alt`, `twitter:card`,
+  `twitter:title`, `twitter:description`, `twitter:image`).
+- ✅ **Social placeholder text left empty** — every `social_*_link`
+  setting has no `default` in `settings_schema.json`, and all three
+  shipped presets in `settings_data.json` ship them as `""`. Verified
+  by temporarily filling all seven with test URLs to check the icon
+  rendering (below), then reverted immediately — confirmed via
+  `git diff` that the revert left the file byte-identical to before.
+- ❌ **Social media icon set — real gap, FIXED 2026-09-03.** Every
+  platform except YouTube rendered the same generic `'external'`
+  (open-in-new-tab arrow) icon — Instagram, Facebook, TikTok,
+  Pinterest, X, and LinkedIn were visually indistinguishable in the
+  footer; YouTube got `'play'`, which is closer but still not a
+  YouTube-specific mark. A shopper couldn't tell which link went where
+  without hovering to read the URL. Added seven platform icons to
+  `icon.liquid` (`instagram`, `facebook`, `x`, `pinterest`, `tiktok`,
+  `linkedin`, `youtube`) as line-art reads of each mark in the theme's
+  existing stroke style — not the brands' solid logotypes, so nothing
+  here reproduces trademarked artwork pixel for pixel, just enough
+  shape for a shopper to tell them apart at a glance. Wired
+  `footer.liquid`'s seven conditional social links to their own icon
+  instead of the two shared placeholders. Verified by rendering: all
+  seven render as visually distinct marks, no broken paths.
+  `shopify theme check`: 121 files, 0 offenses (icon/footer edits don't
+  add new files).
+
+---
+
+## 14. Settings — basic requirements
+
+- ✅ **Text style / terminology** — spot-checked both locale files for
+  the most common violation class (Title Case where Shopify wants
+  sentence case). Zero real hits — the only two matches were correct
+  proper-noun capitalization ("Add to **Apple Wallet**", "Powered by
+  **Shopify**"), not style violations.
+- ⚠️ **Grammar/spelling** — same spot-check scope, nothing found. Not a
+  substitute for an actual proofread/spell-checker pass over every
+  label and info string — flagging as best-effort, not exhaustive.
+- ✅ **No lorem ipsum / demo-store filler as section-block defaults** —
+  checked every `presets` block across `sections/*.liquid`, not just
+  the already-verified `templates/index.json`. Real, on-brand copy
+  throughout (e.g. `value-props.liquid`'s preset ships an actual
+  material claim, not "Heading here").
+- ✅ **Favicon setting** — `config/settings_schema.json:423`.
+- ✅ **Logo works at any aspect ratio.** Checked all three render
+  sites (header, password page, gift card) — none force a crop or a
+  fixed width+height combo. Header: `width: auto; max-height: 40px`.
+  Password page: fixed width only, `height: auto` on the image itself.
+  Gift card: no constraint beyond the srcset. A portrait logo scales
+  down proportionally in all three, never gets clipped.
+- ✅ **Every setting has a `label`.** Scripted a full walk of every
+  section/block schema plus `settings_schema.json` — one flagged hit,
+  and it's a false positive: `color_scheme_group` doesn't take a
+  top-level `label` by Shopify's own schema spec (it has `definition`
+  instead). Zero real violations.
+- ✅ **`link_list` defaults in header/footer** — `header.liquid`'s menu
+  setting defaults to `main-menu`, `footer.liquid`'s to `footer`. (First
+  grep pass under-read the file and looked like header's was missing
+  one — it wasn't; re-read the actual lines and it's there.)
+- ✅ **Resource-based setting defaults** — N/A, no violation possible.
+  Every `product`/`collection` setting in the theme (`cro_empty_cart_collection`,
+  `collection-list`'s block collection picker, `lookbook-collage`'s
+  hotspot product, etc.) ships with no `default` at all, so there's no
+  hardcoded resource reference that could point at something that
+  doesn't exist.
+- ✅ **`metaobject`/`metaobject_list` settings** — N/A, the theme uses
+  neither type anywhere, so the "standard definitions only" rule has
+  nothing to check.
+- ✅ **`theme_info` section — FIXED 2026-09-02, confirmed correct.**
+  Flagged `theme_author: "Loam"` (the theme's own name, not a person)
+  and the unfamiliar `growth-lab.gitbook.io` documentation domain rather
+  than guessing. Operator confirmed the docs URL is real and gave the
+  real author name — `theme_author` corrected to `"Meet Pritmani"`.
+  `theme_documentation_url` and `theme_support_url` left as shipped,
+  both confirmed intentional. `shopify theme check`: 121 files, 0
+  offenses.
+
+---
+
+## Theme editor event requirements
+
+- ✅ **Changes made in the theme editor are reflected in the preview.**
+  Two real, targeted `shopify:section:load` listeners in `global.js`
+  (not decorative): one re-registers a newly added/reordered section's
+  `.reveal` elements with the shared `IntersectionObserver` — without
+  it, a section inserted in the editor would stay permanently
+  `opacity: 0`, invisible, since the observer would never have seen its
+  elements — and one re-applies the announcement bar's dismissed-state
+  from `sessionStorage` so a re-rendered bar doesn't reappear having
+  been closed. Confirmed as a deliberate, documented decision from
+  Phase 1, not an accident: `PROGRESS.md` records the reveal engine
+  being kept as a document-wide singleton specifically so
+  `shopify:section:load` reinitializes it correctly, rather than
+  wrapping every heading in its own custom element.
+  Everything else that needs editor-lifecycle correctness is handled
+  the other, equally valid way Shopify supports: real custom elements
+  (`<sticky-header>`, `<loam-drawer>`, `<marquee-strip>`, etc.) with
+  `connectedCallback`/`disconnectedCallback` pairs, which fire on their
+  own every time the editor replaces a section's DOM — this is the
+  literal mechanism CLAUDE.md's own §4 rule ("every element must
+  survive `shopify:section:load` / `:unload`") is built around, and it
+  predates this specific Theme Store checklist item by the whole build.
+  No `request.design_mode` usage anywhere, and none needed — nothing in
+  the theme assumes it's running outside an iframe (no `window.top`/
+  `window.parent` checks anywhere in `global.js`), so nothing breaks
+  specifically because of the editor's preview context.
+
+No gaps in this batch.
+
+---
+
+## 14 (detail). Text style requirements
+
+Deeper pass against the full rubric, not just the earlier spot-check.
+
+- ✅ **Sentence case on section/preset/category names** — spot-checked,
+  clean.
+- ✅ **No numbered options/titles except colors** — scripted search for
+  "Option 1"/"Position 1"/"Image 1"/"X position"/"Y position" patterns
+  across both locale files and `settings_schema.json`. Zero hits.
+- ✅ **Intuitive language** — zero uses of "CTA" in any merchant-facing
+  label/info anywhere (the one match found was inside a code comment
+  quoting CLAUDE.md's own spec, not shown to a merchant). No
+  "X/Y position" wording either (folds into the item above).
+- ✅ **No ampersands** — one match, and it's a citation, not a style
+  choice: `facet-controls`'s info text reads "Filters come from the
+  Search & Discovery app" — that's the literal, correct name of
+  Shopify's own app. Rewriting it to "Search and Discovery" would
+  misname the app it's pointing a merchant at.
+- ✅ **Declarative statements, not questions** — zero question marks
+  anywhere in `en.default.schema.json` (the settings-facing locale
+  file). The question marks that do exist in the theme (`en.default.json`
+  — "Forgot your password?", "Already have an account?") are storefront
+  UI copy, not settings text, and out of scope for this rule; those are
+  also the expected, idiomatic phrasing for that kind of prompt.
+- ✅ **Subject stated once, not repeated in setting labels** — precise
+  check (not the noisy shared-word version first tried): walked every
+  section's own `name` against every setting `label` inside it, looking
+  for the literal "`{Section Name}` `{generic word}`" pattern the
+  example describes (e.g. "Slideshow color"). Zero real hits — the
+  section-naming discipline already in place avoided this.
+- ⚠️ **Active voice** — not independently checkable by script with any
+  reliability; spot-checked a sample of labels/info strings while doing
+  the other passes and nothing read as passive, but this isn't an
+  exhaustive claim the way the scripted checks above are.
+- ❌ **American English — real gap, FIXED 2026-09-03.** Five British
+  spellings in `en.default.schema.json`: `"Show colour swatches"` (a
+  setting label) and four instances of "catalogue" in `info`/`paragraph`
+  text (CRO settings group intro, page-template next-step block, search
+  term info, featured-collection minimum-products info). All five
+  corrected to `color`/`catalog`. Checked the full American-English
+  table from the requirements page (canceled/cancelled, catalog/
+  catalogue, center/centre, color/colour, customize/customise, dialog/
+  dialogue, gray/grey, organize/organise) — nothing else in either
+  locale file or `settings_schema.json` matched any of the British
+  forms. `shopify theme check`: 121 files, 0 offenses after the fix.
+
+---
+
+## 14 (detail, cont.). Buttons start with a verb; technical specs follow the exact format
+
+- ❌ **Technical specification format — real gap, FIXED 2026-09-03.**
+  Three image-dimension mentions in `en.default.schema.json`, none
+  matching the required `[numeral] x [numeral]px (required/
+  recommended)` shape:
+  - Favicon: "Will be scaled down to 32 x 32px." → **"32 x 32px
+    recommended."** (also stopped describing automatic post-upload
+    behavior and started giving actual upload guidance, which is more
+    useful to a merchant than either version).
+  - Social sharing image: "...1200 x 630px works best." →
+    **"...1200 x 630px recommended."**
+  - Hero image: "Recommended 2400 x 1350px. ..." → **"2400 x 1350px
+    recommended. ..."** (numeral now leads, qualifier now trails,
+    matching the example row exactly).
+  Checked for the other two spec types the table names — word/character
+  count ("32 words max") and "Use basic HTML to format text" — neither
+  appears anywhere in the theme, so there's nothing to reformat there;
+  not a gap, just nothing stated.
+  `shopify theme check`: 121 files, 0 offenses after the fix.
+- ⚠️ **Buttons/actions start with a verb — checked, two flagged rather
+  than silently changed.** Walked every populated button label
+  (`en.default.json` UI strings, `templates/index.json`'s shipped
+  button text, every `button_label`/`button_label_2` default across
+  every section's presets). Everything renders conditionally on
+  non-blank text (confirmed in `hero.liquid`: no default text means no
+  button renders at all, never a blank one), so there's no case of a
+  merchant seeing an empty or broken button from a missing default.
+  Of everything that does render, all of it is verb-first — "Shop
+  men's", "Continue shopping", "Add to cart", "Choose options", "Sign
+  up", "Apply filters", etc. — **except two industry-standard e-commerce
+  terms that are technically noun/adjective-first: "Checkout" (the verb
+  form is "check out," two words — "Checkout" is what Shopify's own
+  platform, and essentially every storefront, calls this button) and
+  "Quick view"** (adjective-first; the near-universal name for this
+  exact feature across the industry). Left both as-is rather than
+  "fixing" them into something grammatically compliant but unfamiliar
+  to shoppers (`"Check out"`, `"Preview"`) — that trade looks like a
+  worse outcome than the literal rule violation. Flagged for a call,
+  not decided unilaterally.
+  Also checked disabled-state labels (`"Sold out"`, `"Unavailable"`) —
+  these replace the action label specifically because the action is no
+  longer available (§9.2/§9.6's own "disabled state explains why" rule),
+  so they read as status, not action; noted, not counted as a
+  violation.
+
+**Action:** confirm "Checkout" and "Quick view" should stay as
+industry-standard terms rather than being rewritten to a literal verb
+form.
+
+---
+
+## 14 (detail, cont. 2). Terminology requirements
+
+Checked every row of the full "use this / don't use this" table against
+`config/settings_schema.json` and `en.default.schema.json`, not just the
+individual terms already caught while checking other §14 rows.
+
+- ❌ **"homepage" → "home page" — real gap, FIXED.** Two hits, both in
+  the hero image info text just edited for the size-format fix
+  (`storefront it decides how fast your homepage feels` /
+  `keeps the homepage fast on cellular`). Both corrected to "home page".
+- ❌ **"Slider" → "Slideshow" — real gap, FIXED.** The shared
+  `options.layout.slider` locale key (used by both `featured-collection`
+  and `testimonials`' grid/slider layout choice) was labeled "Slider".
+  One key, both usages fixed at once.
+- ❌ **Generic "Menu" label on header/footer nav settings → "Main menu"
+  / "Footer menu" — real gap, FIXED.** Both `header.liquid` and
+  `footer.liquid`'s `link_list` settings shared one generic
+  `t:labels.menu` → "Menu" label — exactly the pattern the table calls
+  out by name ("main menu... don't use: navigation, menu" / "footer
+  menu... don't use: navigation, menu"). Added two new distinct keys
+  (`labels.main_menu`, `labels.footer_menu`) and pointed each section at
+  its own; left the original shared `menu` key in place since removing
+  an otherwise-harmless locale entry wasn't necessary.
+- ⚠️ **"Show social links" → "Show social media icons" — improved, not
+  a clear-cut violation.** The footer's toggle didn't use the explicitly
+  banned term ("social media buttons"), but "links" wasn't the
+  recommended "social media icons" either. Retitled for closer
+  alignment since it was a low-risk, purely cosmetic change.
+- ✅ **Everything else checked, no violations:** "Button label" (not
+  "button name"), "Cart type" with "Drawer"/"Page" options (not
+  "Ajax cart"), "Social media" as the settings-group name (not
+  "social"/"social sharing"), no bare "Title" used for a custom heading
+  field, no "sub-heading"/"main text"/"side bar"/"check out"/"meta-nav"/
+  "search bar" anywhere, no ".PNG"/".png " variants. The three
+  `enable_*`-prefixed settings (`enable_sticky`, `enable_reveal`,
+  `enable_image_zoom`) all genuinely fit the "significantly modifies
+  layout/behavior, theme-wide" criterion the table gives for "enable"
+  rather than "show" — spot-checked, not changed.
+  `shopify theme check`: 121 files, 0 offenses after all fixes.
+
+---
+
+## 14 (detail, cont. 3). Section name guidelines
+
+Pulled every section's `name` from `en.default.schema.json` (48 total)
+and checked each against "relates to the section's function" plus
+Shopify's suggested vocabulary (Header, Featured products/collections,
+Slideshow, Image gallery, Logo list, Newsletter, Map, Blog posts,
+Testimonials, Footer).
+
+- ✅ **44 of 48 match Shopify's exact suggested terms or are equally
+  clear, function-first names of their own** — `Header`, `Footer`,
+  `Blog posts`, `Testimonials`, `Newsletter` match verbatim; the rest
+  (`Contact form`, `Announcement bar`, `Cart drawer`, `Predictive
+  search`, `Related products`, `Complementary products`, `Reset
+  password`, etc.) all name what the section actually does, nothing
+  generic or internal-jargon.
+- ⚠️ **One borderline case, not changed:** `value_props`'s display name
+  is **"Value props"** — shorthand for "value propositions," which
+  reads clearly to anyone with e-commerce/marketing background but
+  isn't self-explanatory to every merchant on first read the way
+  `Testimonials` or `Newsletter` is. Flagged rather than renamed
+  unilaterally — an alternative like "Value props" → "Highlights" or
+  "Key benefits" is a real option but changes the section's identity in
+  the editor (presets, any existing merchant configuration keyed to the
+  name), so left for a call rather than assumed.
+- ✅ **No other unclear, internal, or ID-shaped names** — none of the
+  48 leak an internal-id-style name (e.g. no section literally called
+  "block_1" or "section_a"), and abbreviations that do appear (`FAQ`,
+  `UGC`'s display name is deliberately the plain "Social grid", not
+  the acronym) are either universally understood or already avoided in
+  the visible name.
+
+**Action:** decide whether "Value props" should be renamed to something
+more self-explanatory before submission — not done here, low-confidence
+call.
+
+---
+
+## 15. Font picker
+
+- ✅ **`font_picker` setting type** — both `heading_font` and
+  `body_font` in `config/settings_schema.json` use it correctly.
+- ✅ **Default font loaded** — `heading_font` defaults to `archivo_n7`,
+  `body_font` to `assistant_n4`, both real Shopify font-library IDs.
+- ✅ **Custom fonts not accepted** — structurally guaranteed, not just
+  policy: zero `.woff`/`.woff2`/`.ttf`/`.otf`/`.eot` files anywhere in
+  `assets/`. There's nothing to self-host even if someone tried.
+- ✅ **Defaults use a currently available font** — `archivo_n7`
+  (Archivo) and `assistant_n4` (Assistant) are both real, current
+  entries in Shopify's font library, not a renamed or retired one.
+- ❌ **Bold/italic/bold-italic for each font — real gap, FIXED
+  2026-09-03.** `theme-tokens.liquid` generated all three `font_modify`
+  variants for the **body** font but only the bold variant for the
+  **heading** font — no `heading_font_italic`, no
+  `heading_font_bold_italic`, and no matching `@font-face` for either.
+  The requirement is "for each font," not just body. Practical
+  consequence, not just a technicality: without a real italic face
+  loaded, any `<em>`/`<strong><em>` inside heading-styled rich text
+  (an FAQ answer, a page's content, anywhere a merchant nests emphasis
+  in text using `--f-heading`) would fall back to the browser's
+  synthetic/faux-italic slant instead of the font's actual italic
+  design — exactly the rendering artifact this requirement exists to
+  prevent. Added `heading_font_italic` and `heading_font_bold_italic`
+  (chained off the bold variant, matching the existing body pattern so
+  the result carries both properties rather than only the last one
+  applied) and their `@font-face` declarations. Preload tags in
+  `theme.liquid` were already correctly scoped to just the two base
+  weights (not all 8 variants — preloading everything would cost LCP
+  for weights most pages never use above the fold) and reference
+  `settings.heading_font`/`settings.body_font` directly, so they were
+  untouched by this fix and didn't need to be. `shopify theme check`:
+  121 files, 0 offenses; live-checked in a real browser afterward —
+  zero new console errors, only the same pre-existing `theme dev`-proxy
+  noise already documented earlier in this file.
+
+---
+
+## 16. Color system
+
+- ✅ **Minimum 4 colors** — each color scheme's `definition` carries 9:
+  `background`, `surface`, `text`, `accent`, `sand`, `signal`, `button`,
+  `button_label`, `shadow`.
+- ✅ **Every `type: "color"`** — all 9 fields, no exceptions (no color
+  smuggled in as a `text` setting holding a hex string).
+- ✅ **Every background has a registered foreground — confirmed via
+  Shopify's own `role` map, not just inferred from field names.**
+  `config/settings_schema.json`'s `color_scheme_group` declares an
+  explicit `"role"` block pairing `background` → `text`,
+  `primary_button` (→ `button`) → `on_primary_button` (→
+  `button_label`), and `secondary_button` (→ `background`) →
+  `on_secondary_button` (→ `text`). Every background role Shopify's own
+  schema recognizes has a paired foreground registered against it —
+  this is Shopify's own mechanism for asserting the pairing, so its
+  presence and correctness here is direct evidence, not circumstantial.
+  (`surface` and `sand` exist as extra color fields but aren't
+  registered as `background`-type roles in the map, so they don't need
+  a role-level pairing; the theme's own CSS already uses `text` as the
+  foreground on both, independently verified for AA contrast earlier
+  in this file.)
+
+No gaps in this batch.
+
+---
+
+## 17. Responsive images
+
+- ✅ **Responsive image strategy.** Structurally guaranteed, not just
+  per-usage: `image-fallback.liquid` is the only path any image takes
+  through this theme (confirmed earlier — zero raw `<img>` tags exist
+  anywhere in the repo), and it always calls `image_tag` with
+  `widths:`/`sizes:`, producing a real `srcset`. Icons are SVG via
+  `icon.liquid`, not raster images, so the stated exception doesn't
+  even need to apply.
+- ✅ **Load only as needed.** `loading: 'lazy'` is the default inside
+  `image-fallback.liquid` — every caller gets it unless it explicitly
+  overrides. Audited every override: hero (both crops), header logo,
+  article header image, collection banner, password-page logo, and the
+  product gallery's first image are `eager` + `fetchpriority: high` —
+  each one is a legitimate above-the-fold/LCP candidate for its own
+  template, not an arbitrary choice. The product gallery's own logic
+  (`main-product.liquid`) explicitly marks only `forloop.first` as
+  eager+high and everything after it `lazy`/`auto` — confirmed by
+  reading the loop, not assumed. Lightbox images are explicitly `lazy`
+  (hidden until opened, correctly not eager).
+- ❌ **One inconsistency found and fixed.** The *zero-media* fallback
+  path in `main-product.liquid` (what renders when a product has no
+  media at all, a real if rare state — a brand-new product still being
+  set up) had `loading: 'eager'` but no `fetchpriority: 'high'`, unlike
+  every other eager image in the theme. In that state the fallback
+  placeholder *is* the page's first/only image, so it should get the
+  same priority hint the normal first-gallery-image path gets. Added
+  `fetchpriority: 'high'` to match. `shopify theme check`: 121 files, 0
+  offenses.
+
+---
+
+## 18. Naming themes and theme presets
+
+- ✅ **Distinct from Shopify products, company names, platform/SEO
+  words, and Theme Store industries/collections** — "Loam" (theme) and
+  "Fernway"/"Fernway Night" (presets) are original, evocative names,
+  none resembling a Shopify product, the operator's own name, a
+  benefit-word ("Performance", "Sales"), or an industry category
+  ("Fashion", "Footwear"). "Fernway" is the fictional demo brand
+  established throughout `CLAUDE.md`, not a company name.
+- ✅ **1–2 words, under 30 characters** — "Loam" (1 word, 4 chars),
+  "Fernway" (1 word, 7 chars), "Fernway Night" (2 words, 13 chars). All
+  three clear both limits with room to spare.
+- ❌ **One preset must take the parent theme's name — real gap, FIXED
+  2026-09-03.** Neither shipped preset was named "Loam" (the theme's own
+  `theme_name`) — both were demo-brand names, "Fernway" and "Fernway
+  Night". Renamed the primary preset's key in
+  `config/settings_data.json` from `"Fernway"` to `"Loam"`, keeping its
+  full settings content untouched — only the preset's display name
+  changed, satisfying the literal requirement while leaving "Fernway
+  Night" as the second, brand-flavored option. Checked for stale
+  references to the old preset name in `README.md`/`PROGRESS.md` before
+  and after — none existed, nothing else needed updating.
+  `shopify theme check`: 121 files, 0 offenses.
+- ⚠️ **Unique/distinct from existing Theme Store themes** — same
+  caveat already logged under §2: not verifiable from source alone,
+  needs the manual side-by-side comparison against the live catalog
+  already tracked as action item #1.
+
+---
+
+## 18 (detail). Theme and preset name guidelines
+
+These are guidelines, not pass/fail checkboxes — judgment calls, not
+gaps to fix. Assessed "Loam" against each rather than treating this as
+another audit row.
+
+- **Alludes to the purpose, gives an idea of what to expect** — loam is
+  fertile, nutrient-rich soil; the metaphor lines up with a
+  natural-materials brand story ("Built from things that grow") and the
+  earthy, grounded palette (`--c-ink`/`--c-paper`/`--c-sand`) better
+  than a literal category name like "Footwear" would, and a literal
+  name would have failed the industries/collections rule from the
+  checkbox list above anyway.
+- **Noun** — yes, cleanly (a soil type).
+- **Easy to spell and pronounce** — yes; short, phonetic, rhymes with
+  "home"/"foam".
+- **Works across dialects / no unintended meaning elsewhere** — nothing
+  found, but this is the one item on the list that's genuinely hard to
+  fully clear without a real idiom dictionary or native speakers across
+  every locale this theme ships in (`fr`, `de`, `es`, `it`, `ja`,
+  `pt-PT`). Said plainly rather than silently assumed clean.
+- **Different from theme names on other platforms** — actually
+  searched rather than caveated: "Loam" Shopify theme, and "Loam theme"
+  across WordPress/Webflow/Squarespace/ThemeForest. No existing theme
+  by this name surfaced in either search. Not an exhaustive guarantee —
+  an obscure or very recently listed theme could exist that didn't
+  surface — but a real check, not an assumption.
+
+No action needed here; recorded for completeness since it was asked
+about directly.
+
+---
+
+## 18 (detail, cont.). Increasing clarity and discoverability
+
+Also guidelines, not pass/fail. Same treatment — judged, not audited.
+
+- **Not trendy** — "loam" is a centuries-old soil-science term, not
+  slang or a fad word; nothing about it dates.
+- **Not an unusual spelling** — "Loam" is the standard dictionary
+  spelling, not a stylized one ("Lite" for "Light", "Kwik" for
+  "Quick"). "Fernway" is a genuine compound/portmanteau (fern + way),
+  not a misspelling of an existing word — same category as most
+  invented brand names, not what this guideline is warning against.
+- **Not lengthy** — 4/7/13 characters across the three names.
+- **Not the same as a theme on another platform** — searched again,
+  specifically for "Fernway" this time (the previous turn only checked
+  "Loam"): no theme or preset by that exact name surfaced. **One
+  adjacent, not identical, result worth flagging:** Archetype Themes'
+  "Streamline" theme (sold on themes.shopify.com itself) ships a preset
+  called **"Fern"** — not "Fernway," a different, shorter word, so it
+  doesn't violate the literal "same name" rule, but it's close enough
+  in the same natural/plant-name space that it's worth being aware of
+  before submission.
+- **Not the same as an existing theme+preset name** — no exact
+  collision found for "Loam," "Fernway," or "Fernway Night" in either
+  search pass.
+
+No action needed — the one adjacent case ("Fern") is a different word,
+not a rule violation, but flagged since a real, close neighbor is more
+useful to know about than a clean "no gaps" here would suggest.
+
+---
+
+## Adding presets to the theme zip submission
+
+- ❌ **Real, currently-unmet gap — this theme has 2 presets now
+  ("Loam", "Fernway Night" per §18's fix), so a `/listings` folder is
+  required, and it doesn't exist.** Confirmed: no `listings/` directory
+  anywhere in the repo, no mention of one in `README.md`, `PROGRESS.md`,
+  or `CLAUDE.md`. Per the requirement, the zip needs
+  `listings/<preset>/templates/*.json` (and optionally `sections/`) for
+  **every preset beyond the first** — content that shows what that
+  specific preset looks like, similar to its associated demo store.
+  With only one preset this folder is skippable (the note on the page
+  says so explicitly); with two, it's required.
+
+**This is a different kind of gap from everything else on this list.**
+Not a bug or a quick text/CSS fix — it's a packaging deliverable that
+needs real content decisions: what "Loam"'s and "Fernway Night"'s
+listing templates actually contain (presumably "Loam" mirrors the
+existing `templates/`, and "Fernway Night" needs its own JSON with the
+dark-scheme color choices swapped in per section) isn't something to
+guess at silently. Flagged, not built, pending direction on scope —
+worth doing close to actual zip packaging (`shopify theme package`)
+rather than maintaining a parallel copy throughout the rest of the
+build.
+
+**Action, decided 2026-09-03:** deferred to just before packaging.
+Building it now would mean keeping a second parallel copy of
+`templates/` in sync with every homepage/section change made between
+now and submission — real risk of drift for no benefit this early.
+Build `listings/loam/templates/` (mirroring `templates/`) and
+`listings/fernway-night/templates/` (same structure, dark-scheme colors
+swapped in per section) as the last step before running
+`shopify theme package`.
+
+---
+
+## 19. Theme versions and release notes
+
+- ✅ **Version number** — `theme_version: "1.0.0"` in `settings_schema.json`'s
+  `theme_info` (valid semver), matching `package.json`'s own version.
+- ⚠️ **Release notes — not a repo artifact to begin with, drafted
+  anyway.** Unlike the version number, release notes aren't a field
+  embedded in the theme's own files — Shopify collects them through the
+  Partner Dashboard at submission time, so there was nothing in the
+  repo to check for absence or presence. Drafted a genuine v1.0.0 entry
+  anyway (`RELEASE-NOTES.md`, new) so it's ready to paste into that
+  submission form rather than written from scratch under deadline
+  pressure. Content is drawn from what the theme actually ships — 19
+  sections, the CRO feature set, both presets, the a11y/i18n/performance
+  figures already verified elsewhere in this file — nothing claimed
+  that isn't backed by a finding somewhere else in this audit.
+
+**Action:** review `RELEASE-NOTES.md` before submission — it's a draft,
+not a final version copy-pasted in.
+
+---
+
+## 20. Demo stores
+
+- ⚠️ **Not code-checkable — a Partner Dashboard fact, confirmed by
+  operator rather than found in source.** The requirement is that the
+  demo store be built on a Partner Dashboard **client transfer store**
+  specifically, not a regular development store with developer previews
+  enabled (those can't be transferred to Shopify for review). Nothing
+  in the repo or the Admin API can distinguish store-creation method
+  from here — `PROGRESS.md` even surfaced a real ambiguity worth
+  flagging before assuming: it separately mentions "operator has a
+  test/transfer store set up" for the fresh-install test, distinct
+  language from the `demo-store-nwv18ak5` already configured in `.env`
+  for seeding. Asked directly rather than assumed either reading.
+  **Operator confirmed:** `demo-store-nwv18ak5` — the store already
+  seeded, theme-pushed, and used for the live preview earlier in this
+  session — is a client transfer store, created the correct way.
+  Nothing to redo.
+
+No gaps — confirmed correct, not inferred.
+
+---
+
+## 20 (detail). Demo store requirements
+
+Split by what's actually checkable from source versus what lives only
+in store admin / the Partner Dashboard submission form.
+
+**Checked from source, clean:**
+
+- ✅ **`powered_by_link` unaltered** — the one usage
+  (`main-password.liquid:110`) is the bare object, `{{ powered_by_link }}`,
+  nothing wrapped around it or concatenated to it.
+- ✅ **No `rel="nofollow"` gap** — moot rather than satisfied-by-effort:
+  grepped every `.liquid` file for a hardcoded link to any
+  `*.shopify.com`/`shop.app`/`*.myshopify.com` domain and found zero.
+  `powered_by_link` itself is a Shopify-rendered object the theme
+  doesn't construct the markup for, so there's nothing theme-authored
+  that would need the attribute added.
+- ✅ **No affiliate linking** — grepped for `affiliate`, `utm_source`,
+  affiliate-style ref/partner query params across locales and shipped
+  JSON. Nothing found. Consistent with §1's earlier finding (no
+  designer-credit or affiliate links anywhere in the theme).
+- ✅ **Authentic text, no Lorem Ipsum/onboarding text** — re-confirms
+  what's already been verified repeatedly across this whole audit
+  (§3, §14, and the media-manifest review), not re-derived from
+  scratch here.
+- ✅ **Asset rights** — already governed end-to-end by `CLAUDE.md` §6's
+  three-tier licensing system (CC0/Burst-License/AI-generated,
+  bundle-eligibility per tier, `LICENSES.md` tracking every file) —
+  this exists specifically to satisfy the Partner Agreement's rights
+  requirement, not something new to check here.
+
+**Not checkable from source — store admin / submission-form facts:**
+
+- ✅ **Payment gateway — confirmed by operator 2026-09-03: Shopify
+  Payments test mode.** Not verifiable from the theme repo (a
+  Settings → Payments configuration on the live demo store), so asked
+  directly rather than assumed.
+- ⚠️ **No apps beyond the free-review/free-translation exception** (and
+  if a translation app is used, *everything* must actually be
+  translated). Which apps are installed on `demo-store-nwv18ak5` isn't
+  something the theme code or this session's Admin API access can see.
+- ⚠️ **Preset ↔ demo-store industry/catalog-size tagging, and "each
+  preset install matches its demo store's expectations."** These are
+  Theme Store *listing* metadata, set at submission time in the Partner
+  Dashboard, not theme files — nothing in the repo to audit.
+
+**Action:** confirm directly (not verifiable from here) — payment
+gateway is set to Bogus Gateway or Shopify Payments test mode with
+every other checkout method disabled, and no non-exempt apps are
+installed on the demo store before submission.
+
+---
+
+## Demo store recommendations
+
+Explicitly non-mandatory ("recommendations aren't requirements that
+need to be met for submission") — assessed for completeness, not
+treated as pass/fail gates.
+
+- ⚠️ **Identify the source of product images in the product
+  description** — not done at the description-text level, but the
+  underlying provenance is tracked exhaustively elsewhere (`LICENSES.md`,
+  `licenses.json`, per CLAUDE.md §6's three-tier system). A soft nice-
+  to-have, not chased further given it's explicitly optional and the
+  real tracking already exists.
+- ❌ **Use the latest theme version in the demo store — currently
+  false, and concretely checkable.** `git status` right now: 10
+  modified files plus `RELEASE-NOTES.md`, none committed, none pushed.
+  That includes everything fixed this session — the hero scrim bug, the
+  hero-height/landscape fixes, the seven social icons, the heading-font
+  italic variants, the fetchpriority fix, and every locale/terminology
+  correction. The live preview shown earlier in this session predates
+  essentially all of today's real fixes. **Flagging, not pushing** —
+  pushing to the shared demo store is a real, visible action on shared
+  state, not something to do without asking first.
+- ✅ **Built-in Shopify features showcased** — the theme itself renders
+  all of them when store data exists to exercise them: Shop Pay
+  Installments (`buy-buttons.liquid`), pickup availability
+  (`pickup-availability.liquid`), gift cards (`templates/gift_card.liquid`),
+  predictive search, faceted filtering. Whether the demo store's actual
+  configuration (e.g. local pickup enabled, an eligible price point for
+  installments) exercises every one of these is a store-config
+  question outside what the theme repo can confirm.
+- ⚠️ **Versatility examples — 3 of 4 present, 1 likely missing.** Per
+  CLAUDE.md §12.4's own catalog spec and confirmed earlier in this
+  audit: a sale product (real `compareAtPrice`) ✓, sold-out
+  variants ✓, full multi-variant products ✓. **A gift card product does
+  not appear to exist in the seeded catalog** — grepped the seeding
+  script, the exported `products.csv`, and `PROGRESS.md`'s own catalog
+  notes for any mention of one; found none. `templates/gift_card.liquid`
+  exists and is correct, but a template only renders once a real
+  gift-card-type product is purchased — without one in the catalog,
+  there's nothing for a reviewer to buy to see that flow.
+
+**Action:** push the current local changes to `demo-store-nwv18ak5`
+before submission (confirm first — this touches the shared demo store).
+Consider adding one gift-card product to the seeded catalog so the
+gift-card purchase flow has something to actually exercise.
+
+---
+
 ## Open action items (running list)
 
 | # | Item | Status |
@@ -464,6 +1380,27 @@ covered by data already in `PROGRESS.md`.
 | 19 | `article.excerpt_or_content` word-safe fallback on blank excerpt | **Done 2026-09-02** |
 | 20 | Pagination on `article.comments` | **Done 2026-09-02** |
 | 21 | Comment form: loop all `form.errors` fields (was email-only) | **Done 2026-09-02** |
+| 22 | Hero `vh`→`dvh` fallback (all 4 size variants) + landscape short-viewport tightening | **Done 2026-09-03** |
+| 23 | Hero background image sizing the box instead of being cropped to it (`.hero__media` grid-stacking bug) | **Done 2026-09-03** |
+| 24 | Real Safari (desktop + iOS) and Samsung Internet passes | Not started (needs macOS/device access) |
+| 25 | Real Instagram/Facebook/Pinterest in-app webview pass | Not started (needs device/app access) |
+| 26 | W3C HTML validator pass on a live page | **Done 2026-09-03 — homepage; PDP/collection/cart/etc. still to check** |
+| 27 | Platform-specific social icons (Instagram/Facebook/X/Pinterest/TikTok/LinkedIn/YouTube) in footer | **Done 2026-09-03** |
+| 28 | Confirm `theme_author`, `theme_documentation_url`, `theme_support_url` in `config/settings_schema.json` are real, not leftover/placeholder values | **Done 2026-09-03** — `theme_author` corrected to "Meet Pritmani", docs/support URLs confirmed correct |
+| 29 | British spellings in settings locale (`colour` → `color`, `catalogue` → `catalog` ×4) | **Done 2026-09-03** |
+| 30 | Image-size info text reformatted to `[numeral] x [numeral]px (required/recommended)` (favicon, share image, hero image) | **Done 2026-09-03** |
+| 31 | Confirm "Checkout" and "Quick view" stay as industry-standard terms despite not being literally verb-first | Not started — needs operator input |
+| 32 | Terminology table: "homepage"→"home page", "Slider"→"Slideshow", split shared "Menu" label into "Main menu"/"Footer menu", "Show social links"→"Show social media icons" | **Done 2026-09-03** |
+| 33 | Decide whether "Value props" section name should be renamed to something more self-explanatory | Not started — needs operator input |
+| 34 | Heading font missing italic/bold-italic `font_modify` variants (body had all 3, heading only had bold) | **Done 2026-09-03** |
+| 35 | `fetchpriority: high` missing on the zero-media product fallback image (`main-product.liquid`) | **Done 2026-09-03** |
+| 36 | Rename a theme preset to match the parent theme name ("Loam") | **Done 2026-09-03** |
+| 37 | Build `/listings` folder for zip submission (required now that the theme ships 2 presets) | Not started — deferred to just before `shopify theme package`, by design |
+| 38 | Draft v1.0.0 release notes for Theme Store submission | **Done 2026-09-03** — `RELEASE-NOTES.md`, review before submitting |
+| 39 | Confirm demo store payment gateway is Bogus Gateway or Shopify Payments test mode, all other methods disabled | **Confirmed 2026-09-03** — Shopify Payments test mode |
+| 40 | Confirm no non-exempt apps installed on the demo store | Not started — store-admin check, needs operator |
+| 41 | Push today's uncommitted local changes to `demo-store-nwv18ak5` (10 files + RELEASE-NOTES.md, none pushed yet) | Not started — needs confirmation before touching shared store |
+| 42 | Add a gift card product to the seeded demo catalog | Not started (recommendation, not required) |
 
 ---
 

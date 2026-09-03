@@ -162,6 +162,41 @@
       <path d="m17.3 17.3 1.4 1.4"/>
       <path d="m18.7 5.3-1.4 1.4"/>
       <path d="m6.7 17.3-1.4 1.4"/>
+
+    {%- comment -%} Social platforms (build spec §13) — line-art reads of
+      each mark, drawn in the theme's own stroke style rather than the
+      brands' solid logotypes, so a shopper can still tell them apart in
+      the footer at a glance without the theme reproducing trademarked
+      artwork pixel for pixel. A couple of sub-shapes (a dot, a play
+      triangle) need a hard fill regardless of context, so those set
+      fill/stroke inline rather than relying on `.icon--filled`, which
+      flips the whole icon and would lose the stroke everywhere else in
+      it. {%- endcomment -%}
+    {%- when 'instagram' -%}
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
+      <circle cx="12" cy="12" r="4.2"/>
+      <circle cx="17" cy="7" r="0.6" fill="currentColor" stroke="none"/>
+    {%- when 'facebook' -%}
+      <path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.7c0-.9.3-1.5 1.6-1.5h1.6V3.3c-.3 0-1.3-.1-2.4-.1-2.4 0-4.1 1.5-4.1 4.2v2.4H8.5v3.2h2.7v8"/>
+    {%- when 'x' -%}
+      <path d="M5 5l14 14"/>
+      <path d="M19 5 5 19"/>
+    {%- when 'pinterest' -%}
+      <circle cx="12" cy="12" r="8.5"/>
+      <path d="M9.8 18c.5-1.8 1.7-6.2 2.2-8.4"/>
+      <path d="M9.6 13.2c-.3-2.6 1.5-4.7 4-4.7 2.2 0 3.8 1.6 3.8 3.7 0 2.4-1.4 4.3-3.4 4.3-1 0-1.7-.5-2-1.2"/>
+    {%- when 'tiktok' -%}
+      <path d="M13.5 4v11a3.2 3.2 0 1 1-3.2-3.2c.3 0 .6 0 .9.1"/>
+      <path d="M13.5 4c.3 2.4 2.1 4.2 4.5 4.4v3.1c-1.7-.1-3.2-.7-4.5-1.7"/>
+    {%- when 'linkedin' -%}
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3"/>
+      <path d="M7.6 10.3v6.4"/>
+      <circle cx="7.6" cy="7.4" r="0.7" fill="currentColor" stroke="none"/>
+      <path d="M10.9 16.7v-6.4"/>
+      <path d="M10.9 13.2c0-1.7 1-2.9 2.4-2.9 1.4 0 2.3 1.1 2.3 2.8v3.6"/>
+    {%- when 'youtube' -%}
+      <rect x="2.5" y="6" width="19" height="12" rx="4"/>
+      <path d="M10.3 9.7v4.6l4.2-2.3-4.2-2.3Z" fill="currentColor" stroke="none"/>
     {%- else -%}
       <circle cx="12" cy="12" r="8.5"/>
   {%- endcase -%}
