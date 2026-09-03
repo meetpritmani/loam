@@ -1634,7 +1634,7 @@ around.
 | 38 | Draft v1.0.0 release notes for Theme Store submission | **Done 2026-09-03** — `RELEASE-NOTES.md`, review before submitting |
 | 39 | Confirm demo store payment gateway is Bogus Gateway or Shopify Payments test mode, all other methods disabled | **Confirmed 2026-09-03** — Shopify Payments test mode |
 | 40 | Confirm no non-exempt apps installed on the demo store | Not started — store-admin check, needs operator |
-| 41 | Push today's local changes to `demo-store-nwv18ak5` and commit/push to git | **Done 2026-09-03** — theme pushed (#155644264616), committed `ad732a2`, pushed to `origin/main` |
+| 41 | Push today's local changes to `demo-store-nwv18ak5` and commit/push to git | **Done 2026-09-03** — theme pushed (#155644264616), committed `ad732a2`, pushed to `origin/main`. **Repeated 2026-09-03** for this session's swatch/gift-card-recipient/pagination/app-block work and the `ar.json` fix: committed `a19a4c0`, pushed to `origin/main`, theme pushed live to #155644264616 |
 | 42 | Add a gift card product to the seeded demo catalog | Not started (recommendation, not required) |
 | 43 | Review GitBook "Theme settings" doc page against today's renames (Main menu/Footer menu, Show social media icons, theme_author) | Not started |
 | 44 | Verify Tally form: Store URL placeholder text, Problem field is a textarea, auto-responder fires on submit | Not started — needs operator (own form, quick check) |
