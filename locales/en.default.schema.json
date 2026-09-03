@@ -423,6 +423,9 @@
           "default": "As set in admin",
           "alphabetical": "Alphabetical"
         }
+      },
+      "collections_per_page": {
+        "label": "Collections per page"
       }
     },
     "main_page": {

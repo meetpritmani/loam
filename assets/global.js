@@ -854,9 +854,11 @@ const Cart = {
   /**
    * @param {number|string} id variant id
    * @param {number} quantity
+   * @param {{properties?: object, recipient?: object}} [extra] gift card
+   *   recipient fields — see GiftCardRecipientForm/ProductForm.onSubmit.
    */
-  async add(id, quantity) {
-    const data = await this.post(cartRoute('cart/add.js'), { id, quantity });
+  async add(id, quantity, extra) {
+    const data = await this.post(cartRoute('cart/add.js'), { id, quantity, ...extra });
 
     // Reported only once Shopify has confirmed the line (§16). A null `data`
     // means the request failed, so nothing is announced and nothing is
@@ -1038,12 +1040,28 @@ class ProductForm extends HTMLElement {
     // rather than assuming either shape.
     const quantity = Number(this.form?.querySelector('[name="quantity"]')?.value) || 1;
 
+    // Gift card recipient fields (buy-buttons.liquid). The checkbox IS the
+    // `properties[__shopify_send_gift_card_to_recipient]` field, so its
+    // presence in FormData already means "checked" — no gift-card purchase
+    // reaches here with anything extra to send.
+    const formData = this.form ? new FormData(this.form) : null;
+    const sendAsGift = formData?.get('properties[__shopify_send_gift_card_to_recipient]');
+    let extra;
+    if (sendAsGift) {
+      const recipient = {};
+      ['email', 'name', 'message', 'send_on'].forEach((key) => {
+        const value = formData?.get(`recipient[${key}]`);
+        if (value) recipient[key] = value;
+      });
+      extra = { properties: { __shopify_send_gift_card_to_recipient: true }, recipient };
+    }
+
     // aria-disabled rather than disabled: a disabled button loses focus, and
     // the shopper's place on the page goes with it.
     this.button?.setAttribute('aria-disabled', 'true');
     this.toggleAttribute('aria-busy', true);
 
-    const cart = await Cart.add(id, quantity);
+    const cart = await Cart.add(id, quantity, extra);
 
     this.button?.removeAttribute('aria-disabled');
     this.toggleAttribute('aria-busy', false);
@@ -1701,6 +1719,46 @@ class VariantPicker extends HTMLElement {
 
 if (!customElements.get('variant-picker')) {
   customElements.define('variant-picker', VariantPicker);
+}
+
+/* --------------------------------------------------------------------------
+   <gift-card-recipient-form>
+   The recipient fields render open and enabled in the raw HTML, so a no-JS
+   shopper can just fill them in — the checkbox itself IS the
+   `properties[__shopify_send_gift_card_to_recipient]` field, and an
+   unchecked checkbox is simply absent from form data. This element only
+   adds the nicer, JS-only behaviour: collapse the fields until the box is
+   checked, and only require the recipient email once they're in play.
+   -------------------------------------------------------------------------- */
+
+class GiftCardRecipientForm extends HTMLElement {
+  connectedCallback() {
+    this.checkbox = this.querySelector('[data-recipient-toggle]');
+    this.fields = this.querySelector('[data-recipient-fields]');
+    this.email = this.querySelector('[data-recipient-email]');
+
+    this.onChange = this.onChange.bind(this);
+    this.checkbox?.addEventListener('change', this.onChange);
+    this.sync();
+  }
+
+  disconnectedCallback() {
+    this.checkbox?.removeEventListener('change', this.onChange);
+  }
+
+  onChange() {
+    this.sync();
+  }
+
+  sync() {
+    const on = !!this.checkbox?.checked;
+    this.fields?.toggleAttribute('hidden', !on);
+    if (this.email) this.email.required = on;
+  }
+}
+
+if (!customElements.get('gift-card-recipient-form')) {
+  customElements.define('gift-card-recipient-form', GiftCardRecipientForm);
 }
 
 /* --------------------------------------------------------------------------

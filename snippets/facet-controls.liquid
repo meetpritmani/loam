@@ -105,7 +105,13 @@
             {% if value.count == 0 and value.active == false %}disabled{% endif %}
           >
           <label class="facet-list__label" for="{{ input_id }}">
-            {%- if value.swatch.color -%}
+            {%- if value.swatch.image -%}
+              <span
+                class="facet-list__swatch"
+                style="background-image: url({{ value.swatch.image | image_url: width: 36 }});"
+                aria-hidden="true"
+              ></span>
+            {%- elsif value.swatch.color -%}
               <span class="facet-list__swatch" style="--swatch: {{ value.swatch.color }};" aria-hidden="true"></span>
             {%- endif -%}
             <span>{{ value.label | escape }}</span>

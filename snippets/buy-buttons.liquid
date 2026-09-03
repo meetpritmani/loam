@@ -60,6 +60,95 @@
     {{ form | payment_terms }}
   {%- endif -%}
 
+  {%- if product.gift_card? -%}
+    {%- comment -%}
+      §7 (Pages, cont'd): a way to send the gift card to someone else — email,
+      name, message, an optional send date. `recipient[...]` is the field
+      shape Shopify's checkout reads for this; the checkbox IS the
+      `properties[__shopify_send_gift_card_to_recipient]` field, so an
+      unchecked box submits nothing (browsers omit unchecked checkboxes from
+      form data) and the purchase behaves like a normal, non-gift order.
+      Works with no JS: the fields below are visible and enabled by default;
+      <gift-card-recipient-form> only collapses them behind the checkbox once
+      it knows JS is actually running.
+    {%- endcomment -%}
+    {%- liquid
+      assign recipient_checkbox_id = section_id | append: '-recipient-toggle'
+      assign recipient_email_id = section_id | append: '-recipient-email'
+      assign recipient_name_id = section_id | append: '-recipient-name'
+      assign recipient_message_id = section_id | append: '-recipient-message'
+      assign recipient_send_on_id = section_id | append: '-recipient-send-on'
+    -%}
+    <gift-card-recipient-form class="gift-card-recipient">
+      <div class="field field--checkbox">
+        <input
+          class="field__checkbox"
+          type="checkbox"
+          id="{{ recipient_checkbox_id }}"
+          name="properties[__shopify_send_gift_card_to_recipient]"
+          value="1"
+          data-recipient-toggle
+        >
+        <label for="{{ recipient_checkbox_id }}">{{ 'gift_card.recipient.send_as_gift' | t }}</label>
+      </div>
+
+      <div class="gift-card-recipient__fields" data-recipient-fields>
+        <div class="field">
+          <label class="field__label" for="{{ recipient_email_id }}">
+            {{- 'gift_card.recipient.email_label' | t -}}
+          </label>
+          <input
+            class="field__input"
+            type="email"
+            id="{{ recipient_email_id }}"
+            name="recipient[email]"
+            autocomplete="email"
+            data-recipient-email
+          >
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="{{ recipient_name_id }}">
+            {{- 'gift_card.recipient.name_label' | t -}}
+          </label>
+          <input
+            class="field__input"
+            type="text"
+            id="{{ recipient_name_id }}"
+            name="recipient[name]"
+            autocomplete="name"
+          >
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="{{ recipient_message_id }}">
+            {{- 'gift_card.recipient.message_label' | t -}}
+          </label>
+          <textarea
+            class="field__textarea"
+            id="{{ recipient_message_id }}"
+            name="recipient[message]"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="{{ recipient_send_on_id }}">
+            {{- 'gift_card.recipient.send_on_label' | t -}}
+          </label>
+          <input
+            class="field__input"
+            type="date"
+            id="{{ recipient_send_on_id }}"
+            name="recipient[send_on]"
+            min="{{ 'now' | date: '%Y-%m-%d' }}"
+          >
+          <p class="field__hint text-muted">{{ 'gift_card.recipient.send_on_info' | t }}</p>
+        </div>
+      </div>
+    </gift-card-recipient-form>
+  {%- endif -%}
+
   {%- if with_qty -%}
     {%- liquid
       assign qty_id = section_id | append: '-qty'

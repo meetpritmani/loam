@@ -273,7 +273,15 @@
     "print": "Drucken",
     "copy_code": "Code kopieren",
     "code_copied": "Code kopiert",
-    "qr_alt": "QR-Code für diese Geschenkkarte"
+    "qr_alt": "QR-Code für diese Geschenkkarte",
+    "recipient": {
+      "send_as_gift": "Als Geschenk versenden",
+      "email_label": "E-Mail des Empfängers",
+      "name_label": "Name des Empfängers",
+      "message_label": "Nachricht",
+      "send_on_label": "Versanddatum",
+      "send_on_info": "Leer lassen, um die Karte sofort nach der Bestellung zu versenden."
+    }
   },
   "newsletter": {
     "label": "E-Mail",

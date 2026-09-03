@@ -142,10 +142,19 @@ themes specifically.
 - ✅ **Images for social sharing** — `meta-tags.liquid` uses
   `page_image | default: settings.share_image` for `og:image`, resolving
   per template automatically.
-- ❌ **Not part of this checklist item, but flagged along the way:**
-  CLAUDE.md §9.5 itself requires "Print and Apple Wallet options" on the
-  gift card page. Apple Wallet is present; no print button/link found.
-  **Action:** add a print trigger to `templates/gift_card.liquid`.
+- ✅ **Not part of this checklist item, but flagged along the way — FIXED
+  2026-09-03.** CLAUDE.md §9.5 itself requires "Print and Apple Wallet
+  options" on the gift card page. Apple Wallet was present; no print
+  button/link existed. Added a `data-print-gift-card` button calling
+  `window.print()`, plus a `@media print` rule (`.gift-card__no-print`)
+  hiding the print/continue-shopping actions on the printed page since only
+  the card itself is useful on paper. Wired inline rather than through
+  `global.js`: this template deliberately skips the theme's main JS module
+  (same reason `qr-code.js` is loaded standalone here), and one button
+  doesn't earn pulling the whole bundle in. `shopify theme check`: 121
+  files, 0 offenses. Not live-tested end to end — no redeemable gift card
+  exists in the seeded demo catalog to open the real balance page against
+  (see item 42), so this was verified by source review only.
 
 ---
 
@@ -249,16 +258,18 @@ No gaps in this batch.
   `main-cart.liquid`, `cart-drawer.liquid`. Still blocked on the same missing
   featured-product section already logged under §7 — can't carry an `@app`
   block if the section doesn't exist.
-- ❌ **Custom Liquid blocks in sections with `@app` blocks — real gap.** Only
-  one place in the theme has a `"type": "liquid"` setting: the standalone
-  `custom-liquid.liquid` section. None of the four sections carrying `@app`
-  blocks (`main-product`, `main-collection`, `main-cart`, `cart-drawer`) also
-  offer a Custom Liquid *block* as a second app-insertion point, which this
-  requirement asks for specifically.
-  **Action:** add a `custom_liquid` block type (with a `"type": "liquid"`
-  setting) to `main-product.liquid`, `main-collection.liquid`,
-  `main-cart.liquid`, and `cart-drawer.liquid` — and to the new
-  featured-product section once built.
+- ✅ **Custom Liquid blocks in sections with `@app` blocks — real gap,
+  FIXED 2026-09-03.** Only one place in the theme had a `"type": "liquid"`
+  setting: the standalone `custom-liquid.liquid` section. None of the four
+  sections carrying `@app` blocks (`main-product`, `main-collection`,
+  `main-cart`, `cart-drawer`) also offered a Custom Liquid *block* as a
+  second app-insertion point, which this requirement asks for specifically.
+  Added a `custom_liquid` block type to all four, reusing
+  `custom-liquid.liquid`'s own locale keys (`t:sections.custom_liquid.name`
+  / `.custom_liquid.label` / `.info`) rather than minting four near-duplicate
+  keys for the same concept. Still open: the same block type on the new
+  featured-product section once that's built (item 9).
+  `shopify theme check`: 121 files, 0 offenses.
 - ✅ **`config/markets.json`** — correctly absent from the repo.
 
 ---
@@ -322,24 +333,56 @@ covered by data already in `PROGRESS.md`.
   confirmed **enabled by default** (`cro_dynamic_checkout` defaults `true`
   in `settings_schema.json`). Rich product media is the one still-open item
   from §7 above (quick view + missing featured-product section).
-- ❌ **Gift card recipient — real gap.** Grepped the whole theme for
-  `recipient`, `form.email`/`form.name`/`form.message`, and `send_on` — zero
-  matches anywhere. The gift-card product's buy form has no way for a
-  shopper to send the card to someone else's email with a message and a
-  scheduled send date — it can currently only be bought for the purchaser.
-  **Action:** add a recipient form (email/name/message/send_on fields) to
-  the buy form when `product.gift_card?` is true, using the `form` object's
-  `email`/`name`/`message` attributes and `gift_card.send_on`.
-- ❌ **Swatches — real gap, on the PDP specifically.** `card-product.liquid`
-  and `facet-controls.liquid` both correctly use `value.swatch.color`. But
-  **`variant-picker.liquid` — the actual product-page option selector —
-  renders every value as a plain text label, no swatch at all**, which is
-  the most important surface for this feature. Separately, `swatch.image`
-  is used **nowhere** in the theme — only `swatch.color` is ever read.
-  **Action:** add swatch rendering (both `swatch.color` and `swatch.image`)
-  to `variant-picker.liquid`'s value labels, and add `swatch.image` support
-  alongside the existing `swatch.color` handling in `card-product.liquid`
-  and `facet-controls.liquid`.
+- ✅ **Gift card recipient — real gap, FIXED 2026-09-03.** Grepped the
+  whole theme for `recipient`, `form.email`/`form.name`/`form.message`, and
+  `send_on` — zero matches anywhere. The gift-card product's buy form had
+  no way for a shopper to send the card to someone else's email with a
+  message and a scheduled send date — it could only be bought for the
+  purchaser. Added a `<gift-card-recipient-form>` block to
+  `buy-buttons.liquid`, gated on `product.gift_card?`: a checkbox (which
+  IS the `properties[__shopify_send_gift_card_to_recipient]` field —
+  unchecked checkboxes are simply absent from form data, so an un-ticked
+  box behaves like a normal, non-gift purchase) plus `recipient[email]`
+  (required once checked), `recipient[name]`, `recipient[message]`, and
+  `recipient[send_on]` (date, minimum today). Works with no JS at all —
+  the fields render open and enabled by default; the new custom element
+  only collapses them behind the checkbox once it knows script is actually
+  running, toggling `required` on the email field to match. This surfaced
+  a real gap one level down: `ProductForm.onSubmit` (`global.js`) was
+  calling `Cart.add(id, quantity)` with only those two fields — any
+  `properties`/`recipient` data typed into the form was being silently
+  dropped before it ever reached `/cart/add.js`. Fixed `Cart.add` to take
+  an optional third `extra` argument merged into the JSON payload, and
+  `ProductForm.onSubmit` to read the checkbox + recipient fields via
+  `FormData` and pass them through — scoped narrowly to this one feature
+  rather than a generic form-serializer, since that is the only field set
+  the theme currently needs to carry. Translated the four new labels plus
+  the checkbox and the send-on hint into 7 of the theme's 8 locales — see
+  the new finding below on `locales/ar.json` for why Arabic didn't get
+  this one. `shopify theme check`: 121 files, 0 offenses. `node --check`
+  clean on `global.js`. Live-verified via `shopify theme dev` + Playwright
+  that the PDP still renders and functions correctly with these changes in
+  place; the recipient form itself needs a real gift-card product in the
+  catalog to exercise end to end (none exists — same gap as item 42), so
+  that part is source-reviewed, not click-tested.
+- ✅ **Swatches — real gap, on the PDP specifically, FIXED 2026-09-03.**
+  `card-product.liquid` and `facet-controls.liquid` both correctly used
+  `value.swatch.color`. But **`variant-picker.liquid` — the actual
+  product-page option selector — rendered every value as a plain text
+  label, no swatch at all**, which is the most important surface for this
+  feature. Separately, `swatch.image` was used **nowhere** in the theme —
+  only `swatch.color` was ever read. Added swatch rendering (both
+  `swatch.color` and `swatch.image`, image taking priority when both are
+  set) to `variant-picker.liquid`'s value labels for color-named options —
+  the dot sits ahead of the text rather than replacing it, so the value
+  name stays readable and the touch target stays the same ≥44px size. Added
+  `swatch.image` support alongside the existing `swatch.color` handling in
+  `card-product.liquid` and `facet-controls.liquid`. Verified live via
+  `shopify theme dev`: the seeded catalog's own color option values have no
+  swatches configured in admin, so the dots correctly render nothing extra
+  (no broken/empty-circle state) rather than being confirmed with an actual
+  colored swatch — the no-swatch-set path is the one that was actually
+  exercised. `shopify theme check`: 121 files, 0 offenses.
 
 ---
 
@@ -350,16 +393,24 @@ covered by data already in `PROGRESS.md`.
 - ✅ **`collection.featured_image`** — same snippet, correctly relies on
   Shopify's own built-in fallback to the first product's image when a
   collection has no image of its own.
-- ❌ **Pagination or lazy loading — real gap, missing entirely.**
-  `sections/main-list-collections.liquid` renders every non-empty collection
-  in one unbroken loop — no `{% paginate %}` around `collections`, no
-  lazy-loading component. The collection *page* correctly paginates its
-  products (§ above), but the collection *list* page doesn't paginate the
-  collections themselves. A store with many collections would render them
-  all in a single unpaginated page load.
-  **Action:** wrap `collections` in `{% paginate collections by N %}` (or
-  add lazy-loading) in `main-list-collections.liquid`, matching the pattern
-  already used in `main-collection.liquid`.
+- ✅ **Pagination or lazy loading — real gap, FIXED 2026-09-03.**
+  `sections/main-list-collections.liquid` rendered every non-empty
+  collection in one unbroken loop — no `{% paginate %}` around
+  `collections`, no lazy-loading component. The collection *page* correctly
+  paginated its products (§ above), but the collection *list* page didn't
+  paginate the collections themselves. Wrapped `collections` in
+  `{% paginate collections by section.settings.collections_per_page %}`
+  (new setting, default 24, range 8–48), rendered through the same
+  `pagination.liquid` snippet `main-collection.liquid` already uses. One
+  real trade-off, documented in-line: the section's existing "Alphabetical"
+  sort option is applied to each page's slice, not the full set — Liquid
+  has no way to sort the complete collection list before Shopify paginates
+  it — which only matters once a store has enough collections to span more
+  than one page. Live-verified via `shopify theme dev`: the seeded store
+  has 7 collections (under the 24-per-page default), so the grid rendered
+  correctly and pagination controls correctly stayed hidden — the
+  multi-page path itself wasn't exercised against real data.
+  `shopify theme check`: 121 files, 0 offenses.
 
 ---
 
@@ -1355,6 +1406,190 @@ gift-card purchase flow has something to actually exercise.
 
 ---
 
+## 21. Documentation and contact forms
+
+Both URLs already confirmed real (not placeholder) during the §14
+`theme_info` check — this pass actually fetched them rather than
+trusting that confirmation alone.
+
+- ✅ **Theme documentation exists and is substantive.**
+  `growth-lab.gitbook.io/growth-lab-docs` is live: 8 pages — Overview,
+  Installation, Theme settings, Conversion & CRO settings, Metafields,
+  Sections & templates, FAQ, Support. Not scaffolding — covers
+  installation through advanced features.
+- ✅ **Public support contact form exists and is functional.**
+  `tally.so/r/EkOW1L` is a real, working form: Name, Email, Store URL,
+  Problem description, file upload (10MB), branded "Loam."
+- ✅ **FAQ section present** — the docs' own page 7.
+- ✅ **Both ready well before launch** — live and reachable now, not a
+  promise to build later.
+- ✅ **Linked to the theme listing page — structurally, via the correct
+  mechanism.** `theme_documentation_url`/`theme_support_url` in
+  `theme_info` are exactly the fields Shopify's Theme Store listing
+  page pulls Documentation/Support links from automatically; both are
+  set correctly (confirmed under §14). The actual listing page doesn't
+  exist yet (theme isn't submitted), so the live link can't be checked,
+  but the wiring that produces it is correct.
+- ⚠️ **Grammar/spelling in the docs — not verifiable from here at
+  character level.** `WebFetch` returns a summarized read of the page,
+  not raw text to proofread. Nothing in the summary suggested a
+  problem, but that's not the same claim as a real proofread.
+- ⚠️ **Consistency with current theme settings copy — a real,
+  non-trivial risk worth naming, not just a formality.** This session
+  renamed several settings today (`"Menu"` → `"Main menu"`/`"Footer
+  menu"`, `"Show social links"` → `"Show social media icons"`,
+  `theme_author` corrected, several locale-string fixes). If the
+  GitBook docs were written before today, their "Theme settings" page
+  may now describe labels that no longer match what a merchant sees in
+  the editor. Not confirmed either way — flagged because it's a
+  specific, dated risk, not a generic caveat.
+
+**Action:** review the "Theme settings" doc page against today's
+renames (`Main menu`/`Footer menu`, `Show social media icons`,
+`theme_author`) before submission.
+
+---
+
+## 21 (detail). Contact form fields, and custom-tutorial clarity
+
+Tried to verify at field level, hit a real tooling limit worth being
+honest about rather than papering over.
+
+**Contact form (`tally.so/r/EkOW1L`) against the field table:**
+
+- ✅ **Name, Email, Store URL, Description of Problem, File upload** —
+  all five present, confirmed on a second, more targeted fetch.
+- ✅ **Subject / Theme Name fields absent — correctly so, not a gap.**
+  Both are conditional ("if you include this field," "if you offer
+  multiple themes") — no Subject field, and the operator ships exactly
+  one theme, so neither applies.
+- ⚠️ **Can't verify from here: Store URL example placeholder text,
+  whether Problem Description is a real textarea vs. single-line
+  input, and whether an auto-responder fires on submit.** `WebFetch`
+  renders a static/summarized read of the page — Tally forms are
+  interactive and this tool doesn't see field-level HTML attributes or
+  post-submit behavior. Submitting a real test entry to check the
+  auto-responder would create an actual support ticket in the
+  operator's inbox, which isn't something to do without being asked.
+  **Action:** operator to check these three directly in the Tally
+  editor — quick, since it's their own form.
+
+**Custom coding tutorials — likely not applicable, not fully
+confirmed.** This whole item is conditional on the docs offering
+custom code-editing tutorials at all. The 8-page index (Overview,
+Installation, Theme settings, CRO settings, Metafields, Sections &
+templates, FAQ, Support) reads like standard merchant-facing settings
+documentation, not developer tutorials — `WebFetch` couldn't dive into
+the "Sections & templates" page's actual content to be certain either
+way. If there's no code-editing tutorial content, this item doesn't
+apply; if there is, it needs the duplicate-before-editing warning and
+the Shopify Partner suggestion. **Action:** operator to confirm whether
+any doc page walks merchants through editing theme code directly.
+
+---
+
+## 22. Supporting your theme
+
+**Merchant support requirements and the support-workload section are
+policy commitments, not code-checkable.** Responding within two
+business days, fixing critical bugs immediately (or risking removal
+from the Theme Store), and staffing for an ongoing support workload are
+about the operator's post-launch capacity and process — nothing in the
+repo can confirm or deny readiness for that. Named rather than silently
+skipped, since it's a real, binding part of becoming a Theme Partner,
+just not something this audit can verify.
+
+**The "installation experience" tips underneath it, checked directly:**
+
+- ✅ **No demo-store-admin-specific resources baked into shipped
+  JSON.** Checked exactly what the tip warns about — `shopify://`
+  references that only resolve on *this* demo store, not a buyer's
+  fresh one. Grepped every `shopify://` pattern across
+  `templates/index.json` and `config/settings_data.json`: the only one
+  in use is `shopify://shop_images/<filename>`, which is filename-based
+  and portable by design (CLAUDE.md §12.6) — nothing referencing a
+  demo-store-specific product/collection ID or metaobject entry.
+  Collection settings (`featured-collection`'s `"collection":
+  "best-sellers"`) store a portable handle, not a GID, and every
+  `product`-type setting in the shipped JSON (`lookbook-collage`'s
+  hotspot products) is blank, not pointing at anything demo-specific.
+- ✅ **`link_list` defaults** — already confirmed correct under §14
+  (header → `main-menu`, footer → `footer`); not re-derived here.
+- ✅ **Resource-based setting defaults** — already confirmed N/A under
+  §14 (nothing ships a default at all, so nothing to reference
+  incorrectly); not re-derived here.
+- ✅ **`metaobject`/`metaobject_list` standard-definitions-only** —
+  already confirmed N/A under §14 (theme uses neither type anywhere);
+  not re-derived here.
+
+All four tips check out — three by direct cross-reference to work
+already done, one (the `shopify://` scope) checked fresh here since it
+hadn't come up in exactly this form before.
+
+---
+
+## New finding, 2026-09-03: `locales/ar.json` had no headroom left — FIXED
+
+Surfaced by accident, not by audit: `shopify theme dev` was started to
+live-verify the swatch/pagination/gift-card-recipient work above, and the
+very first request came back as a hard upload failure —
+**"locales/ar.json: Too many translation keys."** — not the theme, the
+homepage itself failed to render at all.
+
+Bisected by reverting just the day's `ar.json` edit (the new
+`gift_card.recipient` block, 6 leaf keys) and reloading: the error cleared
+immediately. Confirmed by direct count: `locales/ar.json` currently sits at
+**3,399 leaf translation keys** in the version already committed on `main`
+— before today's session touched it at all. Adding 6 more was enough to
+cross whatever hard cap Shopify's upload step enforces. This is a
+pre-existing condition, not something this session's edits caused; today's
+change just happened to be the one that finally landed on a full file.
+
+The bulk of `ar.json` is not theme-authored copy — most of its ~4,600 lines
+are a large `"shopify": { "checkout": { ... } }` block, and the file's own
+header comment says it plainly: *"The contents of this file are
+auto-generated... may be updated by the Shopify admin language editor or
+related systems... changes made to this file may be overwritten."* That
+block is almost certainly what's consuming the headroom, but deleting
+content from a file Shopify itself describes as auto-managed is a real
+decision with unclear downside (would Shopify just regenerate it on the
+next language sync? does Theme Store review expect it present?) — not
+something to resolve unilaterally mid-session.
+
+**Confirmed the diagnosis before touching anything:** `ar.json`'s
+`shopify` block alone accounted for 2,037 of its 3,399 leaf keys (~60%) —
+Shopify's own auto-generated checkout/customer-accounts translations, not
+theme-authored copy. Every one of the other 7 locale files is ~408 lines
+with no such block at all; `en.default.json`, the theme's own source of
+truth, has exactly 305 leaf keys total. Grepped every `.liquid` file for
+any `| t` reference into `shopify.*` or `customer_accounts.*` — zero hits;
+the only `customer_accounts` matches anywhere in the theme are
+`shop.customer_accounts_enabled`, an unrelated Liquid object property, not
+a translation key. Nothing in the theme's own rendering reads a single
+string out of that block.
+
+**Fix, applied 2026-09-03 with operator sign-off** (this is a bulk edit to
+existing translated content, not something to do unilaterally): removed
+the `shopify` and `customer_accounts` top-level keys from `ar.json`,
+bringing it down from 4,600 lines / 3,399 keys to 408 lines / matching the
+same shape as every other locale file. The `gift_card.recipient.*`
+translation drafted earlier in the session was preserved through the
+trim (recovered via `git stash pop` first, then the auto-generated blocks
+were stripped) — Arabic now has the full recipient string set, same as
+the other 7 locales. Verified twice: `shopify theme check` — 121 files, 0
+offenses; and, more importantly, an actual `shopify theme dev` upload
+against the live demo store, which failed outright before this fix
+("Too many translation keys," the whole homepage 500'd) and served a
+normal 200 after it.
+
+**Why this mattered beyond today's feature:** before this fix, `ar.json`
+had essentially zero remaining headroom — any future addition of even a
+single new Arabic-facing string, by anyone, for any feature, would have
+hit this exact upload failure. That's now resolved, not just worked
+around.
+
+---
+
 ## Open action items (running list)
 
 | # | Item | Status |
@@ -1365,16 +1600,16 @@ gift-card purchase flow has something to actually exercise.
 | 4 | Real shopping-flow click-through (variant → cart → checkout) | Not started |
 | 5 | VoiceOver pass | Not started (needs macOS/Safari) |
 | 6 | Discount display on order template | **Done 2026-09-02** |
-| 7 | Print option on gift card page | Not started |
+| 7 | Print option on gift card page | **Done 2026-09-03** |
 | 8 | Rich media (video/3D model) in quick view | Not started |
 | 9 | New `featured-product.liquid` section, incl. rich media, `@app` block, and `custom_liquid` block | Not started |
 | 10 | Selling-plan selector on product page (render existing `selling_plan_groups` only — no subscription logic in-theme) | Not started |
-| 11 | Add `custom_liquid` block type to `main-product`, `main-collection`, `main-cart`, `cart-drawer` | Not started |
+| 11 | Add `custom_liquid` block type to `main-product`, `main-collection`, `main-cart`, `cart-drawer` | **Done 2026-09-03** |
 | 12 | Run Shopify's official Lighthouse benchmark-dataset script once before submission | Not started |
 | 13 | `cart.taxes_included` note on product page | **Done 2026-09-02** |
-| 14 | Gift card recipient form (email/name/message/send_on) | Not started |
-| 15 | Swatches (`swatch.color` + `swatch.image`) on `variant-picker.liquid`; add `swatch.image` to `card-product.liquid`/`facet-controls.liquid` | Not started |
-| 16 | Pagination or lazy loading on `main-list-collections.liquid` | Not started |
+| 14 | Gift card recipient form (email/name/message/send_on) | **Done 2026-09-03** — translated into all 8 locales |
+| 15 | Swatches (`swatch.color` + `swatch.image`) on `variant-picker.liquid`; add `swatch.image` to `card-product.liquid`/`facet-controls.liquid` | **Done 2026-09-03** |
+| 16 | Pagination or lazy loading on `main-list-collections.liquid` | **Done 2026-09-03** |
 | 17 | `cart.taxes_included` note on cart page + cart drawer | **Done 2026-09-02** |
 | 18 | `item.options_with_values` on cart line (was `variant.title`) | **Done 2026-09-02** |
 | 19 | `article.excerpt_or_content` word-safe fallback on blank excerpt | **Done 2026-09-02** |
@@ -1399,8 +1634,12 @@ gift-card purchase flow has something to actually exercise.
 | 38 | Draft v1.0.0 release notes for Theme Store submission | **Done 2026-09-03** — `RELEASE-NOTES.md`, review before submitting |
 | 39 | Confirm demo store payment gateway is Bogus Gateway or Shopify Payments test mode, all other methods disabled | **Confirmed 2026-09-03** — Shopify Payments test mode |
 | 40 | Confirm no non-exempt apps installed on the demo store | Not started — store-admin check, needs operator |
-| 41 | Push today's uncommitted local changes to `demo-store-nwv18ak5` (10 files + RELEASE-NOTES.md, none pushed yet) | Not started — needs confirmation before touching shared store |
+| 41 | Push today's local changes to `demo-store-nwv18ak5` and commit/push to git | **Done 2026-09-03** — theme pushed (#155644264616), committed `ad732a2`, pushed to `origin/main` |
 | 42 | Add a gift card product to the seeded demo catalog | Not started (recommendation, not required) |
+| 43 | Review GitBook "Theme settings" doc page against today's renames (Main menu/Footer menu, Show social media icons, theme_author) | Not started |
+| 44 | Verify Tally form: Store URL placeholder text, Problem field is a textarea, auto-responder fires on submit | Not started — needs operator (own form, quick check) |
+| 45 | Confirm whether docs contain custom code-editing tutorials (duplicate-theme warning + Partner suggestion needed if so) | Not started — needs operator |
+| 46 | `locales/ar.json` had no headroom for new keys (3,399 leaf keys, hard upload failure past that) — traced to an auto-generated `shopify.checkout.*`/`customer_accounts` block absent from every other locale and unreferenced anywhere in the theme | **Done 2026-09-03** — block removed with operator sign-off, verified via a real `theme dev` upload (failed before, 200 after), see new finding above |
 
 ---
 

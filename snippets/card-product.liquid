@@ -221,7 +221,11 @@
               {%- for value in option.values limit: 5 -%}
                 <li
                   class="swatches__dot"
-                  {% if value.swatch.color %}style="--swatch: {{ value.swatch.color }};"{% endif %}
+                  {% if value.swatch.image %}
+                    style="background-image: url({{ value.swatch.image | image_url: width: 24 }});"
+                  {% elsif value.swatch.color %}
+                    style="--swatch: {{ value.swatch.color }};"
+                  {% endif %}
                   title="{{ value | escape }}"
                 >
                   <span class="visually-hidden">{{ value }}</span>

@@ -81,7 +81,10 @@
           </p>
         {%- endif -%}
 
-        <p>
+        <p class="gift-card__actions gift-card__no-print">
+          <button type="button" class="button button--secondary" data-print-gift-card>
+            {{ 'gift_card.print' | t }}
+          </button>
           <a class="button button--secondary" href="{{ shop.url }}">{{ 'cart.continue_shopping' | t }}</a>
         </p>
       </div>
@@ -90,5 +93,15 @@
     {%- if gift_card.qr_identifier -%}
       <script type="module" src="{{ 'qr-code.js' | asset_url }}"></script>
     {%- endif -%}
+
+    {%- comment -%}
+      This template deliberately loads none of the theme's main JS module
+      (same as the qr-code script above) — one button's worth of behavior
+      doesn't earn pulling in global.js, so it is wired here directly rather
+      than through a custom element.
+    {%- endcomment -%}
+    <script type="module">
+      document.querySelector('[data-print-gift-card]')?.addEventListener('click', () => window.print());
+    </script>
   </body>
 </html>

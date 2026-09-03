@@ -273,7 +273,15 @@
     "print": "Imprimir",
     "copy_code": "Copiar o código",
     "code_copied": "Código copiado",
-    "qr_alt": "Código QR para este cartão-presente"
+    "qr_alt": "Código QR para este cartão-presente",
+    "recipient": {
+      "send_as_gift": "Enviar como presente",
+      "email_label": "Email do destinatário",
+      "name_label": "Nome do destinatário",
+      "message_label": "Mensagem",
+      "send_on_label": "Data de envio",
+      "send_on_info": "Deixe em branco para enviar assim que a encomenda for feita."
+    }
   },
   "newsletter": {
     "label": "E-mail",

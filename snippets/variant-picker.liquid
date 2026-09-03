@@ -39,6 +39,11 @@
   >
     {%- for option in product.options_with_values -%}
       {%- assign option_index = forloop.index0 -%}
+      {%- assign option_name_lower = option.name | downcase -%}
+      {%- assign is_color_option = false -%}
+      {%- if option_name_lower contains 'color' or option_name_lower contains 'colour' -%}
+        {%- assign is_color_option = true -%}
+      {%- endif -%}
       <fieldset class="variant-picker__option">
         <legend class="variant-picker__legend">
           <span class="caption">{{ option.name | escape }}</span>
@@ -81,9 +86,22 @@
               {% if is_unavailable %}data-unavailable="true"{% endif %}
             >
             <label
-              class="variant-picker__value{% if is_unavailable %} variant-picker__value--unavailable{% endif %}"
+              class="variant-picker__value{% if is_unavailable %} variant-picker__value--unavailable{% endif %}{% if is_color_option %} variant-picker__value--swatch{% endif %}"
               for="{{ input_id }}"
             >
+              {%- if is_color_option and value.swatch.image -%}
+                <span
+                  class="variant-picker__swatch"
+                  style="background-image: url({{ value.swatch.image | image_url: width: 40 }});"
+                  aria-hidden="true"
+                ></span>
+              {%- elsif is_color_option and value.swatch.color -%}
+                <span
+                  class="variant-picker__swatch"
+                  style="--swatch: {{ value.swatch.color }};"
+                  aria-hidden="true"
+                ></span>
+              {%- endif -%}
               <span>{{ value | escape }}</span>
               {%- if is_unavailable -%}
                 <span class="visually-hidden">

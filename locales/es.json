@@ -273,7 +273,15 @@
     "print": "Imprimir",
     "copy_code": "Copiar el código",
     "code_copied": "Código copiado",
-    "qr_alt": "Código QR para esta tarjeta regalo"
+    "qr_alt": "Código QR para esta tarjeta regalo",
+    "recipient": {
+      "send_as_gift": "Enviar como regalo",
+      "email_label": "Correo electrónico del destinatario",
+      "name_label": "Nombre del destinatario",
+      "message_label": "Mensaje",
+      "send_on_label": "Fecha de envío",
+      "send_on_info": "Déjalo en blanco para enviarlo en cuanto se realice el pedido."
+    }
   },
   "newsletter": {
     "label": "Correo electrónico",

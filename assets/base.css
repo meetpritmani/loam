@@ -3369,6 +3369,21 @@ recently-viewed {
   border-radius: var(--radius);
 }
 
+.gift-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+}
+
+/* Printing the balance page: only the card itself is useful on paper —
+   the continue-shopping link and the print trigger have no purpose there. */
+@media print {
+  .gift-card__no-print {
+    display: none;
+  }
+}
+
 /* --- Footer ------------------------------------------------------------- */
 
 .footer {
@@ -3890,6 +3905,8 @@ recently-viewed {
   border-radius: 50%;
   border: 1px solid var(--c-ink-12);
   background: var(--swatch, var(--c-sand));
+  background-size: cover;
+  background-position: center;
 }
 
 /* --- Featured collection ------------------------------------------------ */
@@ -4640,6 +4657,24 @@ recently-viewed {
   text-decoration: line-through;
 }
 
+/* Color options get a swatch dot ahead of the text label rather than
+   replacing it — the name stays readable, the dot adds a faster visual scan. */
+.variant-picker__value--swatch {
+  gap: var(--sp-2);
+  padding-inline-start: var(--sp-2);
+}
+
+.variant-picker__swatch {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: var(--border-hairline) solid var(--c-ink-12);
+  background-color: var(--swatch, var(--c-sand));
+  background-size: cover;
+  background-position: center;
+}
+
 .variant-picker__fallback {
   display: grid;
   gap: var(--sp-2);
@@ -4663,6 +4698,25 @@ recently-viewed {
 .buy-buttons__express {
   display: grid;
   gap: var(--sp-2);
+}
+
+/* --- Gift card recipient --------------------------------------------------
+   Visible and enabled by default so the fields work with no JS at all;
+   <gift-card-recipient-form> (global.js) is what collapses them behind the
+   checkbox once it knows script is actually running. */
+
+.gift-card-recipient {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.gift-card-recipient__fields {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border: var(--border-hairline) solid var(--c-ink-12);
+  border-radius: var(--radius);
+  background-color: var(--c-surface);
 }
 
 /* --- Back in stock --------------------------------------------------------
@@ -5183,6 +5237,8 @@ recently-viewed {
   border: var(--border-hairline) solid var(--c-ink-12);
   border-radius: 50%;
   background-color: var(--swatch, var(--c-sand));
+  background-size: cover;
+  background-position: center;
   transition: outline-color var(--dur) var(--ease);
   outline: var(--border-hairline) solid transparent;
   outline-offset: 2px;

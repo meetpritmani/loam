@@ -267,7 +267,15 @@
     "print": "印刷",
     "copy_code": "コードをコピー",
     "code_copied": "コードをコピーしました",
-    "qr_alt": "このギフトカードのQRコード"
+    "qr_alt": "このギフトカードのQRコード",
+    "recipient": {
+      "send_as_gift": "ギフトとして送る",
+      "email_label": "受取人のメールアドレス",
+      "name_label": "受取人の名前",
+      "message_label": "メッセージ",
+      "send_on_label": "送信日",
+      "send_on_info": "空欄の場合、注文確定後すぐに送信されます。"
+    }
   },
   "newsletter": {
     "label": "メールアドレス",

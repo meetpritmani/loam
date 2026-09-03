@@ -293,6 +293,11 @@
                   {%- render 'share', url: share_url, title: product.title -%}
                 </div>
 
+              {%- when 'custom_liquid' -%}
+                <div {{ block.shopify_attributes }}>
+                  {{ block.settings.custom_liquid }}
+                </div>
+
               {%- when '@app' -%}
                 {%- render block -%}
 
@@ -386,7 +391,19 @@
         }
       ]
     },
-    { "type": "share", "name": "t:sections.main_product.blocks.share.name", "limit": 1 }
+    { "type": "share", "name": "t:sections.main_product.blocks.share.name", "limit": 1 },
+    {
+      "type": "custom_liquid",
+      "name": "t:sections.custom_liquid.name",
+      "settings": [
+        {
+          "type": "liquid",
+          "id": "custom_liquid",
+          "label": "t:sections.custom_liquid.custom_liquid.label",
+          "info": "t:sections.custom_liquid.custom_liquid.info"
+        }
+      ]
+    }
   ],
   "settings": [
     {

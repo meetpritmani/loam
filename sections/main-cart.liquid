@@ -223,6 +223,10 @@
 
       {%- for block in section.blocks -%}
         {%- case block.type -%}
+          {%- when 'custom_liquid' -%}
+            <div class="cart-page__app" {{ block.shopify_attributes }}>
+              {{ block.settings.custom_liquid }}
+            </div>
           {%- when '@app' -%}
             <div class="cart-page__app" {{ block.shopify_attributes }}>
               {%- render block -%}
@@ -238,7 +242,21 @@
   "name": "t:sections.main_cart.name",
   "tag": "section",
   "class": "section-main-cart",
-  "blocks": [{ "type": "@app" }],
+  "blocks": [
+    { "type": "@app" },
+    {
+      "type": "custom_liquid",
+      "name": "t:sections.custom_liquid.name",
+      "settings": [
+        {
+          "type": "liquid",
+          "id": "custom_liquid",
+          "label": "t:sections.custom_liquid.custom_liquid.label",
+          "info": "t:sections.custom_liquid.custom_liquid.info"
+        }
+      ]
+    }
+  ],
   "settings": [
     {
       "type": "color_scheme",

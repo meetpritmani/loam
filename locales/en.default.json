@@ -273,7 +273,15 @@
     "print": "Print",
     "copy_code": "Copy code",
     "code_copied": "Code copied",
-    "qr_alt": "QR code for this gift card"
+    "qr_alt": "QR code for this gift card",
+    "recipient": {
+      "send_as_gift": "Send as a gift",
+      "email_label": "Recipient email",
+      "name_label": "Recipient name",
+      "message_label": "Message",
+      "send_on_label": "Send on",
+      "send_on_info": "Leave blank to send as soon as the order is placed."
+    }
   },
   "newsletter": {
     "label": "Email",
