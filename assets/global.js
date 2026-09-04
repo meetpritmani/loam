@@ -1098,6 +1098,12 @@ class ProductForm extends HTMLElement {
     // pointless flicker on an already-open drawer.
     const ownDrawer = this.closest('loam-drawer');
 
+    // Escape has to return focus somewhere sane (§8) — the button that
+    // triggered this add is the correct target regardless of which branch
+    // opens the drawer, `show()` itself never sets `opener` for a drawer
+    // that opens itself rather than through a [data-drawer-toggle] click.
+    if (cartDrawer) cartDrawer.opener = this.button;
+
     if (ownDrawer && ownDrawer !== cartDrawer && ownDrawer.open) {
       ownDrawer.hide();
       const delay = PREFERS_REDUCED_MOTION.matches ? 0 : DRAWER_TRANSITION_MS;

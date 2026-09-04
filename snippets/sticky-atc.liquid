@@ -27,12 +27,12 @@
     <div class="sticky-atc__inner page-width">
       <div class="sticky-atc__info">
         <p class="sticky-atc__title">{{ product.title | escape }}</p>
-        <p class="sticky-atc__meta">
-          <span data-sticky-price>{%- render 'price', variant: current -%}</span>
+        <div class="sticky-atc__meta">
+          <div data-sticky-price>{%- render 'price', variant: current -%}</div>
           {%- unless product.has_only_default_variant -%}
             <span class="sticky-atc__variant" data-sticky-variant>{{ current.title | escape }}</span>
           {%- endunless -%}
-        </p>
+        </div>
       </div>
 
       <button

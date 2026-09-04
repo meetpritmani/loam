@@ -49,14 +49,14 @@
                     sizes: '48px'
                   -%}
                 </span>
-                <span class="predictive-search__item-body">
+                <div class="predictive-search__item-body">
                   <span class="predictive-search__item-title">{{ product.title | escape }}</span>
                   {%- if settings.predictive_search_show_price -%}
-                    <span class="predictive-search__item-price price">
+                    <div class="predictive-search__item-price price">
                       {%- render 'price', product: product, show_from: true -%}
-                    </span>
+                    </div>
                   {%- endif -%}
-                </span>
+                </div>
               </a>
             </li>
           {%- endfor -%}
