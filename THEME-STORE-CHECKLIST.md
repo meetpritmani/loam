@@ -1431,24 +1431,87 @@ vs. duplicating `index.json` "just in case," which would reintroduce
 the exact drift risk deferring this was meant to avoid). **Operator
 chose: create the folders with no template overrides.**
 
-Built:
+Built (first pass):
 - `listings/loam/templates/.gitkeep`
 - `listings/fernway-night/templates/.gitkeep` (`.gitkeep` only — git
   doesn't track empty directories, and neither preset has an actual
   override file)
-- `listings/README.md` — explains why both folders are deliberately
-  empty of overrides, so this reads as a decision, not forgotten work,
-  to anyone opening the repo or the zip later. Also documents how to
-  add a real per-preset override in future if a template setting is
-  ever added that genuinely needs to differ by preset.
+- `listings/README.md` — explained why both folders were deliberately
+  empty of overrides.
 
 **Verified, not assumed:** ran `shopify theme package` and inspected
 the actual zip contents (`unzip -l`) — confirmed `listings/loam/`,
 `listings/fernway-night/`, both `templates/` subfolders, and
 `listings/README.md` all present exactly as built. `shopify theme
-check`: 123 files, 0 offenses (unaffected — `/listings` isn't a
-theme-check-scanned directory). Test zip deleted after verification,
+check`: 123 files, 0 offenses. Test zip deleted after verification,
 not committed.
+
+### Corrected 2026-09-04, cont. — Shopify's actual submission validator disagreed
+
+Operator started the real submission flow in the Partner Dashboard and
+hit a hard blocker: *"Must have a preset folder in /listings for each
+preset in settings_data.json. Issues with: loam, fernway-night."* An
+empty `templates/` folder (`.gitkeep` only) does **not** satisfy
+Shopify's own validator, even though their written guidance ("no need
+to duplicate identical files") reads as if it should. Ground truth from
+the actual submission tool beats a documentation-page inference — fixed
+immediately rather than re-litigating which reading was "more correct."
+
+**Fix:** copied the root `templates/index.json` into both
+`listings/loam/templates/` and `listings/fernway-night/templates/`
+(byte-identical content, since — as established above — nothing is
+genuinely template-unique between the two presets; the difference is
+entirely `settings_data.json`'s per-preset colors), removed both
+`.gitkeep` placeholders now that real files exist, and rewrote
+`listings/README.md` to record the corrected understanding for next
+time rather than silently overwriting the earlier reasoning. Also fixed
+a related gap surfaced by this: `scripts/6-build-store-submission.mjs`
+predated the `/listings` folder entirely — `THEME_PATHS` didn't include
+it, so the shopify:// stripping and demo_images=false pass would have
+silently skipped both preset templates on every future rebuild. Added
+`listings` to `THEME_PATHS` and extended the JSON-walk to cover it.
+
+**Re-verified after the fix:** rebuilt via
+`node scripts/6-build-store-submission.mjs` — correctly stripped the
+same 16 `shopify://` refs from *both* new listing copies this time (49
+total vs. 17 before, confirming the script fix worked). `shopify theme
+check` inside the rebuilt `store-submission-build/`: 125 files (up from
+123 — the two new listing template files), 0 offenses. Repackaged the
+zip and scanned **every** `.json` file inside it programmatically for
+`shopify://` — zero matches anywhere, not just in the files checked by
+hand the first time.
+
+### Corrected 2026-09-04, cont. 2 — the explanatory README itself broke the validator
+
+Operator hit the real submission tool a second time and got 4 new
+errors, all pointing at the same file: *"Can't have other folders except
+for presets in /listings"*, *"Must have templates or sections for each
+preset folder"*, *"Can't have special characters for preset folder
+names"*, *"Must have only lowercase letters for preset folder names" —
+Issues with: README.md.* Shopify's validator treats every top-level
+entry under `/listings` as a preset-folder candidate and validates it as
+one — a `listings/README.md` file (added a few entries up, to document
+why the folders were built the way they were) got read as an attempted
+preset folder named "README.md", which is neither a folder, nor
+lowercase-only, nor free of special characters (the `.`), nor carrying
+its own `templates/`. Four symptoms, one root cause.
+
+Ground truth from the actual submission tool wins again — deleted
+`listings/README.md` outright rather than trying to relocate the
+documentation somewhere else under `/listings` (there's no somewhere
+else that's actually safe; the validator's rule is "presets only, full
+stop"). The rationale it recorded lives on in this file's own entries
+above, which is the more durable location anyway — this file is what
+gets read when someone asks "why does this folder look like this," not
+a README buried inside a submission zip.
+
+Rebuilt and repackaged: `store-submission-build/` now carries exactly
+`listings/loam/templates/index.json` and
+`listings/fernway-night/templates/index.json` — nothing else under
+`/listings`. `shopify theme check`: 125 files, 0 offenses (theme check
+doesn't gate on `/listings` shape, only Shopify's actual submission
+validator does — worth remembering that a clean `theme check` was never
+proof this folder was right, only that nothing about it broke Liquid).
 
 ## 19. Theme versions and release notes
 
@@ -2223,7 +2286,7 @@ before and after is what caught it, twice.
 | 34 | Heading font missing italic/bold-italic `font_modify` variants (body had all 3, heading only had bold) | **Done 2026-09-03** |
 | 35 | `fetchpriority: high` missing on the zero-media product fallback image (`main-product.liquid`) | **Done 2026-09-03** |
 | 36 | Rename a theme preset to match the parent theme name ("Loam") | **Done 2026-09-03** |
-| 37 | Build `/listings` folder for zip submission (required now that the theme ships 2 presets) | **Done 2026-09-04** — `listings/loam/` and `listings/fernway-night/` built with no template overrides (operator-confirmed: neither preset has preset-unique template content, only settings_data.json color values differ), verified present in an actual packaged zip |
+| 37 | Build `/listings` folder for zip submission (required now that the theme ships 2 presets) | **Done 2026-09-04**, corrected twice against Shopify's real submission validator (not just docs inference): both preset folders need a real `templates/index.json` (not empty), and `/listings` can carry *only* preset folders — no README, no other files. Final shape: `listings/loam/templates/index.json` + `listings/fernway-night/templates/index.json`, nothing else |
 | 38 | Draft v1.0.0 release notes for Theme Store submission | **Done 2026-09-03** — `RELEASE-NOTES.md`, review before submitting |
 | 39 | Confirm demo store payment gateway is Bogus Gateway or Shopify Payments test mode, all other methods disabled | **Confirmed 2026-09-03** — Shopify Payments test mode |
 | 40 | Confirm no non-exempt apps installed on the demo store | **Done 2026-09-04** — confirmed, nothing installed |

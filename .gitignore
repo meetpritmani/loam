@@ -49,3 +49,8 @@ gitbook-docs/
 # DEMO-SCREENSHOTS.md (tracked) is the index of what's in here.
 demo-screenshots/*
 !demo-screenshots/.gitkeep
+
+# Fixed-dimension screenshots generated on demand for a specific Theme
+# Store listing upload (750x1334 / 2000x2496 etc.) — throwaway, same
+# reasoning as demo-screenshots/ above.
+listing-screenshots/
