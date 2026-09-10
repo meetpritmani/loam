@@ -60,16 +60,9 @@
       </div>
     {%- endif -%}
 
-    {%- liquid
-      assign list_name = section.settings.heading
-      if list_name == blank
-        assign list_name = section.settings.collection.title
-      endif
-    -%}
     <div
       class="{{ layout_class }} featured-collection__items"
       style="--grid-cols: {{ columns }}; --grid-cols-tablet: {{ columns | at_most: 3 }}; --grid-cols-mobile: 2;"
-      data-analytics-list="{{ list_name | escape }}"
     >
       {%- if has_products -%}
         {%- for product in products limit: count -%}

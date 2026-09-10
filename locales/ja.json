@@ -296,10 +296,6 @@
     "product": {
       "add_to_cart": "カートに追加",
       "added_to_cart": "カートに追加しました。",
-      "back_in_stock_summary": "再入荷時にメールで知らせる",
-      "back_in_stock_label": "メールアドレス",
-      "back_in_stock_submit": "通知を受け取る",
-      "back_in_stock_success": "登録しました。再入荷時にメールでお知らせします。",
       "choose_options": "オプションを選ぶ",
       "choose_options_label": "{{ title }}のオプションを選ぶ",
       "choose_variant": "バリエーションを選んでください",

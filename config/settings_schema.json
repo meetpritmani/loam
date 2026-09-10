@@ -288,7 +288,7 @@
         "id": "card_show_compare",
         "label": "t:settings.product_cards.card_show_compare.label",
         "info": "t:settings.product_cards.card_show_compare.info",
-        "default": true
+        "default": false
       },
       {
         "type": "checkbox",
@@ -497,13 +497,6 @@
         "default": true
       },
       {
-        "type": "checkbox",
-        "id": "cro_back_in_stock",
-        "label": "t:settings.cro.cro_back_in_stock.label",
-        "info": "t:settings.cro.cro_back_in_stock.info",
-        "default": true
-      },
-      {
         "type": "range",
         "id": "cro_low_stock_threshold",
         "min": 0,
@@ -548,33 +541,6 @@
         "id": "cro_empty_cart_collection",
         "label": "t:settings.cro.cro_empty_cart_collection.label",
         "info": "t:settings.cro.cro_empty_cart_collection.info"
-      },
-      {
-        "type": "header",
-        "content": "t:settings.cro.headers.measurement"
-      },
-      {
-        "type": "checkbox",
-        "id": "cro_datalayer",
-        "label": "t:settings.cro.cro_datalayer.label",
-        "info": "t:settings.cro.cro_datalayer.info",
-        "default": false
-      }
-    ]
-  },
-  {
-    "name": "t:settings.demo.name",
-    "settings": [
-      {
-        "type": "paragraph",
-        "content": "t:settings.demo.paragraph"
-      },
-      {
-        "type": "checkbox",
-        "id": "demo_images",
-        "label": "t:settings.demo.demo_images.label",
-        "info": "t:settings.demo.demo_images.info",
-        "default": true
       }
     ]
   }

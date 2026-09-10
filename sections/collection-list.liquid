@@ -6,14 +6,10 @@
   override and optional custom title — a merchant almost always wants a
   lifestyle crop here rather than the collection's own image.
 
-  Falls back to demo category names and imagery when no collection is picked,
-  so the section is never an empty row on a new store.
+  A block with no collection picked and no heading typed has nothing genuine
+  to show, so it does not render — never a fabricated category name standing
+  in for one.
 {%- endcomment -%}
-
-{%- liquid
-  assign demo_titles = 'Men,Women,Active,Lounge' | split: ','
-  assign demo_images = 'demo-collection-mens.webp,demo-collection-womens.webp,demo-collection-active.webp,demo-collection-lounge.webp' | split: ','
--%}
 
 <div
   class="section color-{{ section.settings.color_scheme }}"
@@ -38,24 +34,24 @@
       {%- for block in section.blocks -%}
         {%- liquid
           assign block_collection = collections[block.settings.collection]
+          assign title = block.settings.heading | default: block_collection.title
 
           comment
-            §9.4: "Every card links to a non-empty collection." A blank
-            picker is the fresh-install demo path (§10's comment above) and
-            still renders — it is not "empty" in the sense this guards
-            against. A collection the merchant actually picked that
-            currently holds zero products is the case that must not render:
-            it would be a live, clickable card leading nowhere.
+            §9.4: "Every card links to a non-empty collection." Two cases
+            must not render: a collection the merchant actually picked that
+            currently holds zero products (a live, clickable card leading
+            nowhere), and a block with neither a collection nor a typed
+            heading (nothing genuine to show — never a fabricated category
+            name standing in for it).
           endcomment
           assign skip_card = false
           if block.settings.collection != blank and block_collection.products_count == 0
             assign skip_card = true
+          elsif block.settings.collection == blank and title == blank
+            assign skip_card = true
           endif
 
-          assign position = forloop.index0 | modulo: 4
-          assign title = block.settings.heading | default: block_collection.title | default: demo_titles[position]
           assign url = block_collection.url | default: routes.all_products_collection_url
-          assign fallback_image = demo_images[position]
         -%}
         {%- unless skip_card -%}
           <li class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;" {{ block.shopify_attributes }}>
@@ -64,7 +60,6 @@
               title: title,
               text: block.settings.text,
               image: block.settings.image,
-              fallback: fallback_image,
               ratio: section.settings.image_ratio
             -%}
           </li>

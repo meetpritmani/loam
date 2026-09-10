@@ -6,9 +6,9 @@
   laid-out page rather than a broken one.
 
   Resolution order:
-    1. `image` is set                          → the merchant's own image
-    2. `fallback` set and settings.demo_images → a demo asset, if present
-    3. neither                                 → placeholder_svg_tag
+    1. `image` is set     → the merchant's own image
+    2. `fallback` is set  → a matching asset in assets/, if present
+    3. neither             → placeholder_svg_tag
 
   **The theme ships no photography**, so layer 2 is inert on a stock install
   and every unset slot resolves to layer 3. That is deliberate: no stock
@@ -70,7 +70,7 @@
   endif
 
   assign use_fallback = false
-  if image == blank and fallback != blank and settings.demo_images
+  if image == blank and fallback != blank
     assign use_fallback = true
   endif
 

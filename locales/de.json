@@ -302,10 +302,6 @@
     "product": {
       "add_to_cart": "In den Warenkorb",
       "added_to_cart": "In den Warenkorb gelegt.",
-      "back_in_stock_summary": "Per E-Mail benachrichtigen, wenn verfügbar",
-      "back_in_stock_label": "E-Mail-Adresse",
-      "back_in_stock_submit": "Benachrichtigen",
-      "back_in_stock_success": "Erledigt. Wir benachrichtigen Sie per E-Mail, sobald es wieder verfügbar ist.",
       "choose_options": "Optionen wählen",
       "choose_options_label": "Optionen für {{ title }} wählen",
       "choose_variant": "Variante wählen",

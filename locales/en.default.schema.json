@@ -241,8 +241,7 @@
       "headers": {
         "product": "Product page",
         "trust": "Trust messaging",
-        "recovery": "Cart and recovery",
-        "measurement": "Measurement"
+        "recovery": "Cart and recovery"
       },
       "cro_sticky_atc": {
         "label": "Sticky Add to Cart bar on mobile",
@@ -254,10 +253,6 @@
       },
       "cro_show_payment_icons_pdp": {
         "label": "Show payment icons on the product page"
-      },
-      "cro_back_in_stock": {
-        "label": "Allow back-in-stock requests",
-        "info": "Shows an email field beneath a sold-out variant. Shopify tags the customer restock:{variant id} so you can follow up yourself, through Shopify Flow, or through a restock app — the theme does not send anything on its own."
       },
       "cro_low_stock_threshold": {
         "label": "Low stock message below",
@@ -279,18 +274,6 @@
       "cro_empty_cart_collection": {
         "label": "Recovery collection",
         "info": "Shown when the cart is empty and on the 404 page, so a shopper always has somewhere to go."
-      },
-      "cro_datalayer": {
-        "label": "Push analytics events to the data layer",
-        "info": "Sends GA4-shaped events to window.dataLayer. Leave this off if you already track events with Google Tag Manager or an app, or every event will be counted twice."
-      }
-    },
-    "demo": {
-      "name": "Demo content",
-      "paragraph": "No photography ships inside this theme. Product sections fall back to demo cards with real names and prices so a new store never shows an empty grid, and image slots show Shopify’s placeholder until you add your own. To reproduce the store from the screenshots, upload the demo-store-export media folder to Content → Files.",
-      "demo_images": {
-        "label": "Show demo cards on empty product sections",
-        "info": "Only applies where you have not set an image or chosen a collection yourself. Turn it off to show genuinely empty sections instead."
       }
     }
   },

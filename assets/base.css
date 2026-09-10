@@ -4836,39 +4836,6 @@ recently-viewed {
   background-color: var(--c-surface);
 }
 
-/* --- Back in stock --------------------------------------------------------
-   back-in-stock-form.liquid. Only ever rendered under a genuinely sold-out
-   buy-buttons, so it sits directly beneath it rather than needing its own
-   section padding — see the render guard in buy-buttons.liquid. */
-
-.back-in-stock {
-  margin-block-start: var(--sp-3);
-}
-
-.back-in-stock__summary {
-  font-size: var(--t-sm);
-}
-
-.back-in-stock__form {
-  padding-block-start: var(--sp-3);
-}
-
-.back-in-stock__field {
-  display: flex;
-  gap: var(--sp-2);
-}
-
-.back-in-stock__field .field__input {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.back-in-stock__message {
-  display: block;
-  min-height: 1.4em;
-  margin-block-start: var(--sp-2);
-}
-
 /* --- Pickup availability -------------------------------------------------
    Fetched into <pickup-availability> by global.js — see the comment there
    and in pickup-availability.liquid for why this is never rendered

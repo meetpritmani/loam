@@ -136,12 +136,5 @@
     <ul hidden>
       <li id="a11y-new-window-message">{{ 'accessibility.new_window' | t }}</li>
     </ul>
-
-    {%- comment -%}
-      The analytics payload for this page (§9.8). Renders nothing at all
-      unless the merchant has switched the data layer on, which it is not by
-      default — see the snippet for why.
-    {%- endcomment -%}
-    {%- render 'analytics-events', scope: 'page' -%}
   </body>
 </html>

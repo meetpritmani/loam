@@ -197,7 +197,6 @@
             <ul
               class="grid collection__grid"
               style="--grid-cols: {{ section.settings.columns }}; --grid-cols-tablet: 3; --grid-cols-mobile: {{ section.settings.columns_mobile }};"
-              data-analytics-list="{{ collection.title | escape }}"
             >
               {%- for product in collection.products -%}
                 <li>

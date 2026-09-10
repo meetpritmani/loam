@@ -54,20 +54,18 @@
           <blockquote class="testimonial__quote">{{ block.settings.quote | escape }}</blockquote>
 
           <div class="testimonial__source">
-            {%- if block.settings.image != blank or settings.demo_images -%}
-              <span class="testimonial__avatar media media--square">
-                {%- render 'image-fallback',
-                  image: block.settings.image,
-                  fallback: block.settings.avatar_fallback,
-                  alt: block.settings.name,
-                  widths: '100,200,300',
-                  sizes: '44px',
-                  width: 200,
-                  height: 200,
-                  placeholder: 'image'
-                -%}
-              </span>
-            {%- endif -%}
+            <span class="testimonial__avatar media media--square">
+              {%- render 'image-fallback',
+                image: block.settings.image,
+                fallback: block.settings.avatar_fallback,
+                alt: block.settings.name,
+                widths: '100,200,300',
+                sizes: '44px',
+                width: 200,
+                height: 200,
+                placeholder: 'image'
+              -%}
+            </span>
 
             <span class="testimonial__meta">
               <span class="testimonial__name">{{ block.settings.name | escape }}</span>

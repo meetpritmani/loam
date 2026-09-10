@@ -302,10 +302,6 @@
     "product": {
       "add_to_cart": "Add to cart",
       "added_to_cart": "Added to your cart.",
-      "back_in_stock_summary": "Email me when this is back",
-      "back_in_stock_label": "Email address",
-      "back_in_stock_submit": "Notify me",
-      "back_in_stock_success": "You're on the list. We'll email you when it's back.",
       "choose_options": "Choose options",
       "choose_options_label": "Choose options for {{ title }}",
       "choose_variant": "Choose a variant",

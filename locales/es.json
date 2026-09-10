@@ -302,10 +302,6 @@
     "product": {
       "add_to_cart": "Añadir al carrito",
       "added_to_cart": "Añadido a tu carrito.",
-      "back_in_stock_summary": "Avisarme cuando esté disponible",
-      "back_in_stock_label": "Correo electrónico",
-      "back_in_stock_submit": "Avisarme",
-      "back_in_stock_success": "Listo. Te avisaremos por correo cuando vuelva a estar disponible.",
       "choose_options": "Elegir opciones",
       "choose_options_label": "Elegir opciones de {{ title }}",
       "choose_variant": "Elige una variante",

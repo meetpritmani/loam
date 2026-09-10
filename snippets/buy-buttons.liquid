@@ -197,12 +197,3 @@
   {%- endif -%}
 {%- endform -%}
 </product-form>
-
-{%- comment -%}
-  Real back-in-stock capture (§9.6), not fake urgency: only for a variant
-  that genuinely exists and is out of stock, never for "unavailable" (no
-  such combination) where there is nothing to be notified about.
-{%- endcomment -%}
-{%- if settings.cro_back_in_stock and current != blank and can_buy == false -%}
-  {%- render 'back-in-stock-form', variant: current, product: product -%}
-{%- endif -%}

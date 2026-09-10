@@ -302,10 +302,6 @@
     "product": {
       "add_to_cart": "أضف إلى عربة التسوق",
       "added_to_cart": "تمت الإضافة إلى سلة مشترياتك.",
-      "back_in_stock_summary": "أعلمني عند التوفر",
-      "back_in_stock_label": "البريد الإلكتروني",
-      "back_in_stock_submit": "أعلمني",
-      "back_in_stock_success": "تم التسجيل. سنرسل لك بريدًا إلكترونيًا عند توفر المنتج.",
       "choose_options": "اختر الخيارات",
       "choose_options_label": "اختر الخيارات لـ {{ title }}",
       "choose_variant": "اختر خيارًا",

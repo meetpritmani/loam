@@ -731,32 +731,6 @@ function cartSectionIds() {
   return Array.from(ids).join(',');
 }
 
-/**
- * Map a Shopify cart line — either an /cart/add.js response or the parsed
- * data-analytics-item on a rendered line — into the GA4 item shape.
- *
- * Returns null when the payload is not a line, so a caller cannot push a
- * half-built item. Prices arrive in cents and GA4 wants major units.
- * @param {object|null} data
- * @returns {object|null}
- */
-function itemFromCartLine(data) {
-  if (!data) return null;
-  const line = Array.isArray(data.items) ? data.items[0] : data;
-  if (!line || !line.product_title) return null;
-
-  return {
-    item_id: line.sku || String(line.variant_id || line.id || ''),
-    item_name: line.product_title,
-    item_brand: line.vendor,
-    item_category: line.product_type,
-    item_variant: line.variant_title,
-    price: (line.price || 0) / 100,
-    quantity: line.quantity || 1,
-    currency: window.Shopify?.currency?.active,
-  };
-}
-
 const Cart = {
   /**
    * @param {string} url
@@ -857,35 +831,16 @@ const Cart = {
    * @param {{properties?: object, recipient?: object}} [extra] gift card
    *   recipient fields — see GiftCardRecipientForm/ProductForm.onSubmit.
    */
-  async add(id, quantity, extra) {
-    const data = await this.post(cartRoute('cart/add.js'), { id, quantity, ...extra });
-
-    // Reported only once Shopify has confirmed the line (§16). A null `data`
-    // means the request failed, so nothing is announced and nothing is
-    // counted — an optimistic event here would tell the merchant about a
-    // sale that never happened.
-    if (data) {
-      document.dispatchEvent(
-        new CustomEvent('cart:added', { detail: { item: itemFromCartLine(data) } })
-      );
-    }
-
-    return data;
+  add(id, quantity, extra) {
+    return this.post(cartRoute('cart/add.js'), { id, quantity, ...extra });
   },
 
   /**
    * @param {number} line 1-based cart line
    * @param {number} quantity
-   * @param {object|null} [removed] GA4 item, when this change empties a line
    */
-  async change(line, quantity, removed) {
-    const data = await this.post(cartRoute('cart/change.js'), { line, quantity });
-
-    if (data && quantity === 0 && removed) {
-      document.dispatchEvent(new CustomEvent('cart:removed', { detail: { item: removed } }));
-    }
-
-    return data;
+  change(line, quantity) {
+    return this.post(cartRoute('cart/change.js'), { line, quantity });
   },
 
   /** @param {string} note */
@@ -922,36 +877,17 @@ class CartItems extends HTMLElement {
     this.toggleAttribute('aria-busy', busy);
   }
 
-  /**
-   * The GA4 item a line carries, read before the request rather than after.
-   * The line is gone from the DOM by the time the response comes back, so
-   * reading it afterwards always returns nothing.
-   * @param {Element|null} node any element inside the line
-   * @returns {object|null}
-   */
-  itemFor(node) {
-    const raw = node?.closest('[data-analytics-item]')?.getAttribute('data-analytics-item');
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
-
   onChange(event) {
     const input = event.target;
     if (!(input instanceof HTMLInputElement) || !input.dataset.line) return;
 
     const line = Number(input.dataset.line);
     const quantity = Math.max(0, Number(input.value) || 0);
-    // Stepping down to zero is a removal too, not only the Remove button.
-    const removed = quantity === 0 ? this.itemFor(input) : null;
 
     window.clearTimeout(this.debounce);
     this.debounce = window.setTimeout(async () => {
       this.setBusy(true);
-      await Cart.change(line, quantity, removed);
+      await Cart.change(line, quantity);
       this.setBusy(false);
     }, 350);
   }
@@ -963,9 +899,8 @@ class CartItems extends HTMLElement {
     if (!remove) return;
 
     event.preventDefault();
-    const removed = this.itemFor(remove);
     this.setBusy(true);
-    await Cart.change(Number(remove.getAttribute('data-cart-remove')), 0, removed);
+    await Cart.change(Number(remove.getAttribute('data-cart-remove')), 0);
     this.setBusy(false);
   }
 }
@@ -2880,172 +2815,6 @@ document.addEventListener('click', (event) => {
   if (message && !window.confirm(message)) event.preventDefault();
 });
 
-
-/* ==========================================================================
-   Analytics (§9.8)
-   GA4-shaped events pushed to window.dataLayer.
-
-   Everything below is inert unless the merchant switched the data layer on:
-   with `cro_datalayer` off, analytics-events.liquid renders no JSON island
-   and no data-analytics-* attribute, so `pushEvent` is never reached.
-
-   Nothing here reads or pushes customer data. The payloads carry catalogue
-   fields and the shopper's own interaction, and nothing else.
-   ========================================================================== */
-
-/** @param {object} payload */
-function pushEvent(payload) {
-  if (!payload) return;
-  // Guarded before every push, not once at load: a tag manager can replace
-  // the array between our load and the first event.
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push(payload);
-}
-
-/**
- * The GA4 item an element carries, or null.
- * @param {Element|null} node
- * @returns {object|null}
- */
-function analyticsItem(node) {
-  const raw = node instanceof HTMLElement ? node.dataset.analyticsItem : '';
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-const analyticsIsland = document.getElementById('loam-analytics');
-
-if (analyticsIsland) {
-  /* --- The page's own event: view_item, view_cart or search ------------- */
-  try {
-    pushEvent(JSON.parse(analyticsIsland.textContent || '{}'));
-  } catch (error) {
-    console.warn('[Loam] Analytics payload could not be read:', error);
-  }
-}
-
-/* Whether any analytics is wired at all. The island only exists on the three
-   templates with a page-level event, so it cannot be the test — a collection
-   page has no island and still needs select_item. */
-const analyticsOn = Boolean(
-  analyticsIsland || document.querySelector('[data-analytics-item], [data-analytics-list]')
-);
-
-if (analyticsOn) {
-  /* --- sign_up ---------------------------------------------------------- */
-  // Once per page load. Shopify sets posted_successfully? on every customer
-  // form on the page rather than only the submitted one, so two capture
-  // points would otherwise report two signups for one address.
-  if (document.querySelector('[data-analytics-signup]')) {
-    pushEvent({ event: 'sign_up', method: 'newsletter' });
-  }
-
-  /* --- view_item_list --------------------------------------------------- */
-  // On entering the viewport, once per list. A list that is scrolled past
-  // twice is one impression, not two.
-  const lists = document.querySelectorAll('[data-analytics-list]');
-
-  if (lists.length > 0 && 'IntersectionObserver' in window) {
-    const listObserver = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          observer.unobserve(entry.target);
-
-          const listName = entry.target.getAttribute('data-analytics-list') || '';
-          const items = Array.from(entry.target.querySelectorAll('[data-analytics-item]'))
-            .map((node, index) => {
-              const item = analyticsItem(node);
-              return item ? { ...item, index, item_list_name: listName } : null;
-            })
-            .filter(Boolean);
-
-          if (items.length === 0) return;
-          pushEvent({ event: 'view_item_list', item_list_name: listName, items });
-        });
-      },
-      { threshold: 0.25 }
-    );
-
-    lists.forEach((list) => listObserver.observe(list));
-  }
-
-  /* --- select_item and begin_checkout ----------------------------------- */
-  document.addEventListener('click', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-
-    if (target.closest('[name="checkout"]')) {
-      pushEvent({ event: 'begin_checkout' });
-      return;
-    }
-
-    // Only a real navigation counts as selecting the product. A click on the
-    // quick-add button inside the card is an add_to_cart, and counting it as
-    // a select as well double-reports the same intent.
-    const link = target.closest('a[href]');
-    if (!link) return;
-
-    const card = link.closest('[data-analytics-item]');
-    const item = analyticsItem(card);
-    if (!item) return;
-
-    const listName = card?.closest('[data-analytics-list]')?.getAttribute('data-analytics-list');
-    pushEvent({
-      event: 'select_item',
-      item_list_name: listName || undefined,
-      items: [item],
-    });
-  });
-
-  /* --- add_to_cart and remove_from_cart --------------------------------- */
-  // Both are raised from the cart region after Shopify has confirmed the
-  // change, never from the click (§16). An optimistic add that later fails
-  // reports a sale that did not happen.
-  document.addEventListener('cart:added', (event) => {
-    const item = event.detail?.item;
-    if (!item) return;
-    pushEvent({
-      event: 'add_to_cart',
-      currency: item.currency,
-      value: (item.price || 0) * (item.quantity || 1),
-      items: [item],
-    });
-  });
-
-  document.addEventListener('cart:removed', (event) => {
-    const item = event.detail?.item;
-    if (!item) return;
-    pushEvent({
-      event: 'remove_from_cart',
-      currency: item.currency,
-      value: (item.price || 0) * (item.quantity || 1),
-      items: [item],
-    });
-  });
-
-  /* --- view_cart on drawer open ----------------------------------------- */
-  // The cart page raises its own view_cart from the island; this covers the
-  // drawer, which is the far more common way the cart is opened.
-  document.addEventListener('drawer:open', (event) => {
-    const drawer = event.target;
-    if (!(drawer instanceof HTMLElement) || drawer.id !== 'cart-drawer') return;
-
-    const items = Array.from(drawer.querySelectorAll('[data-analytics-item]'))
-      .map((node) => analyticsItem(node))
-      .filter(Boolean);
-
-    pushEvent({
-      event: 'view_cart',
-      items,
-      value: items.reduce((total, item) => total + (item.price || 0) * (item.quantity || 1), 0),
-    });
-  });
-}
 
 /* ==========================================================================
    Compare

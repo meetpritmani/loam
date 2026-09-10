@@ -23,25 +23,10 @@
   endif
 -%}
 
-{%- comment -%}
-  The GA4 item travels with the line, because remove_from_cart has to know
-  what was removed and the line is gone by the time the response comes back.
-  Empty string when the data layer is off (§9.8).
-{%- endcomment -%}
-{%- capture analytics_item -%}
-  {%- render 'analytics-events',
-    scope: 'item',
-    product: item.product,
-    variant: item.variant,
-    quantity: item.quantity
-  -%}
-{%- endcapture -%}
-
 <li
   class="cart-line{% if prefix == 'page' %} cart-line--page{% endif %}"
   data-cart-line="{{ line }}"
   data-key="{{ item.key }}"
-  {% if analytics_item != blank %}data-analytics-item="{{ analytics_item | strip | escape }}"{% endif %}
 >
   <a class="cart-line__media media media--portrait{{ zoom_class }}" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
     {%- comment -%}
