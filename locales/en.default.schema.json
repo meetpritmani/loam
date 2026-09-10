@@ -154,7 +154,7 @@
         }
       },
       "cart_show_note": {
-        "label": "Enable order notes"
+        "label": "Show order notes"
       },
       "cart_show_free_shipping_bar": {
         "label": "Show free shipping progress"
@@ -167,7 +167,7 @@
     "search": {
       "name": "Search",
       "predictive_search_enabled": {
-        "label": "Enable search suggestions"
+        "label": "Show search suggestions"
       },
       "predictive_search_show_price": {
         "label": "Show price in suggestions"
@@ -228,7 +228,7 @@
     },
     "cro": {
       "name": "Conversion",
-      "paragraph": "These settings control how clearly your store answers a shopper's objections at the moment they arise. Nothing here fabricates urgency or stock levels — every figure shown to a shopper comes from your real catalog and cart.",
+      "paragraph": "Controls for trust messaging, cart recovery, and checkout — grouped here so you can review and adjust them together.",
       "headers": {
         "product": "Product page",
         "trust": "Trust messaging",
@@ -366,7 +366,7 @@
       "name": "Product grid",
       "show_filters": {
         "label": "Show filters",
-        "info": "Filters come from the Search & Discovery app. With none configured, nothing renders here."
+        "info": "Filters come from the Search and Discovery app. With none configured, nothing renders here."
       },
       "show_sort": {
         "label": "Show sort"
@@ -481,7 +481,7 @@
           "name": "Vendor"
         },
         "title": {
-          "name": "Title"
+          "name": "Product title"
         },
         "badges": {
           "name": "Badges"
