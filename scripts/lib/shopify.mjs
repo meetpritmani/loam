@@ -319,6 +319,10 @@ function syntheticPayload(root, variables) {
       // real, so that half of the picture stays accurate; this is the one
       // resource type this pipeline creates without checking first.
       return { createdDefinition: { id: gid('MetafieldDefinition'), name: variables.definition.name, key: variables.definition.key } };
+    case 'standardMetafieldDefinitionEnable':
+      // Same "always reports as new" caveat as metafieldDefinitionCreate
+      // above, and the same reason.
+      return { createdDefinition: { id: gid('MetafieldDefinition'), name: variables.key, key: variables.key, namespace: variables.namespace } };
     case 'collectionCreate':
       return { collection: { id: gid('Collection'), handle: variables.collection.handle, title: variables.collection.title } };
     case 'stagedUploadsCreate':

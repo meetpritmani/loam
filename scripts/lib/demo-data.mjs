@@ -54,7 +54,6 @@ export const PRODUCTS = [
     colours: ['Shell', 'Slate', 'Moss'],
     material: 'Merino wool upper, sugarcane foam sole',
     care: 'Machine wash cold on a gentle cycle. Remove the insoles first. Air dry away from direct heat.',
-    carbonFootprint: '6.4',
     description: [
       '<p>A road runner with a merino upper that holds its shape through a wet mile and dries out by morning. The sugarcane foam underfoot is springy at mile one and still springy at mile five hundred.</p>',
       '<ul><li>Merino wool upper, machine washable</li><li>Sugarcane foam midsole</li><li>Weighs 232g in a US 9</li></ul>',
@@ -71,7 +70,6 @@ export const PRODUCTS = [
     colours: ['Oat', 'Charcoal', 'Clay'],
     material: 'Merino wool upper and lining',
     care: 'Spot clean with cool water. Machine wash cold on a gentle cycle when it needs more than that.',
-    carbonFootprint: '4.1',
     description: [
       '<p>A wool slipper that holds up outdoors. Merino inside and out, so it regulates temperature instead of turning your feet into a sauna after twenty minutes.</p>',
       '<ul><li>Merino wool upper and lining</li><li>Sugarcane foam sole, rubber outsole pods</li><li>Collapses at the heel to wear as a slide</li></ul>',
@@ -88,7 +86,6 @@ export const PRODUCTS = [
     colours: ['Chalk', 'Ink', 'Sand'],
     material: 'Eucalyptus fibre knit upper',
     care: 'Machine wash cold on a gentle cycle. Air dry. Do not tumble dry.',
-    carbonFootprint: '3.8',
     description: [
       '<p>The one to keep by the door. Eucalyptus knit breathes in humid heat and the whole shoe goes in the machine when it stops looking new.</p>',
       '<ul><li>Eucalyptus fibre knit upper</li><li>No laces, no hardware</li><li>Machine washable end to end</li></ul>',
@@ -106,7 +103,6 @@ export const PRODUCTS = [
     colours: ['Bone', 'Fern', 'Storm', 'Rust'],
     material: 'Eucalyptus fibre knit upper',
     care: 'Machine wash cold. Air dry away from direct heat.',
-    carbonFootprint: '3.2',
     description: [
       '<p>The plainest shoe we make, and the one that gets worn most. A low eucalyptus knit that goes with everything and disappears on the foot.</p>',
       '<ul><li>Eucalyptus fibre knit upper</li><li>Sugarcane foam sole</li><li>Four colourways, one silhouette</li></ul>',
@@ -123,7 +119,6 @@ export const PRODUCTS = [
     colours: ['Moss', 'Basalt', 'Dune'],
     material: 'Merino wool upper, rubber outsole',
     care: 'Brush off dry mud before washing. Machine wash cold on a gentle cycle, laces out.',
-    carbonFootprint: '8.9',
     description: [
       '<p>A mid-height trail shoe for weather you did not plan for. Merino over a lugged rubber outsole, cut high enough to keep the scree out.</p>',
       '<ul><li>Merino wool upper with a reinforced toe</li><li>4mm lugged rubber outsole</li><li>Weighs 318g in a US 9</li></ul>',
@@ -140,7 +135,6 @@ export const PRODUCTS = [
     colours: ['Mist', 'Pitch', 'Sorrel'],
     material: 'Eucalyptus fibre knit upper, sugarcane foam sole',
     care: 'Machine wash cold on a gentle cycle. Reshape while damp and air dry.',
-    carbonFootprint: '4.6',
     description: [
       '<p>A knit trainer with enough structure to walk all day in. The upper is one piece, so there are no seams to rub and nothing to come unstuck.</p>',
       '<ul><li>Seamless eucalyptus fibre knit</li><li>Sugarcane foam sole</li><li>Wide toe box</li></ul>',
@@ -157,7 +151,6 @@ export const PRODUCTS = [
     colours: ['Bark', 'Slate'],
     material: 'Merino wool upper, water-repellent finish',
     care: 'Wipe down after wet weather. Machine wash cold when it needs it, then reproof.',
-    carbonFootprint: '9.7',
     description: [
       '<p>A winter boot that does not weigh anything. Merino with a water-repellent finish over a foam sole, so it stays warm without the bulk that usually comes with it.</p>',
       '<ul><li>Merino wool upper, water-repellent finish</li><li>Sugarcane foam sole with a rubber tread</li><li>Fits over a thick sock without changing size</li></ul>',
@@ -174,7 +167,6 @@ export const PRODUCTS = [
     colours: ['Shell', 'Kelp', 'Ash'],
     material: 'Sugarcane foam footbed and strap',
     care: 'Rinse with fresh water after the beach. Air dry.',
-    carbonFootprint: '2.4',
     description: [
       '<p>One piece of sugarcane foam, moulded. It floats, it does not mind salt water, and there is nothing on it to break.</p>',
       '<ul><li>Sugarcane foam throughout</li><li>Contoured footbed</li><li>Rinses clean</li></ul>',
@@ -249,47 +241,41 @@ export const COLLECTIONS = [
 ];
 
 /* --------------------------------------------------------------------------
-   Metafield definitions (§11 metafields table)
+   Metafield definitions
    -------------------------------------------------------------------------- */
 
 /**
- * `pin: true` so the merchant sees them in admin without hunting, and
- * storefront PUBLIC_READ access or the theme cannot read them at all — which
- * is the single most common reason a metafield-driven feature renders blank
- * on a store that has the data.
+ * As of the 2026-09-10 resubmission fixes (T5/T6), the theme reads exactly
+ * one metafield: `descriptors.care_guide`, the care accordion's content
+ * source. material, size_guide, and carbon_footprint used to be custom
+ * metafields here, but the theme no longer reads any of them —
+ * card-product/main-product's material tag is now a merchant-editable block
+ * setting (with a dynamic-source icon a merchant can point at their own
+ * metafield, if they want, but the demo store deliberately does not use it —
+ * binding the demo to a metafield source would make its install state
+ * diverge from every other buyer's, and §18 requires preset parity), the
+ * size guide reads a `page` block setting, and the carbon footprint feature
+ * was removed outright.
+ *
+ * `descriptors.care_guide` is a Shopify *standard* metafield definition
+ * (namespace `descriptors`, key `care_guide`, `multi_line_text_field`, 500
+ * char max, defined for both PRODUCT and PRODUCTVARIANT — the theme only
+ * reads the PRODUCT one), not a custom one — see `standard: true` below.
+ * Enabling a standard definition is a different mutation
+ * (`standardMetafieldDefinitionEnable`) from creating a custom one
+ * (`metafieldDefinitionCreate`); 3-seed-catalog.mjs branches on this flag to
+ * call the right one. `pin: true` so the merchant sees the field in admin
+ * without hunting.
  */
 export const METAFIELD_DEFINITIONS = [
   {
-    namespace: 'custom',
-    key: 'material',
-    name: 'Material',
-    description: 'Shown as the material tag on product cards and the product page.',
-    type: 'single_line_text_field',
-    ownerType: 'PRODUCT',
-  },
-  {
-    namespace: 'custom',
-    key: 'care',
-    name: 'Care',
+    namespace: 'descriptors',
+    key: 'care_guide',
+    name: 'Care instructions',
     description: 'Fills the Care row of the product page accordion.',
     type: 'multi_line_text_field',
     ownerType: 'PRODUCT',
-  },
-  {
-    namespace: 'custom',
-    key: 'carbon_footprint',
-    name: 'Carbon footprint',
-    description: 'Kilograms of CO2e per pair. Shown as a badge on the product page.',
-    type: 'number_decimal',
-    ownerType: 'PRODUCT',
-  },
-  {
-    namespace: 'custom',
-    key: 'size_guide',
-    name: 'Size guide',
-    description: 'The page opened by the size guide drawer on the product page.',
-    type: 'page_reference',
-    ownerType: 'PRODUCT',
+    standard: true,
   },
 ];
 
@@ -305,7 +291,7 @@ export const PAGES = [
       '<p>Fernway started with a complaint. Every shoe we owned was made of plastic, wore out in a season, and took a few hundred years to go away afterwards.</p>',
       '<p>So we started with the materials instead of the silhouette. Merino wool for the uppers, because it regulates temperature and resists odour without a chemical finish. Eucalyptus fibre for the knits, because it uses a fraction of the water cotton does. Sugarcane foam for the soles, because it is carbon negative before it is anything else.</p>',
       '<p>Three materials. That is the whole shoe. Everything we make is built from some combination of them, which keeps the range small and keeps us honest about what is in it.</p>',
-      '<p>We print the carbon footprint on every box. Not because it is flattering — some of our boots run close to ten kilograms — but because a number you can check is worth more than a word you cannot.</p>',
+      '<p>Every product page lists exactly what a pair is made of — no blend you cannot picture, no material we would rather not name. If you want the long version of why each one is in there, the materials page has it.</p>',
     ].join(''),
   },
   {
