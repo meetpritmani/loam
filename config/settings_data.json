@@ -109,7 +109,7 @@
     "cro_back_in_stock": true,
     "cro_low_stock_threshold": 10,
     "cro_trust_returns": "Free returns for 30 days",
-    "cro_trust_shipping": "Carbon neutral shipping on every order",
+    "cro_trust_shipping": "",
     "cro_datalayer": false,
     "card_quick_add": true,
     "card_quick_view": true
@@ -216,7 +216,7 @@
       "cro_back_in_stock": true,
       "cro_low_stock_threshold": 10,
       "cro_trust_returns": "Free returns for 30 days",
-      "cro_trust_shipping": "Carbon neutral shipping on every order",
+      "cro_trust_shipping": "",
       "cro_datalayer": false,
       "card_quick_add": true,
       "card_quick_view": true

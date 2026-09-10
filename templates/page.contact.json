@@ -67,7 +67,7 @@
         "success_heading": "Message sent",
         "success_text": "It is with our team. You will have a reply within one working day.",
         "success_label": "Keep shopping",
-        "success_link": "/collections/best-sellers",
+        "success_link": "/collections/all",
         "padding_top": 48,
         "padding_bottom": 72
       }
@@ -86,7 +86,7 @@
           "type": "question",
           "settings": {
             "question": "How long does delivery take?",
-            "answer": "<p>Two to four working days in the UK and mainland Europe, five to eight elsewhere. Every order ships carbon neutral and you get a tracking link the moment it leaves the warehouse.</p>"
+            "answer": "<p>Two to four working days in the UK and mainland Europe, five to eight elsewhere. You get a tracking link the moment it leaves the warehouse.</p>"
           }
         },
         "returns": {

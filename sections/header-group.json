@@ -14,7 +14,7 @@
         "announcement-2": {
           "type": "announcement",
           "settings": {
-            "text": "Carbon neutral shipping on every order."
+            "text": "Secure checkout, every order."
           }
         },
         "announcement-3": {
@@ -45,7 +45,7 @@
           "type": "menu_promo",
           "settings": {
             "menu_item": "Shop",
-            "image": "shopify://shop_images/demo-mega-feature.webp",
+            "image": "",
             "heading": "New in — Autumn",
             "text": "Wool loungers, back in three new colourways."
           }

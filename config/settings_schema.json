@@ -544,7 +544,7 @@
         "id": "cro_trust_shipping",
         "label": "t:settings.cro.cro_trust_shipping.label",
         "info": "t:settings.cro.cro_trust_shipping.info",
-        "default": "Carbon neutral shipping on every order"
+        "default": ""
       },
       {
         "type": "header",

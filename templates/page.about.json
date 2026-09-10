@@ -65,7 +65,7 @@
         "heading": "Three materials. That's the whole shoe.",
         "text": "<p>We started with a question that had nothing to do with fashion: what would a shoe look like if every part of it grew back? Eight years later the answer is three materials, sourced from farms we can name, and a factory we visit.</p>",
         "button_label": "Shop the range",
-        "button_link": "/collections/best-sellers",
+        "button_link": "/collections/all",
         "padding_top": 40,
         "padding_bottom": 72
       }
@@ -76,32 +76,33 @@
         "pairs": {
           "type": "stat",
           "settings": {
-            "value": "2.1",
-            "suffix": "M",
-            "text": "Pairs made from renewable materials"
+            "value": "0",
+            "suffix": "",
+            "text": "Add your own statistic here"
           }
         },
         "water": {
           "type": "stat",
           "settings": {
-            "value": "95",
-            "suffix": "%",
-            "text": "Less water in every knit upper"
+            "value": "0",
+            "suffix": "",
+            "text": "Add your own statistic here"
           }
         },
         "carbon": {
           "type": "stat",
           "settings": {
-            "value": "100",
-            "suffix": "%",
-            "text": "Carbon neutral shipping, no offsets bought after the fact"
+            "value": "0",
+            "suffix": "",
+            "text": "Add your own statistic here"
           }
         },
         "reviews": {
           "type": "stat",
           "settings": {
-            "value": "12,400",
-            "text": "Reviews averaging 4.8"
+            "value": "0",
+            "suffix": "",
+            "text": "Add your own statistic here"
           }
         }
       },
@@ -147,7 +148,7 @@
           "type": "button",
           "settings": {
             "label": "Shop all shoes",
-            "link": "/collections/best-sellers",
+            "link": "/collections/all",
             "style": "primary"
           }
         }
