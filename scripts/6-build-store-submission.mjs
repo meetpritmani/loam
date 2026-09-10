@@ -28,7 +28,11 @@ const outDir = path.join(root, 'store-submission-build');
 // Exactly the folders/files Shopify's own theme structure expects — the
 // dev-only tooling (scripts/, demo-store-export/, docs) never belonged in a
 // submission zip in the first place.
-const THEME_PATHS = ['assets', 'config', 'layout', 'locales', 'sections', 'snippets', 'templates'];
+//
+// listings/ added 2026-09-04: required once the theme ships more than one
+// preset (§18's Theme Store fix) — its per-preset templates/sections, when
+// present, need the same shopify:// stripping as the root theme.
+const THEME_PATHS = ['assets', 'config', 'layout', 'listings', 'locales', 'sections', 'snippets', 'templates'];
 
 function copyDir(src, dest) {
   mkdirSync(dest, { recursive: true });
@@ -110,6 +114,10 @@ function main() {
   const stripped = [];
   forEachJsonFile(path.join(outDir, 'templates'), (f) => processJsonFile(f, stripped));
   forEachJsonFile(path.join(outDir, 'sections'), (f) => processJsonFile(f, stripped));
+  const listingsDir = path.join(outDir, 'listings');
+  if (existsSync(listingsDir)) {
+    forEachJsonFile(listingsDir, (f) => processJsonFile(f, stripped));
+  }
 
   // demo_images defaults to true in the working repo (build spec §6) so the
   // demo store and the marketplace listings show real imagery. Shopify's own

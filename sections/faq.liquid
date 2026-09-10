@@ -6,6 +6,13 @@
   before JavaScript runs — and, importantly, findable by the browser's own
   find-in-page in browsers that expand closed details on match.
 
+  Every <details> in the list shares one `name` attribute, scoped to this
+  section instance — the native exclusive-open group behaviour (same
+  mechanism already used for facet groups in main-collection.liquid), so
+  opening one question closes whichever was already open rather than
+  stacking answers. No JS needed for it, and it survives shopify:section:load
+  like the rest of a native <details>/<summary> element.
+
   The JSON-LD is generated from the same blocks that render the accordion, so
   the two can never disagree. Answers are `richtext`, so they go through
   strip_html before entering JSON: schema.org wants text, and unescaped markup
@@ -41,7 +48,7 @@
 
       <div class="faq__list accordion reveal" style="--reveal-delay: 80ms;">
         {%- for block in faq_blocks -%}
-          <details class="accordion__item" {{ block.shopify_attributes }}>
+          <details class="accordion__item" name="{{ section.id }}-faq" {{ block.shopify_attributes }}>
             <summary class="accordion__summary">
               <span class="h5">{{ block.settings.question | escape }}</span>
               {%- render 'icon', icon: 'chevron-down', class: 'accordion__icon', size: 18 -%}

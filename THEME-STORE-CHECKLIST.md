@@ -19,17 +19,16 @@ so no exclusivity conflict.
 
 ## 2. Uniqueness from other themes
 
-⚠️ **Can't be fully verified from code.** No Dawn or Skeleton Theme
-fingerprints found (`PUB_SUB_EVENTS`, `HTMLUpdateUtility`, `trapFocus`,
-`quick-add-modal`, etc. all absent) — codebase is original, not derived from
-either. But "fundamentally different from the current Theme Store catalog" is
-a subjective, comparative judgment that needs an actual human side-by-side
-against live listings at themes.shopify.com before submission. Not something
-a repo-only check can certify.
-
-**Action:** manual visual-comparison pass against the live Theme Store
-catalog before submitting, ideally against other minimal/earthy-aesthetic
-themes specifically.
+✅ **Confirmed by the operator, 2026-09-04.** No Dawn or Skeleton Theme
+fingerprints found in source (`PUB_SUB_EVENTS`, `HTMLUpdateUtility`,
+`trapFocus`, `quick-add-modal`, etc. all absent) — codebase is original,
+not derived from either. The subjective half — "fundamentally different
+from the current Theme Store catalog" — isn't something a repo-only check
+can certify, so it needed an actual human side-by-side against live
+listings at themes.shopify.com. Operator ran that comparison directly,
+including against `CLAUDE.md`'s own named reference standard (Blum,
+Motion, Sydney, Symmetry) and other minimal/earthy-aesthetic themes: done,
+confirmed distinct.
 
 ---
 
@@ -37,10 +36,10 @@ themes specifically.
 
 ### Visual design and art direction
 
-- ⚠️ **Unique and intentional design** — same caveat as §2, needs the manual
-  comparison pass. Theme does target a specific merchant type (natural-materials
-  footwear) with a deliberate, consistent style (two signature elements:
-  material tag + seam divider).
+- ✅ **Unique and intentional design** — same comparison pass as §2,
+  operator-confirmed 2026-09-04. Theme targets a specific merchant type
+  (natural-materials footwear) with a deliberate, consistent style (two
+  signature elements: material tag + seam divider).
 - ✅ **Professional-quality visuals** — spot-checked `demo-hero.webp`,
   `demo-product-1.webp`, `demo-avatar-1.webp`: high-res, sharp, consistent
   tone, no artifacts, no deformed anatomy, no rendered text. Worth a full
@@ -103,8 +102,10 @@ themes specifically.
 - ✅ **Inspiring merchant experience** — per `README.md`'s current build
   status: fresh-store install test confirmed, desktop Lighthouse 90+
   repeatably, listing screenshots captured (10 page states × 3 breakpoints,
-  both theme styles). **VoiceOver pass is the one item still open** per the
-  theme's own README — needs macOS/Safari access.
+  both theme styles). **VoiceOver pass confirmed by the operator,
+  2026-09-04** (iPadOS VoiceOver + Safari — this session has no macOS/iOS
+  access to reproduce it independently, same trust level as the Safari/iOS
+  confirmation above). The one item blocking this row is now closed.
 
 ---
 
@@ -668,17 +669,30 @@ Desktop matrix: Safari (latest 2, Mac), Chrome (latest 3, Mac+PC), Firefox
   product call, not made unilaterally. CLAUDE.md's own hero rule commits
   to "375px" width only, never pairs it with a height, so this isn't a
   violation of the written spec.
-- ❌ **Can't be verified from here: real Safari, real Chrome Mobile,
-  real Samsung Internet.** No macOS access (same constraint blocking the
-  VoiceOver pass) and no Android/iOS device or emulator in this
-  environment. Everything above is either a source audit or tested on
-  Blink/Gecko engines standing in for the closest available proxy —
-  genuine WebKit/Mobile Safari and Samsung Internet coverage is still
-  outstanding.
+- ✅ **Real Safari (desktop) and real iOS Safari — confirmed working by
+  the operator, 2026-09-04.** Tested directly on their own hardware
+  (this session has no macOS/iOS access to reproduce it independently).
+  Closes the one item that had been blocked since 2026-09-03's
+  browser-compatibility pass. Not re-verified against every route/state
+  this session tested on other engines — taken as the operator's own
+  pass/fail on their real devices, same trust level as every other
+  operator-confirmed store-admin fact in this file (e.g. payment
+  gateway, item 39).
+- ✅ **Real Chrome Mobile (Android) — confirmed working by the operator,
+  2026-09-04.** Tested on their own device (this session has no Android
+  access to reproduce it independently) — same trust level as the
+  Safari/VoiceOver confirmations above.
+- ✅ **Real Samsung Internet — confirmed working by the operator,
+  2026-09-04.** Tested on their own device (this session has no
+  Samsung/Android access to reproduce it independently) — same trust
+  level as the other operator-confirmed device passes above.
 
-**Action:** real Safari (desktop + iOS) and Samsung Internet passes
-before submission — same blocker as the VoiceOver item, needs macOS or
-a device lab.
+**The full required browser/device matrix (Safari desktop+iOS, Chrome
+Mobile, Samsung Internet, VoiceOver) is now closed, all operator-confirmed
+on real hardware.** Remaining device-access item in this file is the
+Instagram/Facebook/Pinterest in-app webview pass (item 25) — a different
+category (embedded webviews inside another app, not a standalone browser),
+still untested.
 
 ---
 
@@ -712,16 +726,17 @@ Facebook, and Pinterest — latest release, Android and iOS.
   theme code, but it's exactly the category of thing genuinely flaky
   inside Instagram/Facebook in-app browsers industry-wide — flagged for
   awareness, nothing to fix on the theme side.
-- ❌ **Can't be verified from here.** No Instagram, Facebook, or
-  Pinterest app, and no Android/iOS device, available in this
-  environment. Spoofing a user-agent string in a desktop Chromium
-  instance would not reproduce the real constraints those WebViews
-  impose (storage partitioning, stripped APIs, injected restrictions),
-  so this is a code audit only — not claimed as a real test.
+- ✅ **Real in-app webview pass — confirmed working by the operator,
+  2026-09-04.** Tested directly (this session has no Instagram/Facebook/
+  Pinterest app or device to reproduce it independently) — same trust
+  level as the browser/device confirmations above. Closes the one item
+  the source-level audit above couldn't itself certify — a code audit
+  proves nothing *should* break; only a real webview proves nothing
+  *did*.
 
-**Action:** an actual pass inside Instagram/Facebook/Pinterest in-app
-browsers (real devices or a device-cloud service) before submission —
-same category of gap as the browser-compatibility item above.
+This closes every device-access item in this file — browser matrix (§9)
+and in-app webviews are both now operator-confirmed on real
+hardware/apps.
 
 ---
 
@@ -1082,9 +1097,12 @@ Deeper pass against the full rubric, not just the earlier spot-check.
   so they read as status, not action; noted, not counted as a
   violation.
 
-**Action:** confirm "Checkout" and "Quick view" should stay as
-industry-standard terms rather than being rewritten to a literal verb
-form.
+**Decided 2026-09-04 — operator confirmed: keep both as-is.** No code
+change. Rationale matches the reasoning already recorded above: rewriting
+to a literal verb form ("Check out", "Preview") would trade a cosmetic
+style-guide match for shopper-facing wording that's less familiar than
+Shopify's own platform terminology, a worse outcome than the literal rule
+violation. Item closed.
 
 ---
 
@@ -1145,15 +1163,21 @@ Testimonials, Footer).
   search`, `Related products`, `Complementary products`, `Reset
   password`, etc.) all name what the section actually does, nothing
   generic or internal-jargon.
-- ⚠️ **One borderline case, not changed:** `value_props`'s display name
-  is **"Value props"** — shorthand for "value propositions," which
-  reads clearly to anyone with e-commerce/marketing background but
-  isn't self-explanatory to every merchant on first read the way
-  `Testimonials` or `Newsletter` is. Flagged rather than renamed
-  unilaterally — an alternative like "Value props" → "Highlights" or
-  "Key benefits" is a real option but changes the section's identity in
-  the editor (presets, any existing merchant configuration keyed to the
-  name), so left for a call rather than assumed.
+- ✅ **`value_props` renamed to "Highlights", decided 2026-09-04.** Was
+  shorthand for "value propositions" — clear to anyone with e-commerce/
+  marketing background, not self-explanatory to every merchant on first
+  read the way `Testimonials` or `Newsletter` is. Operator picked
+  "Highlights" over "Key benefits" and "Icon row" (both offered as
+  alternatives). One-line change: `locales/en.default.schema.json`'s
+  `sections.value_props.name` key — the section's `type` (`value-props`,
+  what actually identifies it in JSON templates and any existing merchant
+  configuration) is untouched, so this is purely the label shown in the
+  editor's Add Section list, nothing structural. Confirmed the preset
+  shares the same `t:` key rather than duplicating the string
+  (`sections/value-props.liquid:60,152`), so one edit covers both.
+  `shopify theme check`: 123 files, 0 offenses. `check-locales.mjs`: 0
+  missing/extra across all 7 translated locales. `check-sections.mjs`: 50
+  sections, no findings.
 - ✅ **No other unclear, internal, or ID-shaped names** — none of the
   48 leak an internal-id-style name (e.g. no section literally called
   "block_1" or "section_a"), and abbreviations that do appear (`FAQ`,
@@ -1161,9 +1185,7 @@ Testimonials, Footer).
   the acronym) are either universally understood or already avoided in
   the visible name.
 
-**Action:** decide whether "Value props" should be renamed to something
-more self-explanatory before submission — not done here, low-confidence
-call.
+**Closed 2026-09-04** — renamed to "Highlights", see entry above.
 
 ---
 
@@ -1288,10 +1310,8 @@ No gaps in this batch.
   references to the old preset name in `README.md`/`PROGRESS.md` before
   and after — none existed, nothing else needed updating.
   `shopify theme check`: 121 files, 0 offenses.
-- ⚠️ **Unique/distinct from existing Theme Store themes** — same
-  caveat already logged under §2: not verifiable from source alone,
-  needs the manual side-by-side comparison against the live catalog
-  already tracked as action item #1.
+- ✅ **Unique/distinct from existing Theme Store themes** — same
+  comparison pass as §2, operator-confirmed 2026-09-04 (action item #1).
 
 ---
 
@@ -1387,12 +1407,111 @@ build.
 Building it now would mean keeping a second parallel copy of
 `templates/` in sync with every homepage/section change made between
 now and submission — real risk of drift for no benefit this early.
-Build `listings/loam/templates/` (mirroring `templates/`) and
-`listings/fernway-night/templates/` (same structure, dark-scheme colors
-swapped in per section) as the last step before running
-`shopify theme package`.
 
----
+**Built 2026-09-04.** Researched the exact mechanism first rather than
+guessing at structure (Sources: shopify.dev/docs/storefronts/themes/
+store/success/updates#adding-theme-presets) — preset folders are
+kebab-case slugs (`loam`, `fernway-night`), each optionally carrying a
+`templates/`/`sections/` subfolder whose `.json` files *overwrite* the
+corresponding root file just for that preset's listing/demo rendering.
+Shopify's own instruction is explicit: *"Include preset-unique .json
+files in each preset listing folder; no need to duplicate identical
+files."*
+
+Checked `config/settings_data.json` before building anything: `Loam` and
+`Fernway Night` render from **byte-identical template JSON** — every
+section in every template references the same `color_scheme` ids, and
+the entire visual difference between the two presets is
+`settings_data.json`'s own per-preset `color_schemes` block (light
+hexes for Loam, dark for Fernway Night), a mechanism already correctly
+built and entirely separate from `/listings`. So neither preset has any
+template-unique content to override — this was flagged to the operator
+as a real decision rather than assumed silently (an empty preset folder
+vs. duplicating `index.json` "just in case," which would reintroduce
+the exact drift risk deferring this was meant to avoid). **Operator
+chose: create the folders with no template overrides.**
+
+Built (first pass):
+- `listings/loam/templates/.gitkeep`
+- `listings/fernway-night/templates/.gitkeep` (`.gitkeep` only — git
+  doesn't track empty directories, and neither preset has an actual
+  override file)
+- `listings/README.md` — explained why both folders were deliberately
+  empty of overrides.
+
+**Verified, not assumed:** ran `shopify theme package` and inspected
+the actual zip contents (`unzip -l`) — confirmed `listings/loam/`,
+`listings/fernway-night/`, both `templates/` subfolders, and
+`listings/README.md` all present exactly as built. `shopify theme
+check`: 123 files, 0 offenses. Test zip deleted after verification,
+not committed.
+
+### Corrected 2026-09-04, cont. — Shopify's actual submission validator disagreed
+
+Operator started the real submission flow in the Partner Dashboard and
+hit a hard blocker: *"Must have a preset folder in /listings for each
+preset in settings_data.json. Issues with: loam, fernway-night."* An
+empty `templates/` folder (`.gitkeep` only) does **not** satisfy
+Shopify's own validator, even though their written guidance ("no need
+to duplicate identical files") reads as if it should. Ground truth from
+the actual submission tool beats a documentation-page inference — fixed
+immediately rather than re-litigating which reading was "more correct."
+
+**Fix:** copied the root `templates/index.json` into both
+`listings/loam/templates/` and `listings/fernway-night/templates/`
+(byte-identical content, since — as established above — nothing is
+genuinely template-unique between the two presets; the difference is
+entirely `settings_data.json`'s per-preset colors), removed both
+`.gitkeep` placeholders now that real files exist, and rewrote
+`listings/README.md` to record the corrected understanding for next
+time rather than silently overwriting the earlier reasoning. Also fixed
+a related gap surfaced by this: `scripts/6-build-store-submission.mjs`
+predated the `/listings` folder entirely — `THEME_PATHS` didn't include
+it, so the shopify:// stripping and demo_images=false pass would have
+silently skipped both preset templates on every future rebuild. Added
+`listings` to `THEME_PATHS` and extended the JSON-walk to cover it.
+
+**Re-verified after the fix:** rebuilt via
+`node scripts/6-build-store-submission.mjs` — correctly stripped the
+same 16 `shopify://` refs from *both* new listing copies this time (49
+total vs. 17 before, confirming the script fix worked). `shopify theme
+check` inside the rebuilt `store-submission-build/`: 125 files (up from
+123 — the two new listing template files), 0 offenses. Repackaged the
+zip and scanned **every** `.json` file inside it programmatically for
+`shopify://` — zero matches anywhere, not just in the files checked by
+hand the first time.
+
+### Corrected 2026-09-04, cont. 2 — the explanatory README itself broke the validator
+
+Operator hit the real submission tool a second time and got 4 new
+errors, all pointing at the same file: *"Can't have other folders except
+for presets in /listings"*, *"Must have templates or sections for each
+preset folder"*, *"Can't have special characters for preset folder
+names"*, *"Must have only lowercase letters for preset folder names" —
+Issues with: README.md.* Shopify's validator treats every top-level
+entry under `/listings` as a preset-folder candidate and validates it as
+one — a `listings/README.md` file (added a few entries up, to document
+why the folders were built the way they were) got read as an attempted
+preset folder named "README.md", which is neither a folder, nor
+lowercase-only, nor free of special characters (the `.`), nor carrying
+its own `templates/`. Four symptoms, one root cause.
+
+Ground truth from the actual submission tool wins again — deleted
+`listings/README.md` outright rather than trying to relocate the
+documentation somewhere else under `/listings` (there's no somewhere
+else that's actually safe; the validator's rule is "presets only, full
+stop"). The rationale it recorded lives on in this file's own entries
+above, which is the more durable location anyway — this file is what
+gets read when someone asks "why does this folder look like this," not
+a README buried inside a submission zip.
+
+Rebuilt and repackaged: `store-submission-build/` now carries exactly
+`listings/loam/templates/index.json` and
+`listings/fernway-night/templates/index.json` — nothing else under
+`/listings`. `shopify theme check`: 125 files, 0 offenses (theme check
+doesn't gate on `/listings` shape, only Shopify's actual submission
+validator does — worth remembering that a clean `theme check` was never
+proof this folder was right, only that nothing about it broke Liquid).
 
 ## 19. Theme versions and release notes
 
@@ -1473,19 +1592,19 @@ in store admin / the Partner Dashboard submission form.
   Payments test mode.** Not verifiable from the theme repo (a
   Settings → Payments configuration on the live demo store), so asked
   directly rather than assumed.
-- ⚠️ **No apps beyond the free-review/free-translation exception** (and
-  if a translation app is used, *everything* must actually be
-  translated). Which apps are installed on `demo-store-nwv18ak5` isn't
-  something the theme code or this session's Admin API access can see.
+- ✅ **No apps installed on `demo-store-nwv18ak5` — confirmed by the
+  operator, 2026-09-04.** Not verifiable from the theme code or this
+  session's Admin API scopes, so asked directly. Nothing installed at
+  all, which clears the requirement outright — no need to reason about
+  the review/translation exemptions since there's nothing on the store
+  to qualify for them either way.
 - ⚠️ **Preset ↔ demo-store industry/catalog-size tagging, and "each
   preset install matches its demo store's expectations."** These are
   Theme Store *listing* metadata, set at submission time in the Partner
   Dashboard, not theme files — nothing in the repo to audit.
 
-**Action:** confirm directly (not verifiable from here) — payment
-gateway is set to Bogus Gateway or Shopify Payments test mode with
-every other checkout method disabled, and no non-exempt apps are
-installed on the demo store before submission.
+Both store-admin facts in this row are now confirmed: payment gateway
+(2026-09-03) and no apps installed (2026-09-04).
 
 ---
 
@@ -1594,28 +1713,58 @@ honest about rather than papering over.
   Both are conditional ("if you include this field," "if you offer
   multiple themes") — no Subject field, and the operator ships exactly
   one theme, so neither applies.
-- ⚠️ **Can't verify from here: Store URL example placeholder text,
-  whether Problem Description is a real textarea vs. single-line
-  input, and whether an auto-responder fires on submit.** `WebFetch`
-  renders a static/summarized read of the page — Tally forms are
-  interactive and this tool doesn't see field-level HTML attributes or
-  post-submit behavior. Submitting a real test entry to check the
-  auto-responder would create an actual support ticket in the
-  operator's inbox, which isn't something to do without being asked.
-  **Action:** operator to check these three directly in the Tally
-  editor — quick, since it's their own form.
+- ✅ **Store URL placeholder text, and Problem Description is a real
+  textarea — confirmed 2026-09-04.** Operator sent a screenshot of the
+  live form: Store URL reads `yourstore.myshopify.com` (a proper
+  example, not blank or lorem), Problem Description is a genuine
+  multi-line box, not a single-line input. Cross-checked with a second
+  `WebFetch` pass, which independently listed the same five fields with
+  matching types.
+- ✅ **Auto-responder: confirmed not available — operator checked
+  directly, 2026-09-04.** Respondent notifications (Tally's name for a
+  post-submit confirmation email to the person who filled the form) is
+  gated behind Tally Pro on the operator's current plan. This is a
+  plan/tooling limitation, not a theme defect or an oversight in the
+  form's setup.
+  **Not a blocker.** The actual Theme Store requirement this whole
+  section is auditing — "Public support contact form exists and is
+  functional" — is independently ✅ above and doesn't depend on an
+  auto-responder; `CLAUDE.md` §22's "respond within two business days"
+  commitment is a policy/process matter the operator holds to manually,
+  already noted elsewhere in this file as outside what a code audit can
+  verify either way. Upgrading to Tally Pro for the confirmation-email
+  nicety is the operator's call, not something this review is asking
+  for.
 
-**Custom coding tutorials — likely not applicable, not fully
-confirmed.** This whole item is conditional on the docs offering
-custom code-editing tutorials at all. The 8-page index (Overview,
-Installation, Theme settings, CRO settings, Metafields, Sections &
-templates, FAQ, Support) reads like standard merchant-facing settings
-documentation, not developer tutorials — `WebFetch` couldn't dive into
-the "Sections & templates" page's actual content to be certain either
-way. If there's no code-editing tutorial content, this item doesn't
-apply; if there is, it needs the duplicate-before-editing warning and
-the Shopify Partner suggestion. **Action:** operator to confirm whether
-any doc page walks merchants through editing theme code directly.
+**Custom coding tutorials — confirmed not applicable, 2026-09-04.**
+Fetched the four pages most likely to carry developer-level content with
+a targeted prompt each, rather than trusting the earlier single
+summarized pass: `06-sections-and-templates.md` (the strongest
+candidate), `07-faq.md`, `08-support.md`, and `02-installation.md` (CLI
+usage was the other plausible route in). None contain a code-editing
+tutorial:
+
+- **Sections & templates** — describes the visual editor UI only (add/
+  remove/reorder sections, block settings); zero mentions of Liquid,
+  CSS/JS, or a code editor.
+- **FAQ** — one passing mention of custom code capability ("Loam
+  includes a Custom Liquid section you can add to any page"), pointing
+  at a built-in editor feature, not teaching direct code editing.
+- **Support** — actively discourages it rather than teaching it, and
+  **already carries the duplicate-theme warning** this item would have
+  required if a tutorial existed: *"please duplicate the theme first
+  (Online Store → Themes → Actions → Duplicate) and make your changes
+  on the copy. Support covers the theme as delivered — once its code
+  has been modified directly, we can't guarantee every future update or
+  fix will apply cleanly on top of your changes."*
+- **Installation** — GUI-only (Online Store → Themes → Add theme →
+  Upload ZIP file), no CLI, no code editor mentioned.
+
+Since no page teaches code editing, the item's own conditional framing
+("if there is [a tutorial], it needs the duplicate-before-editing
+warning and the Shopify Partner suggestion") doesn't apply — there's
+nothing that needs those additions. The Support page's warning above is
+a bonus, not a requirement being satisfied.
 
 ---
 
@@ -1721,22 +1870,398 @@ around.
 
 ---
 
+## 2026-09-04 — W3C validator pass extended to 9 more templates, two real nesting bugs found and fixed; FAQ accordion made exclusive-open
+
+### HTML validation (item 26) — remaining templates checked
+
+The homepage was the only template run through the W3C Nu validator as of
+2026-09-03. Fetched raw server-rendered HTML (via the local `theme dev`
+proxy, same method as the homepage pass — no post-JS DOM, no password-bypass
+token sent to a third party) for the other 9 template types and POSTed each
+directly to `validator.w3.org/nu/?out=json`:
+
+| Template | Route used | Errors before fix | Errors after fix |
+|---|---|---|---|
+| Product | `/products/coastline-runner` | 6 | **2** (both Shopify-platform, see below) |
+| Collection | `/collections/best-sellers` | 1 | 1 (Shopify-platform) |
+| Cart | `/cart` | 1 | 1 (Shopify-platform) |
+| Search | `/search?q=shoe` | 2 | 2 (see charset note below) |
+| Blog | `/blogs/journal` | 1 | 1 (Shopify-platform) |
+| Article | `/blogs/journal/field-notes-...` | 1 | 1 (Shopify-platform) |
+| Page (about) | `/pages/about` | 1 | 1 (Shopify-platform) |
+| Page (contact) | `/pages/contact` | 1 | 1 (Shopify-platform) |
+| 404 | `/this-page-does-not-exist` | 1 | 1 (Shopify-platform) |
+
+**The recurring single error on 8 of 9 templates is the same one already
+identified on the homepage** — `A "script" element with "type=module" must
+not have a "defer" attribute` — traced to Shopify's own platform-injected
+`shop-js/modules/v2/loader.init-shop-cart-sync` script, confirmed again by
+reading the actual line each time. Not theme code, not actionable from here.
+
+**Search page's second error, not yet triaged:** `A "charset" attribute on a
+"meta" element found after the first 1024 bytes` at line 11. Not chased this
+pass — flagged for a follow-up look at `meta-tags.liquid`'s output on the
+search template specifically, since every other template's `charset` meta
+apparently lands inside the 1024-byte window.
+
+### Two real, theme-authored bugs found and fixed
+
+**1. Sticky mobile ATC bar — invalid `<div>` inside `<span>` inside `<p>`,
+producing cascading parse errors.** `snippets/sticky-atc.liquid` rendered
+`{% render 'price' %}` (whose root element is `<div class="price">`, used
+everywhere in the theme) inside `<span data-sticky-price>`, itself inside
+`<p class="sticky-atc__meta">`. `<div>` is not valid phrasing content inside
+`<p>` — the HTML parser auto-closes the `<p>` on hitting the `<div>`, which
+strands the `<span>` open and turns every later `</span>`/`</p>` into a
+"stray end tag" while parsing carries on in a broken tree state. This was
+the direct cause of 3 of the product page's 6 validator errors (an implied
+`</p>`, an unclosed `<span>`, a stray `</span>`). Confirmed the exact
+location with a small nesting-scanner script rather than guessing from the
+validator's line number (which pointed at unrelated markup further down the
+file, since the parser only reports the implicit closure where it's
+detected, not where the malformed nesting began). Fixed by changing
+`<p class="sticky-atc__meta">` → `<div>` and `<span data-sticky-price>` →
+`<div data-sticky-price>` (checked first: `global.js` finds both via
+`querySelector`, tag-agnostic; `base.css` targets only the classes, no
+tag-qualified selectors) — re-validated after the fix, all three errors
+gone. `sticky-atc__title` and `sticky-atc__variant` stay as `<p>`/`<span>`
+since both hold text only, no block content.
+
+**2. Same bug class, second site: `sections/predictive-search.liquid`.**
+`<span class="predictive-search__item-price price">` wrapped the same
+`{% render 'price' %}` call — a `<div>` inside a `<span>`, one level
+removed from `<span class="predictive-search__item-body">`. `<span>`
+doesn't force-close the way `<p>` does, so this one didn't cascade into a
+parse-tree break the way the sticky-atc instance did, but it's the same
+underlying content-model violation and was caught by grepping every
+`render 'price'` call site in the theme once the first instance was found —
+the exact "check for the bug class, not just the reported instance"
+practice this project has followed elsewhere. Fixed by changing
+`item-body`/`item-price` from `<span>` to `<div>` (checked `base.css` first:
+`.predictive-search__item-body` already sets `display: grid`, so the
+tag-name change has no visual effect either way). `item-title` stays a
+`<span>` — text only.
+
+All six `render 'price'` call sites in the theme now checked:
+`featured-product`, `main-product`, `card-product` (×2) already wrap it in a
+`<div>`; `predictive-search` and `sticky-atc` were the two broken ones, both
+now fixed.
+
+`shopify theme check`: 123 files, 0 offenses. Re-validated the product page
+after both fixes: errors dropped from 6 to 2, and the 2 remaining are the
+Shopify-platform script tag plus one more platform artifact (the
+accelerated-checkout skeleton's `disabled` attribute on a `<div>` —
+`shopify-payment-button__button`, rendered by Shopify's own
+`<shopify-accelerated-checkout>` web component, same component already
+documented under item 4/§Features for its CSS specificity fight — not
+theme markup, nothing to fix here).
+
+### FAQ accordion — now exclusive-open, operator-requested
+
+`sections/faq.liquid`'s `<details>` elements had no `name` attribute, so
+multiple questions could be open at once — inconsistent with the facet
+filter groups in `main-collection.liquid`, which already use the native
+`<details name="...">` exclusive-open-group behaviour (one `name` shared
+across a set of `<details>` means opening one closes whichever else was
+open, no JS required). Added `name="{{ section.id }}-faq"`, scoped per
+section instance so two FAQ sections on the same page (unlikely, but
+CLAUDE.md's per-section rules don't forbid it) don't fight over one group.
+Documented in the section's own header comment, matching this codebase's
+convention of explaining *why* next to non-obvious markup.
+
+Verified live, not assumed: drove real installed Edge via Playwright,
+clicked question 1 (opened), then question 2 — question 1 closed
+automatically, question 2 opened. `shopify theme check`: 123 files, 0
+offenses, unchanged (attribute addition only).
+
+Not part of Shopify's own Theme Store requirements page (no line item there
+covers accordion exclusivity), so this doesn't close a numbered checklist
+gap — logged here because it's a real interaction fix made during this
+session, in the same file this session has been tracking findings in.
+
+---
+
+## 2026-09-04 (cont.) — Real shopping-flow click-through (item 4), one real focus-return bug found and fixed
+
+Drove the actual purchase path end to end via Playwright/real Edge against
+`theme dev`: homepage → click a real product card → PDP → pick a
+non-default variant → Add to Cart → cart drawer opens → checkout button
+present and posts to `/cart` → Escape closes the drawer. 15 checks total.
+
+**Two apparent failures on the first run, both chased to ground rather than
+left ambiguous:**
+
+- The `aria-live` check first grabbed the wrong region — the page has two
+  (`header.liquid`'s predictive-search result-count status, and
+  `theme.liquid`'s `#a11y-announcer`, the one `global.js`'s `announce()`
+  actually writes to) — and a generic `[aria-live="polite"]` selector took
+  the first one in DOM order, which is the unrelated header region. Not a
+  theme bug; re-targeted the check at `#a11y-announcer` specifically, which
+  correctly read "Added to your cart."
+- The Escape/drawer-visibility check read the drawer's computed visibility
+  400ms after pressing Escape — 20ms short of `--dur-slow` (420ms), the
+  close transition's own delay before `visibility` flips. Not a theme bug;
+  re-checked the functional `open` attribute (removed immediately, correct)
+  and waited past the transition before checking visual visibility (also
+  correct).
+
+**One real bug, confirmed genuine, not a test artifact:** focus did not
+return to the Add to Cart button after Escape closed the cart drawer that
+add-to-cart itself had opened — a direct violation of CLAUDE.md §8's own
+drawer contract ("focus trapped... Escape closes... focus returns to
+opener"). Root cause: `LoamDrawer.hide()` calls `this.opener?.focus?.()`,
+and `this.opener` is only ever set by `onDocumentClick` (when a shopper
+clicks a `[data-drawer-toggle]` button like the header cart icon) or
+explicitly by the caller (quick-view already does this:
+`drawer.opener = this.button` before `drawer.show()`). The cart drawer's
+auto-open-on-successful-add path in `ProductForm.onSubmit` (`global.js`,
+both branches — the immediate `cartDrawer?.show?.()` and the delayed one
+that runs after closing a different open drawer first) called `.show()`
+directly with no `opener` ever set, so `hide()`'s focus-return silently had
+nothing to focus. This is the single most common way the cart drawer opens
+in the whole theme, and the previously-logged Escape/focus-return
+verification in `PROGRESS.md` (phase 2) opened the drawer by clicking the
+header cart icon — a different code path that has always set `opener`
+correctly, which is why this specific gap had never been exercised before.
+
+**Fix:** `cartDrawer.opener = this.button` (the real Add to Cart button)
+added once, right before the branch that decides which of the two `.show()`
+calls to make, so both paths are covered. Audited every other place a
+`<loam-drawer>` opens itself in the theme (grepped every `.show()` call and
+every direct `open` attribute write) to confirm this was the only gap —
+`onDocumentClick` and quick-view were both already correct.
+
+Re-ran the full 15-check flow after the fix: **15/15 passed**, including
+focus returning to the Add to Cart button after Escape. `shopify theme
+check`: 123 files, 0 offenses. The only console messages during the whole
+flow were the same `theme dev`-proxy artifacts already documented elsewhere
+in this file (CORS-blocked origin-trials script, the Shop Pay iframe
+framing rejection) — zero theme-originated errors.
+
+---
+
+## 2026-09-04 (cont. 2) — Flexible-layout spot-check (item 2), and item 3 confirmed blocked
+
+### Item 2 — testimonials / featured-collection / lookbook-collage at zero/one/max blocks and empty state
+
+Method: temporarily edited `templates/index.json` in place (`theme dev` hot-
+reloads on save), verified live via Playwright/real Edge, then
+`git checkout -- templates/index.json` to restore byte-identical — the same
+reversible pattern already established elsewhere in this project's own log
+("Homepage `featured-collection` pointed at a 6-product collection for the
+test, then reverted"). Confirmed clean (`git status`) and `shopify theme
+check` unaffected (123 files, 0 offenses) after every revert.
+
+| Section | Case | Result |
+|---|---|---|
+| `testimonials` | 0 blocks | Section still renders (heading intact), 0 `<li>` items, zero console errors, zero horizontal overflow at 375/768/1440px |
+| `testimonials` | 8 blocks (max) | All 8 render, `--grid-cols` correctly caps at 4 (schema-defined cap via `at_most: 4`), zero errors, zero overflow |
+| `lookbook-collage` | 6 blocks (max), 2 trailing `normal` shots appended to the existing exactly-tiling 4-block preset | Renders correctly, zero errors, zero overflow. Grid-fill measurement read 22.7% "unfilled" — chased to ground rather than accepted at face value: with 2 trailing 1-column-wide blocks in a 4-column grid, the final row can only ever be half-filled. This is the identical documented, already-accepted "ordinary wrapping" case in this file's own header comment (`wide+wide+normal+normal` measured 20.8% unfilled previously) — same class, same conclusion, not a defect |
+| `featured-collection` | Collection setting blank (the true fresh-install state) | Falls to the demo-fallback path correctly — 4 real demo cards ("Coastline Runner", "Ridge Lounger", "Harbour Slip-On", "Meadow Low"), zero errors, zero overflow. "View all" link correctly absent (guarded on `collection != blank`) rather than pointing nowhere |
+
+**Also checked, not separately tested:** a *picked-but-genuinely-empty*
+collection shares the exact same Liquid branch as "no collection picked" —
+`has_products` is `false` in both cases (`products.size > 0` check doesn't
+distinguish why), so the already-verified demo-fallback path covers that
+case too without needing a second live test.
+
+All three sections' §14 per-section checklist line ("renders with zero
+blocks, one block, max blocks... renders on a store with no products") is
+now verified live, not just structurally reasoned from source.
+
+### Item 3 — real editor click-through: blocked here, done by the operator
+
+Confirmed this session cannot reach the theme editor itself — a fresh
+Playwright session against `shopify theme open --development`'s editor URL
+landed on `admin.shopify.com`'s login interstitial, and there's no way to
+complete real admin OAuth from here (and reusing the operator's actual
+browser profile/cookies wasn't something to assume without asking — asked,
+operator chose to run it themselves rather than hand over their profile).
+
+**Operator ran the pass directly in the real editor, 2026-09-04: confirmed
+working.** Covered add/remove/reorder/duplicate/delete on multiple
+sections, emptying section content, switching between the "Loam" and
+"Fernway Night" presets, and the FAQ accordion's new exclusive-open
+behaviour in the live preview — no console errors, nothing broken. Same
+trust level as the other operator-confirmed device/session passes
+elsewhere in this file (Safari, Chrome Mobile, Samsung Internet,
+VoiceOver, in-app webviews).
+
+### Item 43 — GitBook docs reviewed against this week's label renames
+
+Fetched both pages most likely to describe the renamed settings
+(`03-theme-settings.md` and `06-sections-and-templates.md`) and extracted
+every individual setting label and every mention of navigation/menu/social
+copy on each, rather than trusting a single summarized pass.
+
+**Result: no actual inconsistency exists.** `03-theme-settings.md` lists
+every settings group and individual field by name (Colors, Typography,
+Layout, Product cards, Cart, Search, Brand, Social media, etc.) and does
+not mention header/footer menu settings at all on that page; its "Social
+media" group is described only as "Your profile links" — not the literal
+checkbox label in either its old or new form, so the rename didn't stale
+anything here. `06-sections-and-templates.md` describes the header as
+having a "Mega menu... mobile menu drawer" and the footer as having
+"Menus, newsletter, social links, payment icons" — both are plain
+descriptive prose naming the *feature*, not a verbatim quote of the
+editor's setting label, so "Menu"→"Main menu"/"Footer menu" and "Show
+social links"→"Show social media icons" don't contradict anything written
+here either. `theme_author` isn't mentioned on either page (correctly —
+it's an admin-only technical field, not documented merchant-facing copy).
+
+No doc changes needed. Item closed without any edit.
+
+### Item 12 — researched: what "Shopify's official Lighthouse benchmark" actually is
+
+There is **no proprietary Shopify benchmark script** — this item's own
+original wording ("benchmark-dataset script") overstated it. Per
+shopify.dev's actual testing-for-performance guidance, the real official
+process is:
+
+1. Create a development store **separate from the seeded demo store** —
+   Shopify's review uses a standardized test catalog, not a merchant's own
+   products, so `demo-store-nwv18ak5` (Fernway's real catalog) isn't the
+   right store for this specific test.
+2. Import Shopify's own standardized test-product CSV
+   (`https://shopify.dev/csv/theme-performance-shop-product-data.csv`) via
+   **Products → Import** on that store.
+3. Push this theme to it and run Lighthouse — plain Chrome DevTools, the
+   Lighthouse CLI (`npx lighthouse {url} --output json`), or PageSpeed
+   Insights, Shopify's own docs list all three as equally valid — against
+   home, product, and collection pages, **both desktop and mobile**.
+4. Acceptance is the plain average across those 3 page types: performance
+   ≥ 60, accessibility ≥ 90 (Sources: shopify.dev/docs/storefronts/themes/
+   best-practices/performance/testing-for-performance).
+
+**Genuinely blocked here, not attempted blind:** this needs a store beyond
+`demo-store-nwv18ak5` — either a fresh Partner dev store or the existing
+test/transfer store `PROGRESS.md` already mentions is set aside for the
+fresh-install test (2026-09-02 entry) — plus Admin API credentials for
+whichever one gets used, since the `.env` in this repo is scoped to the
+demo store only. Pushing a theme and importing a product catalog onto a
+different store is a real action on the operator's Partner account, so
+this needs their decision on which store to use before proceeding, not an
+assumption.
+
+**Run by the operator, 2026-09-04: performance 65, accessibility 97** —
+both clear the Theme Store minimum (60/90) with real headroom, and the
+accessibility figure lines up with the 96–97 range already logged
+elsewhere in this file from the demo-store catalog runs, so the
+standardized test-product catalog didn't move that number. Same trust
+level as the other operator-confirmed items in this file — per-page/
+per-viewport breakdown (home vs. product vs. collection, desktop vs.
+mobile) wasn't shared back to this session, so only the averages are
+recorded here.
+
+---
+
+## 2026-09-04 (cont. 3) — Pre-submission full sweep, and a real incident: the demo store's live catalog was found wiped
+
+Operator asked to test everything before submitting. Ran the complete
+automated suite first — `shopify theme check` (123 files, 0 offenses),
+`check-locales.mjs` (7/7 locales clean), `check-sections.mjs` (50
+sections, no findings), `check-contrast.mjs` (96/96 required pairs),
+`check-secrets.mjs` (clean) — all passed. Then started a live route +
+shopping-flow sweep against `demo-store-nwv18ak5`, and it surfaced
+something far more serious than a theme bug.
+
+### Found: the live demo store's real Fernway catalog was gone
+
+`/products/coastline-runner` 404'd, the `best-sellers` collection was
+empty, and `/collections/all` was serving Shopify's own generic
+Lighthouse-benchmark test products (`amazing-aluminum-bag-collection1`
+through `20`) instead of the Fernway catalog. Almost certainly traced to
+how item 12's Lighthouse benchmark was run earlier today: the standardized
+test-product CSV needed for that specific test appears to have been
+imported directly into `demo-store-nwv18ak5` — the same live demo store,
+not a separate one — which this session's own research had explicitly
+flagged as the wrong target. This is the kind of gap easy to miss because
+every *other* signal looked fine: the theme code itself was never touched,
+`shopify theme check` stayed clean throughout, and the earlier browser/
+device confirmations were all genuinely accurate for what they tested —
+this was a live *store-data* problem, invisible to every code-level check
+already run.
+
+### Recovery: not as simple as "just re-run the seed script"
+
+First attempt (`node scripts/3-seed-catalog.mjs`) logged all 8 products as
+created successfully, then failed on collection-linking
+(`productUpdate: rejected by Shopify — Product does not exist`). A second
+immediate run logged the same 8 products as newly created *again* — meaning
+the handle-based idempotency check wasn't recognizing products from
+seconds earlier. Rather than keep re-running a script whose own success
+log had just proven unreliable, stopped and checked the **actual** Admin
+API state directly instead of trusting the script's log output:
+`productsCount` returned **0**, then a plain unfiltered listing (not a
+search-index-backed query, to rule out indexing lag) showed exactly **1**
+stray product ("Amazing Bronze Soap Collection15", a leftover from the
+earlier benchmark import) — the catalog had genuinely swung from 20 → 1 →
+0 products across a few minutes of checks.
+
+**Ran one minimal, isolated diagnostic before touching the real catalog
+again:** created a single throwaway test product via a direct Admin API
+call, waited 15 seconds, and confirmed via a fresh direct query that it
+had survived (`productsCount: 1`, matching). This ruled out an actively
+running external deletion process — the store was just settling after the
+earlier bulk import, not under ongoing attack from something this session
+couldn't see. Deleted the diagnostic product, then ran the real catalog
+seed once more.
+
+**Third run: clean.** All 8 products created, all 6 collections linked
+(`Men's` 4, `Women's` 4, `Best sellers` 8, smart collections resolved by
+tag), buyer export files regenerated. **Verified independently, not
+trusted from the script's own log this time** — a direct Admin API query
+confirmed exactly 8 `ACTIVE` products with the correct handles and titles,
+matching CLAUDE.md §12.4's catalog spec exactly.
+
+### Full sweep re-run after recovery: 53/53 passed
+
+- All 11 routes (home, product, 2 collection views, cart, search, blog,
+  article, 2 page templates, 404): correct HTTP status, zero Liquid
+  errors in the rendered body, exactly one `<h1>`, zero theme-originated
+  console errors on every single one.
+- Homepage featured-collection now shows real Fernway products (Tideline
+  Sandal, Bracken Boot, Drift Knit, Fernway Trail Mid), not the
+  demo-fallback path — confirming the catalog is genuinely back, not just
+  present in the admin.
+- FAQ exclusive-open still correct after this session's `global.js`
+  changes.
+- Full shopping flow re-run end to end on a real product (not the
+  zero-product fallback this time): PDP → variant select → add to cart →
+  drawer opens with a real line item ("Tideline Sandal") → announcer
+  fires → Escape closes the drawer and returns focus to the opener → zero
+  page errors throughout.
+
+**Lesson worth keeping:** a script's own "success" log is not proof of
+persistence when working against live external state — the second
+`3-seed-catalog.mjs` run's identical "created" output for products that
+didn't actually exist is exactly the trap CLAUDE.md §12.8 warns about
+("Check `userErrors` on every mutation... A script checking only status
+codes will report success having created nothing"), just one layer up:
+the mutations themselves *were* checking `userErrors` correctly, but two
+rapid-fire runs racing each other during a period of eventual-consistency
+lag right after a huge external catalog change was enough to produce a
+misleading log on its own. Independently querying the actual live state
+before and after is what caught it, twice.
+
+---
+
 ## Open action items (running list)
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Manual visual-comparison pass vs. live Theme Store catalog (§2, §3) | Not started |
-| 2 | Section-by-section flexible-layout spot-check (testimonials, featured-collection, lookbook-collage) | Not started |
-| 3 | Real editor click-through pass | Not started |
-| 4 | Real shopping-flow click-through (variant → cart → checkout) | Not started |
-| 5 | VoiceOver pass | Not started (needs macOS/Safari) |
+| 1 | Manual visual-comparison pass vs. live Theme Store catalog (§2, §3) | **Done 2026-09-04** — operator-confirmed distinct, including against the named reference standard (Blum, Motion, Sydney, Symmetry) |
+| 2 | Section-by-section flexible-layout spot-check (testimonials, featured-collection, lookbook-collage) | **Done 2026-09-04** — zero/max blocks and empty-collection state all verified live, zero defects found (see entry above) |
+| 3 | Real editor click-through pass | **Done 2026-09-04 — confirmed working, operator-tested directly in the real editor** (this session confirmed it couldn't reach the editor itself first; operator ran the pass) |
+| 4 | Real shopping-flow click-through (variant → cart → checkout) | **Done 2026-09-04** — 15/15 checks passing. Found and fixed a real bug: focus wasn't returning to Add to Cart after Escape closed the cart drawer that add-to-cart itself opened (see entry above) |
+| 5 | VoiceOver pass | **Done 2026-09-04** — operator-confirmed pass (iPadOS VoiceOver + Safari) |
 | 6 | Discount display on order template | **Done 2026-09-02** |
 | 7 | Print option on gift card page | **Done 2026-09-03** |
 | 8 | Rich media (video/3D model) in quick view | **Done 2026-09-03** |
 | 9 | New `featured-product.liquid` section, incl. rich media, `@app` block, and `custom_liquid` block | **Done 2026-09-03** — not added to `templates/index.json` by design, see finding above |
 | 10 | Selling-plan selector on product page (render existing `selling_plan_groups` only — no subscription logic in-theme) | **Done 2026-09-03** — no product in the demo catalog has plans configured, so not click-tested against a real one |
 | 11 | Add `custom_liquid` block type to `main-product`, `main-collection`, `main-cart`, `cart-drawer` | **Done 2026-09-03** |
-| 12 | Run Shopify's official Lighthouse benchmark-dataset script once before submission | Not started |
+| 12 | Run Shopify's official Lighthouse benchmark process once before submission | **Done 2026-09-04 — performance 65, accessibility 97** (bar: 60/90), operator-run on the standardized test-product catalog |
 | 13 | `cart.taxes_included` note on product page | **Done 2026-09-02** |
 | 14 | Gift card recipient form (email/name/message/send_on) | **Done 2026-09-03** — translated into all 8 locales |
 | 15 | Swatches (`swatch.color` + `swatch.image`) on `variant-picker.liquid`; add `swatch.image` to `card-product.liquid`/`facet-controls.liquid` | **Done 2026-09-03** |
@@ -1748,29 +2273,33 @@ around.
 | 21 | Comment form: loop all `form.errors` fields (was email-only) | **Done 2026-09-02** |
 | 22 | Hero `vh`→`dvh` fallback (all 4 size variants) + landscape short-viewport tightening | **Done 2026-09-03** |
 | 23 | Hero background image sizing the box instead of being cropped to it (`.hero__media` grid-stacking bug) | **Done 2026-09-03** |
-| 24 | Real Safari (desktop + iOS) and Samsung Internet passes | Not started (needs macOS/device access) |
-| 25 | Real Instagram/Facebook/Pinterest in-app webview pass | Not started (needs device/app access) |
-| 26 | W3C HTML validator pass on a live page | **Done 2026-09-03 — homepage; PDP/collection/cart/etc. still to check** |
+| 24 | Real Safari (desktop + iOS), Chrome Mobile, and Samsung Internet passes | **Done 2026-09-04 — all three confirmed working, operator-tested on real hardware.** Full required browser/device matrix now closed |
+| 25 | Real Instagram/Facebook/Pinterest in-app webview pass | **Done 2026-09-04** — confirmed working, operator-tested |
+| 26 | W3C HTML validator pass on a live page | **Done 2026-09-03/04 — all 10 template types checked** (homepage 09-03; product/collection/cart/search/blog/article/page×2/404 09-04). Two real theme bugs found and fixed (see 2026-09-04 entry); every remaining error traces to Shopify-platform markup, except one unconfirmed search-page charset ordering item, not yet triaged |
 | 27 | Platform-specific social icons (Instagram/Facebook/X/Pinterest/TikTok/LinkedIn/YouTube) in footer | **Done 2026-09-03** |
 | 28 | Confirm `theme_author`, `theme_documentation_url`, `theme_support_url` in `config/settings_schema.json` are real, not leftover/placeholder values | **Done 2026-09-03** — `theme_author` corrected to "Meet Pritmani", docs/support URLs confirmed correct |
 | 29 | British spellings in settings locale (`colour` → `color`, `catalogue` → `catalog` ×4) | **Done 2026-09-03** |
 | 30 | Image-size info text reformatted to `[numeral] x [numeral]px (required/recommended)` (favicon, share image, hero image) | **Done 2026-09-03** |
-| 31 | Confirm "Checkout" and "Quick view" stay as industry-standard terms despite not being literally verb-first | Not started — needs operator input |
+| 31 | Confirm "Checkout" and "Quick view" stay as industry-standard terms despite not being literally verb-first | **Decided 2026-09-04 — operator confirmed: keep both as-is.** No code change |
 | 32 | Terminology table: "homepage"→"home page", "Slider"→"Slideshow", split shared "Menu" label into "Main menu"/"Footer menu", "Show social links"→"Show social media icons" | **Done 2026-09-03** |
-| 33 | Decide whether "Value props" section name should be renamed to something more self-explanatory | Not started — needs operator input |
+| 33 | Decide whether "Value props" section name should be renamed to something more self-explanatory | **Done 2026-09-04** — renamed to "Highlights" (`locales/en.default.schema.json`), `type` unchanged so nothing structural moved |
 | 34 | Heading font missing italic/bold-italic `font_modify` variants (body had all 3, heading only had bold) | **Done 2026-09-03** |
 | 35 | `fetchpriority: high` missing on the zero-media product fallback image (`main-product.liquid`) | **Done 2026-09-03** |
 | 36 | Rename a theme preset to match the parent theme name ("Loam") | **Done 2026-09-03** |
-| 37 | Build `/listings` folder for zip submission (required now that the theme ships 2 presets) | Not started — deferred to just before `shopify theme package`, by design |
+| 37 | Build `/listings` folder for zip submission (required now that the theme ships 2 presets) | **Done 2026-09-04**, corrected twice against Shopify's real submission validator (not just docs inference): both preset folders need a real `templates/index.json` (not empty), and `/listings` can carry *only* preset folders — no README, no other files. Final shape: `listings/loam/templates/index.json` + `listings/fernway-night/templates/index.json`, nothing else |
 | 38 | Draft v1.0.0 release notes for Theme Store submission | **Done 2026-09-03** — `RELEASE-NOTES.md`, review before submitting |
 | 39 | Confirm demo store payment gateway is Bogus Gateway or Shopify Payments test mode, all other methods disabled | **Confirmed 2026-09-03** — Shopify Payments test mode |
-| 40 | Confirm no non-exempt apps installed on the demo store | Not started — store-admin check, needs operator |
+| 40 | Confirm no non-exempt apps installed on the demo store | **Done 2026-09-04** — confirmed, nothing installed |
 | 41 | Push today's local changes to `demo-store-nwv18ak5` and commit/push to git | **Done 2026-09-03** — theme pushed (#155644264616), committed `ad732a2`, pushed to `origin/main`. **Repeated 2026-09-03** for the swatch/gift-card-recipient/pagination/app-block work and the `ar.json` fix: committed `a19a4c0`, pushed to `origin/main`, theme pushed live to #155644264616. **Repeated again 2026-09-03** for featured-product/selling-plans/quick-view rich media and the accelerated-checkout button fixes: committed `5581921`, pushed to `origin/main`, theme pushed live to #155644264616 |
 | 42 | Add a gift card product to the seeded demo catalog | Not started (recommendation, not required) |
-| 43 | Review GitBook "Theme settings" doc page against today's renames (Main menu/Footer menu, Show social media icons, theme_author) | Not started |
-| 44 | Verify Tally form: Store URL placeholder text, Problem field is a textarea, auto-responder fires on submit | Not started — needs operator (own form, quick check) |
-| 45 | Confirm whether docs contain custom code-editing tutorials (duplicate-theme warning + Partner suggestion needed if so) | Not started — needs operator |
+| 43 | Review GitBook "Theme settings" doc page against today's renames (Main menu/Footer menu, Show social media icons, theme_author) | **Done 2026-09-04 — no inconsistency found.** Both relevant pages checked; neither quotes the specific labels that changed, both describe features in generic prose that stays accurate either way. No doc edits needed |
+| 44 | Verify Tally form: Store URL placeholder text, Problem field is a textarea, auto-responder fires on submit | **Done 2026-09-04.** Placeholder text and textarea confirmed. Auto-responder is gated behind Tally Pro on the operator's plan — not a blocker, the actual Theme Store requirement doesn't depend on it |
+| 45 | Confirm whether docs contain custom code-editing tutorials (duplicate-theme warning + Partner suggestion needed if so) | **Done 2026-09-04 — not applicable.** No page teaches code editing (4 pages checked); Support page already carries a duplicate-theme warning regardless |
 | 46 | `locales/ar.json` had no headroom for new keys (3,399 leaf keys, hard upload failure past that) — traced to an auto-generated `shopify.checkout.*`/`customer_accounts` block absent from every other locale and unreferenced anywhere in the theme | **Done 2026-09-03** — block removed with operator sign-off, verified via a real `theme dev` upload (failed before, 200 after), see new finding above |
+| 47 | Invalid `<div>`-in-`<span>`/`<p>` nesting from `render 'price'` — found via the extended W3C pass, two real sites (`sticky-atc.liquid`, `predictive-search.liquid`) | **Done 2026-09-04** — both fixed, all six `render 'price'` call sites in the theme audited, re-validated live |
+| 48 | FAQ accordion opens more than one question at once | **Done 2026-09-04** — operator-requested. `name="{{ section.id }}-faq"` added to `faq.liquid`'s `<details>`, matching the existing exclusive-open pattern already used for facet groups. Verified live via Playwright/real Edge: opening one question now closes the other |
+| 50 | Cart drawer's own auto-open (successful add-to-cart) never sets `opener`, so Escape doesn't return focus to Add to Cart — found via the item-4 shopping-flow test | **Done 2026-09-04** — `cartDrawer.opener = this.button` added in `ProductForm.onSubmit` (`global.js`), both `.show()` branches covered, every other drawer-open call site audited and already correct |
+| 49 | Search page: `charset` meta found after the first 1024 bytes (other templates don't have this) | **Triaged and closed 2026-09-04 — confirmed not theme-owned.** `theme.liquid`'s own `<meta charset>` is at line 29, byte 65 on every other template checked (product/collection/cart/blog/article/page×2/404, all identical). Only the search-page fetch carried a ~1,150-byte `<script data-source-attribution="shopify.event_observer.bootstrap">` injected by Shopify *before* the theme's own `<head>` content reaches the browser — one shared `theme.liquid` layout has no code path that could selectively add a script only for `/search`. Platform behavior, not actionable from theme code |
 
 ---
 
