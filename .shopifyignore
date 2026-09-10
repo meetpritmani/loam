@@ -24,5 +24,17 @@ store-submission-build/
 node_modules/
 package.json
 package-lock.json
-.env
-.env.example
+.env*
+
+# Internal build/dev documentation (PROGRESS.md, TEST-CASES.md, etc.) — not
+# part of the distributable theme. The four files §3/§9.10 of the build spec
+# actually ships to the buyer are re-included below; everything else .md
+# stays out of `theme push` and `theme package`.
+*.md
+!LICENSE.md
+!README.md
+!CRO-CHECKLIST.md
+!assets/LICENSES.md
+.githooks/
+.github/
+.theme-check.yml
