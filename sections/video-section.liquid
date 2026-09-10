@@ -9,7 +9,11 @@
 
   Supports a Shopify-hosted video or an external URL (YouTube/Vimeo). The
   external case builds an iframe only on click, so no third-party frame — and
-  none of its cookies — exists until the visitor opts in.
+  none of its cookies — exists until the visitor opts in. The embed URL comes
+  from Shopify's own `external_video_url` filter rather than a hand-built
+  string — it is the sanctioned way to turn a `video_url` setting into a
+  playable src, and it stays correct if either provider changes its embed
+  domain or params.
 
   A poster is required by the build spec; if the merchant leaves it empty the
   section falls back through image-fallback.liquid rather than showing a black
@@ -27,11 +31,7 @@
 
   assign external_src = ''
   if external_url != blank
-    if external_url.type == 'youtube'
-      assign external_src = 'https://www.youtube.com/embed/' | append: external_url.id | append: '?autoplay=1&rel=0'
-    elsif external_url.type == 'vimeo'
-      assign external_src = 'https://player.vimeo.com/video/' | append: external_url.id | append: '?autoplay=1'
-    endif
+    assign external_src = external_url | external_video_url: autoplay: true
   endif
 -%}
 
