@@ -427,7 +427,7 @@
           "type": "testimonial",
           "settings": {
             "rating": 5,
-            "quote": "Wore them through a wet week in Lisbon and they dried overnight. Sizing runs a touch long, so I sized down and they are perfect.",
+            "quote": "Add a real customer quote here. Specific detail — fit, wash results, how it held up — builds more trust than anything generic.",
             "name": "Customer name",
             "detail": "",
             "image": "",
@@ -438,7 +438,7 @@
           "type": "testimonial",
           "settings": {
             "rating": 5,
-            "quote": "Washed them three times now. They come out looking new, which I did not expect from wool. My only gripe is I want more colours.",
+            "quote": "This is placeholder text. Swap in a genuine testimonial once you have a real review to feature.",
             "name": "Customer name",
             "detail": "",
             "image": "",
@@ -449,7 +449,7 @@
           "type": "testimonial",
           "settings": {
             "rating": 4,
-            "quote": "Took a week to soften up and I nearly sent them back. Glad I did not. Two months on they are the only thing I reach for.",
+            "quote": "Edit this block with feedback from an actual customer — a specific product, a specific experience, in their own words.",
             "name": "Customer name",
             "detail": "",
             "image": "",
@@ -460,7 +460,7 @@
           "type": "testimonial",
           "settings": {
             "rating": 5,
-            "quote": "I stand twelve hours a shift. These are the first pair that did not leave my feet aching by hour eight.",
+            "quote": "Sample testimonial copy. Replace before launch — a shopper can tell placeholder text from a real review.",
             "name": "Customer name",
             "detail": "",
             "image": "",
