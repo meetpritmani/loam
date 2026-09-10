@@ -5,10 +5,10 @@
   theme.liquid, opened by the "Compare" button in the tray via the ordinary
   <loam-drawer> data-drawer-toggle contract. Unlike quick view, nothing here
   is fetched from the server — every field the table needs (title, price,
-  material, footprint, url) was already captured into JSON on each product
-  card when it was added to the tray, so <compare-table> in global.js builds
-  the rows straight from localStorage. There is nothing for Liquid to render
-  here beyond the empty shell.
+  material, url) was already captured into JSON on each product card when
+  it was added to the tray, so <compare-table> in global.js builds the rows
+  straight from localStorage. There is nothing for Liquid to render here
+  beyond the empty shell.
 
   A centred dialog, not the lightbox panel main-product.liquid uses for its
   own image zoom — `.drawer__panel--lightbox` is built for a single image
@@ -51,7 +51,6 @@
             data-label-product="{{ 'products.product.compare_column_product' | t | escape }}"
             data-label-price="{{ 'products.product.compare_column_price' | t | escape }}"
             data-label-material="{{ 'products.product.compare_column_material' | t | escape }}"
-            data-label-footprint="{{ 'products.product.compare_column_footprint' | t | escape }}"
             data-label-availability="{{ 'products.product.compare_column_availability' | t | escape }}"
             data-label-in-stock="{{ 'products.product.compare_in_stock' | t | escape }}"
             data-label-sold-out="{{ 'products.product.sold_out' | t | escape }}"

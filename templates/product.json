@@ -60,10 +60,6 @@
           "type": "trust",
           "settings": {}
         },
-        "carbon": {
-          "type": "carbon",
-          "settings": {}
-        },
         "acc_materials": {
           "type": "accordion",
           "settings": {
@@ -117,7 +113,6 @@
         "buy",
         "pickup",
         "trust",
-        "carbon",
         "acc_materials",
         "acc_care",
         "acc_shipping",

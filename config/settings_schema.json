@@ -356,13 +356,6 @@
         "default": true
       },
       {
-        "type": "checkbox",
-        "id": "cart_show_footprint",
-        "label": "t:settings.cart.cart_show_footprint.label",
-        "info": "t:settings.cart.cart_show_footprint.info",
-        "default": true
-      },
-      {
         "type": "number",
         "id": "cart_free_shipping_threshold",
         "label": "t:settings.cart.cart_free_shipping_threshold.label",

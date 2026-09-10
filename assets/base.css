@@ -2046,32 +2046,6 @@ cart-items[aria-busy] {
   transition: width var(--dur-slow) var(--ease);
 }
 
-/* --- Footprint counter ---------------------------------------------------
-   footprint-counter.liquid. Sits directly under the shipping bar, same row
-   rhythm, so the two read as one strip of cart-level facts rather than two
-   unrelated widgets stacked on top of each other. */
-
-.footprint-counter {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  margin-block-end: var(--sp-5);
-  color: var(--c-ink-70);
-}
-
-.footprint-counter__text {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
-  font-size: var(--t-sm);
-}
-
-.footprint-counter__value {
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--f-body-weight-bold);
-  color: var(--c-ink);
-}
-
 /* --- Compare ---------------------------------------------------------------
    compare-bar.liquid, compare-drawer.liquid. A persistent bottom bar, the
    same reasoning as the cart drawer for existing on every template: it is
@@ -4627,7 +4601,6 @@ recently-viewed {
   margin: 0;
 }
 
-.product__carbon,
 .low-stock {
   display: flex;
   align-items: center;

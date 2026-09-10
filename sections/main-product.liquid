@@ -211,15 +211,6 @@
                   </div>
                 {%- endif -%}
 
-              {%- when 'carbon' -%}
-                {%- assign footprint = product.metafields.custom.carbon_footprint -%}
-                {%- if footprint != blank -%}
-                  <p class="product__carbon caption" {{ block.shopify_attributes }}>
-                    {%- render 'icon', icon: 'leaf', size: 16 -%}
-                    <span>{{ 'products.product.carbon_footprint_html' | t: amount: footprint }}</span>
-                  </p>
-                {%- endif -%}
-
               {%- when 'variant_picker' -%}
                 <div {{ block.shopify_attributes }}>
                   {%- render 'variant-picker', product: product, section_id: section_id -%}
@@ -328,7 +319,6 @@
     { "type": "badges", "name": "t:sections.main_product.blocks.badges.name", "limit": 1 },
     { "type": "price", "name": "t:sections.main_product.blocks.price.name", "limit": 1 },
     { "type": "material", "name": "t:sections.main_product.blocks.material.name", "limit": 1 },
-    { "type": "carbon", "name": "t:sections.main_product.blocks.carbon.name", "limit": 1 },
     {
       "type": "variant_picker",
       "name": "t:sections.main_product.blocks.variant_picker.name",

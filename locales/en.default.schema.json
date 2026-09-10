@@ -172,10 +172,6 @@
       "cart_show_free_shipping_bar": {
         "label": "Show free shipping progress"
       },
-      "cart_show_footprint": {
-        "label": "Show carbon footprint total",
-        "info": "Reads the product metafield custom.carbon_footprint. Only sums the lines that have it set, and only appears once at least one line does."
-      },
       "cart_free_shipping_threshold": {
         "label": "Free shipping threshold",
         "info": "In your store currency, without a currency symbol. Set to 0 to hide the progress bar."
@@ -525,9 +521,6 @@
         },
         "material": {
           "name": "Material tag"
-        },
-        "carbon": {
-          "name": "Carbon footprint"
         },
         "variant_picker": {
           "name": "Variant picker",

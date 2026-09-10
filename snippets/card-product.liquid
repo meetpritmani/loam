@@ -96,7 +96,6 @@
       "image": {{ product.featured_image | image_url: width: 200 | json }},
       "price": {{ product.price | money | json }},
       "material": {{ material | json }},
-      "footprint": {{ product.metafields.custom.carbon_footprint | json }},
       "available": {{ product.available | json }}
     }
   {%- endcapture -%}

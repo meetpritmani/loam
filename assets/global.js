@@ -3343,7 +3343,6 @@ class CompareTable extends HTMLElement {
       'title',
       'price',
       'material',
-      'footprint',
       'available',
       'link',
     ];
@@ -3360,7 +3359,6 @@ class CompareTable extends HTMLElement {
         title: this.dataset.labelProduct,
         price: this.dataset.labelPrice,
         material: this.dataset.labelMaterial,
-        footprint: this.dataset.labelFootprint,
         available: this.dataset.labelAvailability,
       };
       if (labels[key]) th.textContent = labels[key];
@@ -3407,9 +3405,7 @@ class CompareTable extends HTMLElement {
     const span = document.createElement('span');
     if (key === 'price') span.textContent = item.price || '';
     else if (key === 'material') span.textContent = item.material || '—';
-    else if (key === 'footprint') {
-      span.textContent = item.footprint ? `${item.footprint} kg CO2e` : '—';
-    } else if (key === 'available') {
+    else if (key === 'available') {
       span.textContent = item.available
         ? this.dataset.labelInStock || ''
         : this.dataset.labelSoldOut || '';
