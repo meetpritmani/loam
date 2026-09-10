@@ -1,5 +1,69 @@
 # Release notes
 
+## 1.1.0 — resubmission fixes
+
+A focused release addressing a Theme Store review rejection. The root cause
+was never missing features — it was that the theme shipped fabricated
+commercial data live on a merchant's storefront the moment they installed
+it, plus a homepage that referenced files specific to the developer's own
+demo store.
+
+**Fixed on every install**
+- Removed the demo product cards that rendered invented names, prices, and
+  a "New" badge on a store with no products — the single largest issue.
+  Empty product sections now show a plain "no products yet" state instead.
+- Stripped every `shopify://shop_images/...` reference and the hardcoded
+  `best-sellers` collection default from the shipped homepage and header —
+  both resolved to nothing on any store but the developer's own.
+- Replaced fabricated install-state copy (B Corp / Fair Trade
+  certifications, a 12,400-review / 4.8-rating figure, "Verified buyer"
+  testimonials for products that don't exist) with neutral, genuinely
+  editable copy.
+- Collapsed to a single "Loam" preset — the second, "Fernway Night," was a
+  colour swap of the same theme, which the Theme Store does not count as a
+  second style.
+
+**Removed rather than half-shipped**
+- The carbon footprint feature (cart counter, PDP badge, compare column):
+  presented an unverifiable sustainability figure as fact, on top of
+  depending on a metafield no merchant has.
+- Back-in-stock capture: implied a notification the theme cannot actually
+  send.
+- The `window.dataLayer` analytics layer: every event fired with no
+  `Shopify.customerPrivacy.analyticsProcessingAllowed()` gate, meaning a
+  merchant in a consent-regulated region who enabled it would track
+  shoppers pre-consent without knowing it. Deferred to a future release,
+  consent-gated — see `CLAUDE.md` §9.8 for the event taxonomy and the
+  compliant design.
+- Product compare now defaults off rather than being part of the reviewed
+  install state (the feature itself is unchanged and can be re-enabled).
+
+**Metafield dependencies**
+- The care accordion now reads the standard `descriptors.care_guide`
+  metafield instead of a custom one.
+- The material tag, its composition breakdown, and its provenance note are
+  now merchant-editable block settings (with dynamic-source binding
+  available) rather than a hardcoded custom metafield — safer than a
+  taxonomy-conditional standard metafield that may not exist for a given
+  product category.
+- The size guide drawer and article related-products both moved from a
+  custom metafield to a plain page/product-list setting on the section.
+
+**Also in this release**
+- Added `surface_text` and `sand_text` colour settings so every background
+  colour has a declared, independently adjustable foreground.
+- `video-section.liquid` now builds its embed URL with Shopify's own
+  `external_video_url` filter instead of a hand-built YouTube/Vimeo string.
+- Removed JSON comment blocks from locale and config files (only supported
+  in JSON templates).
+- Terminology pass: "Enable X" labels became "Show X", a block named
+  "Title" became "Product title", and the reviewer-facing paragraph in the
+  Conversion settings group was replaced with a plain description.
+- `.shopifyignore` now excludes internal build docs and dev tooling
+  (`.github/`, `.githooks/`, `.theme-check.yml`, every root `.md` file
+  except the four the theme actually ships) from `theme push` and
+  `theme package`.
+
 ## 1.0.0 — initial release
 
 Loam is a premium Online Store 2.0 theme built for brands that sell on
