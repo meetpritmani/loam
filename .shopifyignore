@@ -26,15 +26,26 @@ package.json
 package-lock.json
 .env*
 
-# Internal build/dev documentation (PROGRESS.md, TEST-CASES.md, etc.) — not
-# part of the distributable theme. The four files §3/§9.10 of the build spec
-# actually ships to the buyer are re-included below; everything else .md
-# stays out of `theme push` and `theme package`.
-*.md
-!LICENSE.md
-!README.md
-!CRO-CHECKLIST.md
-!assets/LICENSES.md
+# Internal build/dev documentation — not part of the distributable theme.
+# Listed individually rather than as a `*.md` + `!` negation pair.
+# Verified against an actual `shopify theme package` output: root-level
+# .md files (README.md, LICENSE.md, CRO-CHECKLIST.md) never appear in the
+# zip regardless of what's in this file — `theme package` only scans the
+# theme's own folders (assets/, config/, layout/, locales/, sections/,
+# snippets/, templates/), so root files were never going to ship through
+# it either way, and a `!` negation had nothing to re-include. Those three
+# reach a buyer some other way (the repo, the store listing) — not this
+# zip. assets/LICENSES.md ships automatically, since it already lives
+# inside assets/.
+CLAUDE.md
+CLAUDE-TASKS-theme-store-fixes.md
+loam-theme-store-fixes.md
+DEMO-SCREENSHOTS.md
+FUTURE-ENHANCEMENTS.md
+PROGRESS.md
+RELEASE-NOTES.md
+TEST-CASES.md
+THEME-STORE-CHECKLIST.md
 .githooks/
 .github/
 .theme-check.yml
