@@ -3,18 +3,16 @@
 // Produces a Theme Store submission copy of the theme in
 // store-submission-build/, separate from the working repo.
 //
-// Shopify's Theme Store install-experience requirement says to avoid
-// shopify:// URLs in shipped config/template JSON — they're how build spec
-// §12 wires the demo store's own uploaded Files into templates/index.json
-// and sections/header-group.json by filename, which is exactly what the
-// demo store and the TemplateMonster/Gumroad listings need. The working
-// repo has to keep those refs. This script never edits the repo; it copies
-// the theme folders out, blanks every shopify:// value in the copy, and
-// turns settings.demo_images off there so no section attempts a Files
-// lookup at all on Shopify's own review install. image-fallback.liquid
-// already falls through cleanly to a placeholder when image/fallback are
-// unset (§6), so blanking is sufficient — nothing else needs to change for
-// the theme to render correctly with an empty catalogue and no uploads.
+// Historically this script's job was to blank shopify:// references before
+// submission — the working repo used to carry them (§12 wired the demo
+// store's own uploaded Files into templates/index.json and
+// sections/header-group.json by filename) and Shopify's review install has
+// none of those Files uploaded. As of the 2026-09-10 resubmission fixes
+// (T1-T2), the working repo no longer carries any shopify:// reference at
+// all, so the strip step below now finds nothing to strip on every ordinary
+// run — it stays as a safety net rather than dead code, since a future
+// section that reintroduces one would otherwise ship it straight to
+// submission unnoticed.
 //
 // Usage: node scripts/6-build-store-submission.mjs
 
@@ -117,24 +115,6 @@ function main() {
   const stripped = [];
   forEachJsonFile(path.join(outDir, 'templates'), (f) => processJsonFile(f, stripped));
   forEachJsonFile(path.join(outDir, 'sections'), (f) => processJsonFile(f, stripped));
-
-  // demo_images defaults to true in the working repo (build spec §6) so the
-  // demo store and the marketplace listings show real imagery. Shopify's own
-  // review install has none of those Files uploaded, so leave it on would
-  // just mean every fallback attempt fails and falls through anyway — but
-  // turning it off here removes the wasted attempt and keeps the submission
-  // build's intent explicit: this copy renders on an empty store, honestly.
-  const settingsPath = path.join(outDir, 'config', 'settings_data.json');
-  if (existsSync(settingsPath)) {
-    const settings = parseShopifyJson(readFileSync(settingsPath, 'utf8'));
-    if (settings.current && typeof settings.current === 'object' && !Array.isArray(settings.current)) {
-      settings.current.demo_images = false;
-    }
-    for (const preset of Object.values(settings.presets || {})) {
-      preset.demo_images = false;
-    }
-    writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
-  }
 
   console.log(`Wrote submission build to ${path.relative(root, outDir)}/`);
   console.log(`Stripped ${stripped.length} shopify:// reference(s):`);
