@@ -66,6 +66,22 @@ export const API_VERSION = process.env.SHOPIFY_API_VERSION || '2026-07';
 const TOKEN = process.env.SHOPIFY_ADMIN_TOKEN || '';
 
 /**
+ * Read once at import time, the same way every other flag in this pipeline
+ * is read (see seed.mjs) — process.argv does not change mid-run, so there is
+ * no reason to re-check it on every call.
+ *
+ * Gated here rather than in each script: `mutate()` is the single choke
+ * point every write in scripts 2, 3 and 4 already goes through (that is the
+ * whole reason it exists — see its own comment below), so this is the one
+ * place a dry-run guard covers every mutation without editing each call
+ * site. Reads (`graphql()` calls outside `mutate()`) are deliberately left
+ * running for real even in dry-run mode: a script needs the store's actual
+ * state — does this product handle already exist? — to report accurately
+ * what it WOULD do.
+ */
+export const DRY_RUN = process.argv.includes('--dry-run');
+
+/**
  * Stop before the first request if the run cannot possibly work.
  *
  * Checked up front rather than on first use: a missing token that surfaces
@@ -255,12 +271,99 @@ export async function graphql(query, variables = {}, label = 'query') {
 }
 
 /**
+ * A synthetic payload for a mutation `mutate()` did not actually send.
+ *
+ * Shaped per-root rather than generically, because the callers in scripts
+ * 2/3/4 read specific fields back out of a real payload — `payload.product.id`
+ * to remember for a later collection-membership call, `payload.menu.id` to
+ * re-query nesting depth, and so on. A payload missing the field a caller
+ * expects is a crash in dry-run mode, which defeats the point of having one.
+ *
+ * IDs are synthetic but shaped like real GIDs (`gid://shopify/<Type>/dryrun-N`)
+ * so anything that logs or string-matches an id does not choke on an
+ * unexpected shape. A counter, not a fixed string, so two calls in the same
+ * run never collide.
+ *
+ * @param {string} root
+ * @param {object} variables
+ * @returns {object}
+ */
+let dryRunCounter = 0;
+function syntheticPayload(root, variables) {
+  const n = () => (dryRunCounter += 1);
+  const gid = (type) => `gid://shopify/${type}/dryrun-${n()}`;
+
+  switch (root) {
+    case 'productSet':
+      return {
+        product: {
+          id: variables.input.id || gid('Product'),
+          handle: variables.input.handle,
+          title: variables.input.title,
+          variants: { nodes: (variables.input.variants || []).map(() => ({ id: gid('ProductVariant') })) },
+        },
+      };
+    case 'productUpdate':
+      return {
+        product: {
+          id: variables.product.id,
+          media: { nodes: (variables.media || []).map(() => ({ id: gid('MediaImage') })) },
+        },
+      };
+    case 'metafieldsSet':
+      return { metafields: (variables.metafields || []).map((f) => ({ id: gid('Metafield'), key: f.key, namespace: f.namespace })) };
+    case 'metafieldDefinitionCreate':
+      // Real behaviour on a second run is "TAKEN", tolerated by the caller —
+      // dry run cannot know which, so it reports every one as if new. The
+      // caller's own existence check for products/pages/etc. still runs for
+      // real, so that half of the picture stays accurate; this is the one
+      // resource type this pipeline creates without checking first.
+      return { createdDefinition: { id: gid('MetafieldDefinition'), name: variables.definition.name, key: variables.definition.key } };
+    case 'collectionCreate':
+      return { collection: { id: gid('Collection'), handle: variables.collection.handle, title: variables.collection.title } };
+    case 'stagedUploadsCreate':
+      return {
+        stagedTargets: (variables.input || []).map(() => ({
+          url: 'https://dry-run.invalid/staged-upload',
+          resourceUrl: 'https://dry-run.invalid/resource',
+          parameters: [],
+        })),
+      };
+    case 'fileCreate':
+      return { files: (variables.files || []).map(() => ({ id: gid('MediaImage'), fileStatus: 'READY', alt: '' })) };
+    case 'fileDelete':
+      return { deletedFileIds: variables.ids };
+    case 'pageCreate':
+      return { page: { id: gid('Page'), handle: variables.page.handle, title: variables.page.title } };
+    case 'blogCreate':
+      return { blog: { id: gid('Blog'), handle: variables.blog.handle, title: variables.blog.title } };
+    case 'articleCreate':
+      return { article: { id: gid('Article'), handle: variables.article.handle, title: variables.article.title } };
+    case 'menuCreate':
+    case 'menuUpdate':
+      return { menu: { id: variables.id || gid('Menu'), handle: variables.handle, title: variables.title } };
+    default:
+      // An unrecognised root means this file grew a new mutation without a
+      // matching case here — fail loudly rather than hand a caller `undefined`
+      // and let it crash three lines later with a confusing error.
+      fail(`mutate(): no dry-run shape defined for "${root}".`, [
+        'Add a case to syntheticPayload() in scripts/lib/shopify.mjs.',
+      ]);
+  }
+}
+
+/**
  * A mutation, with its userErrors checked.
  *
  * This is the whole reason `graphql` is not called directly for writes.
  * Shopify answers a failed mutation with HTTP 200 and the reason inside
  * `data.<root>.userErrors`. Checking only the status code produces a script
  * that reports a clean run and created nothing at all.
+ *
+ * In dry-run mode (`DRY_RUN`, set from `--dry-run`), no request is sent —
+ * `syntheticPayload()` above returns a plausible-shaped stand-in so the
+ * caller's own logic keeps running, and the mutation that would have been
+ * sent is logged instead.
  *
  * @param {string} query
  * @param {object} variables
@@ -270,6 +373,11 @@ export async function graphql(query, variables = {}, label = 'query') {
  * @returns {Promise<object>} the mutation's payload, minus userErrors
  */
 export async function mutate(query, variables, root, options = {}) {
+  if (DRY_RUN) {
+    log.info(`[dry run] would send ${root}: ${JSON.stringify(variables).slice(0, 300)}`);
+    return syntheticPayload(root, variables);
+  }
+
   const data = await graphql(query, variables, root);
   const payload = data?.[root];
 

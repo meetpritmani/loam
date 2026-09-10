@@ -19,15 +19,19 @@
  * until Shopify has finished processing, so writing the map straight after
  * fileCreate produces a map full of nulls.
  *
- * Run: node scripts/2-upload-media.mjs [--replace]
+ * Run: node scripts/2-upload-media.mjs [--replace] [--dry-run]
  *   --replace  delete and re-upload files that already exist
+ *   --dry-run  contact the store only to read its current Files (so the
+ *              report of what's new vs. already-there is accurate); upload,
+ *              delete and fileCreate all become logged no-ops, and
+ *              media-map.json is not written
  */
 
 import { existsSync, readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { log, fail, sleep } from './lib/log.mjs';
 import { MEDIA_MANIFEST, PATHS, ensureDir } from './lib/media.mjs';
-import { graphql, mutate, requireCredentials, verifyShop, STORE } from './lib/shopify.mjs';
+import { graphql, mutate, requireCredentials, verifyShop, STORE, DRY_RUN } from './lib/shopify.mjs';
 
 const replace = process.argv.includes('--replace');
 
@@ -195,6 +199,17 @@ async function uploadBatch(batch) {
     const item = batch[index];
     const target = targets[index];
 
+    // The staged target above is synthetic in dry-run mode (mutate() never
+    // called stagedUploadsCreate for real), so its url is not a real S3
+    // endpoint — posting to it would just be a network error, not a
+    // meaningful test of anything. Log the intent and stop here; fileCreate
+    // right after this function returns is already a dry-run no-op too.
+    if (DRY_RUN) {
+      log.info(`[dry run] would upload ${item.file} (${statSync(item.absolutePath).size} bytes)`);
+      uploaded.push({ file: item.file, resourceUrl: target.resourceUrl, alt: item.alt });
+      continue;
+    }
+
     const form = new FormData();
 
     // Order matters and this is the whole reason for the loop. S3 reads its
@@ -287,6 +302,7 @@ async function waitForReady(ids) {
    -------------------------------------------------------------------------- */
 
 log.banner('2 / 5  Upload media to Files');
+if (DRY_RUN) log.warn('Dry run: no file will be uploaded, deleted, or recorded.');
 
 requireCredentials();
 
@@ -385,9 +401,20 @@ if (toUpload.length === 0) {
       );
 
       const ids = (payload.files || []).map((file) => file.id);
-      log.info(`fileCreate accepted ${ids.length}, waiting for READY`);
 
-      const ready = await waitForReady(ids);
+      // waitForReady polls FILE_STATUS for real, which fileCreate's synthetic
+      // ids in dry-run mode were never going to satisfy — Shopify rejects a
+      // gid that does not match its own id format rather than returning
+      // null for it, so this would surface as a confusing GraphQL error, not
+      // a clean "still processing". mutate() already marked the synthetic
+      // files READY; skip the poll and trust that.
+      let ready;
+      if (DRY_RUN) {
+        ready = new Map((payload.files || []).map((file) => [file.id, file]));
+      } else {
+        log.info(`fileCreate accepted ${ids.length}, waiting for READY`);
+        ready = await waitForReady(ids);
+      }
 
       // Matched back by order. fileCreate preserves the order it was given,
       // and the filename is not queryable on the returned node.
@@ -435,7 +462,15 @@ function record(file, node) {
   };
 }
 
-created.forEach(({ file, node }) => record(file, node));
+// `created` entries are synthetic in dry-run mode (fileCreate never actually
+// ran), with no real url/gid behind them — merging those into the real map
+// would corrupt it for the next real run. Real entries for files the store
+// already has (`existing`, from a genuine read query) are not synthetic and
+// are safe either way, but the whole map is left unwritten in dry-run mode
+// regardless, matching step 5's own "nothing will be written" contract.
+if (!DRY_RUN) {
+  created.forEach(({ file, node }) => record(file, node));
+}
 
 // Existing files that were skipped still belong in the map — otherwise a
 // second run produces a map covering only what that run happened to upload.
@@ -451,11 +486,16 @@ MEDIA_MANIFEST.forEach((entry) => {
   if (mediaMap[entry.file]) ordered[entry.file] = mediaMap[entry.file];
 });
 
-writeFileSync(mapPath, `${JSON.stringify(ordered, null, 2)}\n`, 'utf8');
+if (DRY_RUN) {
+  log.warn('Dry run: media-map.json not written.');
+} else {
+  writeFileSync(mapPath, `${JSON.stringify(ordered, null, 2)}\n`, 'utf8');
+}
 
 const mapped = Object.keys(ordered).length;
 log.success(
-  `${created.length} uploaded, ${mapped} of ${MEDIA_MANIFEST.length} in media-map.json.`
+  `${created.length} ${DRY_RUN ? 'would be uploaded' : 'uploaded'}, ${mapped} of ${MEDIA_MANIFEST.length} in media-map.json.` +
+    (DRY_RUN ? ' (dry run)' : '')
 );
 
 if (mapped < MEDIA_MANIFEST.length) {

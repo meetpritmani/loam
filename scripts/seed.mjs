@@ -13,7 +13,13 @@
  *   --offline  do everything that does not need a store: process whatever
  *              media is on disk and write the buyer's export package. Steps 2
  *              and 5 are skipped, since both genuinely require one.
- *   --dry-run  pass through to step 5, which then writes nothing
+ *   --dry-run  pass through to every step. Steps 2-4 read the store for real
+ *              (so "would create" vs. "would update" is accurate) but send
+ *              no mutation — every write logs what it would have sent
+ *              instead. Step 5 writes nothing to the theme JSON either.
+ *              Nothing in this pipeline is destructive without --reset, but
+ *              --dry-run is still the way to see what a real run would do
+ *              before it does it — see REMAINING-WORK.md R1.
  *   --reset    delete the seeded resources first. Refuses to run against a
  *              store whose domain does not look disposable (§12.8).
  */
