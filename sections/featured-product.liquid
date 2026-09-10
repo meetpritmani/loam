@@ -98,16 +98,21 @@
                 </div>
 
               {%- when 'material' -%}
-                {%- assign material = product.metafields.custom.material -%}
-                {%- if material != blank -%}
+                {%- liquid
+                  assign composition_blocks = section.blocks | where: 'type', 'material_composition' | where: 'settings.name'
+                -%}
+                {%- if block.settings.material_text != blank -%}
                   <div {{ block.shopify_attributes }}>
                     {%- render 'material-tag',
-                      material: material,
-                      composition: product.metafields.custom.material_composition.value,
-                      story: product.metafields.custom.material_story.value
+                      material: block.settings.material_text,
+                      composition: composition_blocks,
+                      story: block.settings.material_story
                     -%}
                   </div>
                 {%- endif -%}
+
+              {%- when 'material_composition' -%}
+                {%- comment -%} Rendered inside the 'material' block above. {%- endcomment -%}
 
               {%- when 'description' -%}
                 {%- if product.description != blank -%}
@@ -168,7 +173,47 @@
     { "type": "vendor", "name": "t:sections.main_product.blocks.vendor.name", "limit": 1 },
     { "type": "title", "name": "t:sections.main_product.blocks.title.name", "limit": 1 },
     { "type": "price", "name": "t:sections.main_product.blocks.price.name", "limit": 1 },
-    { "type": "material", "name": "t:sections.main_product.blocks.material.name", "limit": 1 },
+    {
+      "type": "material",
+      "name": "t:sections.main_product.blocks.material.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "material_text",
+          "label": "t:sections.main_product.blocks.material.material_text.label",
+          "info": "t:sections.main_product.blocks.material.material_text.info"
+        },
+        {
+          "type": "richtext",
+          "id": "material_story",
+          "label": "t:sections.main_product.blocks.material.material_story.label",
+          "info": "t:sections.main_product.blocks.material.material_story.info"
+        }
+      ]
+    },
+    {
+      "type": "material_composition",
+      "name": "t:sections.main_product.blocks.material_composition.name",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "name",
+          "label": "t:sections.main_product.blocks.material_composition.name_setting.label"
+        },
+        {
+          "type": "range",
+          "id": "percent",
+          "label": "t:sections.main_product.blocks.material_composition.percent.label",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 0
+        }
+      ]
+    },
     { "type": "variant_picker", "name": "t:sections.main_product.blocks.variant_picker.name", "limit": 1 },
     { "type": "low_stock", "name": "t:sections.main_product.blocks.low_stock.name", "limit": 1 },
     { "type": "selling_plan", "name": "t:sections.main_product.blocks.selling_plan.name", "limit": 1 },

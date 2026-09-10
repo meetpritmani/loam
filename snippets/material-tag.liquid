@@ -9,7 +9,7 @@
   composition renders as a segmented bar (each segment's share of the
   material) plus the same numbers as an accessible list; story is the
   "Behind the seam" provenance note. Either can be blank on its own — a
-  product with only a composition metafield still gets the bar with no note
+  product with only composition data still gets the bar with no note
   beneath it, and vice versa.
 
   Native <details>/<summary> rather than a floating popover: keyboard and
@@ -18,10 +18,11 @@
   choice already made for the mega menu and the accordion.
 
   Params:
-    material     (string, required)  — product.metafields.custom.material
-    composition  (array, optional)   — parsed custom.material_composition,
-                                        e.g. [{"name": "Merino wool", "percent": 70}, ...]
-    story        (string, optional)  — custom.material_story (rich text)
+    material     (string, required)  — the material tag's own display text
+    composition  (array, optional)   — 'material_composition' block objects,
+                                        each read as block.settings.name /
+                                        block.settings.percent
+    story        (string, optional)  — provenance note (rich text)
     compact      (boolean, optional) — default false; tightens spacing for
                                         product cards and cart lines
 {%- endcomment -%}
@@ -46,13 +47,13 @@
       {%- if composition != blank -%}
         <ul class="material-bar" aria-hidden="true">
           {%- for part in composition limit: 4 -%}
-            <li class="material-bar__segment material-bar__segment--{{ forloop.index }}" style="--pct: {{ part.percent | default: 0 }};"></li>
+            <li class="material-bar__segment material-bar__segment--{{ forloop.index }}" style="--pct: {{ part.settings.percent | default: 0 }};"></li>
           {%- endfor -%}
         </ul>
         <dl class="material-info__breakdown">
           {%- for part in composition limit: 4 -%}
-            <dt>{{ part.name | escape }}</dt>
-            <dd>{{ part.percent | default: 0 }}%</dd>
+            <dt>{{ part.settings.name | escape }}</dt>
+            <dd>{{ part.settings.percent | default: 0 }}%</dd>
           {%- endfor -%}
         </dl>
       {%- endif -%}

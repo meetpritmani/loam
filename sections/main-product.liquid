@@ -200,22 +200,27 @@
                 </div>
 
               {%- when 'material' -%}
-                {%- assign material = product.metafields.custom.material -%}
-                {%- if material != blank -%}
+                {%- liquid
+                  assign composition_blocks = section.blocks | where: 'type', 'material_composition' | where: 'settings.name'
+                -%}
+                {%- if block.settings.material_text != blank -%}
                   <div {{ block.shopify_attributes }}>
                     {%- render 'material-tag',
-                      material: material,
-                      composition: product.metafields.custom.material_composition.value,
-                      story: product.metafields.custom.material_story.value
+                      material: block.settings.material_text,
+                      composition: composition_blocks,
+                      story: block.settings.material_story
                     -%}
                   </div>
                 {%- endif -%}
+
+              {%- when 'material_composition' -%}
+                {%- comment -%} Rendered inside the 'material' block above. {%- endcomment -%}
 
               {%- when 'variant_picker' -%}
                 <div {{ block.shopify_attributes }}>
                   {%- render 'variant-picker', product: product, section_id: section_id -%}
                   {%- if block.settings.show_size_guide -%}
-                    {%- render 'size-guide', product: product, section_id: section_id -%}
+                    {%- render 'size-guide', page: pages[block.settings.size_guide_page], section_id: section_id -%}
                   {%- endif -%}
                 </div>
 
@@ -269,8 +274,8 @@
               {%- when 'accordion' -%}
                 {%- liquid
                   assign body = block.settings.content
-                  if block.settings.source == 'care' and product.metafields.custom.care != blank
-                    assign body = product.metafields.custom.care
+                  if block.settings.source == 'care' and product.metafields.descriptors.care_guide.value != blank
+                    assign body = product.metafields.descriptors.care_guide.value | newline_to_br
                   elsif block.settings.source == 'description' and product.description != blank
                     assign body = product.description
                   endif
@@ -318,7 +323,47 @@
     { "type": "title", "name": "t:sections.main_product.blocks.title.name", "limit": 1 },
     { "type": "badges", "name": "t:sections.main_product.blocks.badges.name", "limit": 1 },
     { "type": "price", "name": "t:sections.main_product.blocks.price.name", "limit": 1 },
-    { "type": "material", "name": "t:sections.main_product.blocks.material.name", "limit": 1 },
+    {
+      "type": "material",
+      "name": "t:sections.main_product.blocks.material.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "material_text",
+          "label": "t:sections.main_product.blocks.material.material_text.label",
+          "info": "t:sections.main_product.blocks.material.material_text.info"
+        },
+        {
+          "type": "richtext",
+          "id": "material_story",
+          "label": "t:sections.main_product.blocks.material.material_story.label",
+          "info": "t:sections.main_product.blocks.material.material_story.info"
+        }
+      ]
+    },
+    {
+      "type": "material_composition",
+      "name": "t:sections.main_product.blocks.material_composition.name",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "name",
+          "label": "t:sections.main_product.blocks.material_composition.name_setting.label"
+        },
+        {
+          "type": "range",
+          "id": "percent",
+          "label": "t:sections.main_product.blocks.material_composition.percent.label",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 0
+        }
+      ]
+    },
     {
       "type": "variant_picker",
       "name": "t:sections.main_product.blocks.variant_picker.name",
@@ -330,6 +375,12 @@
           "label": "t:sections.main_product.blocks.variant_picker.show_size_guide.label",
           "info": "t:sections.main_product.blocks.variant_picker.show_size_guide.info",
           "default": true
+        },
+        {
+          "type": "page",
+          "id": "size_guide_page",
+          "label": "t:sections.main_product.blocks.variant_picker.size_guide_page.label",
+          "info": "t:sections.main_product.blocks.variant_picker.size_guide_page.info"
         }
       ]
     },

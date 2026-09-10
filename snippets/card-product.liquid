@@ -17,6 +17,10 @@
     loading      (string, optional)
     show_badges  (boolean, optional) — default true
     heading_tag  (string, optional)  — h2/h3/h4, default h3
+    material     (string, optional)  — caller-supplied material tag text;
+                                        the card has no per-product metafield
+                                        access of its own, so this is blank
+                                        unless a caller passes it in
 
   `heading_tag` exists so the card does not create a gap in the document
   outline. On the homepage a card sits under a section <h2>, so <h3> is right.
@@ -66,7 +70,6 @@
       assign show_hover = true
     endif
 
-    assign material = product.metafields.custom.material.value
     assign is_new = false
     if product.tags contains 'new'
       assign is_new = true
@@ -193,13 +196,8 @@
         <a class="card__link" href="{{ product.url }}">{{ product.title | escape }}</a>
       </{{ title_tag }}>
 
-      {%- if settings.card_show_material and material != blank -%}
-        {%- render 'material-tag',
-          material: material,
-          composition: product.metafields.custom.material_composition.value,
-          story: product.metafields.custom.material_story.value,
-          compact: true
-        -%}
+      {%- if material != blank -%}
+        {%- render 'material-tag', material: material, compact: true -%}
       {%- endif -%}
 
       {%- if settings.card_show_swatches -%}

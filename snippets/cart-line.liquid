@@ -71,22 +71,6 @@
     <div class="cart-line__heading">
       <a class="cart-line__title link" href="{{ item.url }}">{{ item.product.title | escape }}</a>
 
-      {%- comment -%}
-        Loam's other signature element (§2) — already on card-product and
-        the PDP, never on the cart. A cart line is exactly the kind of
-        product-identifying spot that element exists for, so its absence
-        here was a real gap, not a deliberate omission.
-      {%- endcomment -%}
-      {%- assign material = item.product.metafields.custom.material -%}
-      {%- if settings.card_show_material and material != blank -%}
-        {%- render 'material-tag',
-          material: material,
-          composition: item.product.metafields.custom.material_composition.value,
-          story: item.product.metafields.custom.material_story.value,
-          compact: true
-        -%}
-      {%- endif -%}
-
       {%- unless item.product.has_only_default_variant -%}
         <ul class="cart-line__variant text-body-sm text-muted">
           {%- for option in item.options_with_values -%}

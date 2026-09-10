@@ -3,11 +3,11 @@
 
   §9.4 asks for a related products block "where the article mentions a
   product". That judgement belongs to whoever wrote the post, not to the
-  theme, so the products are read from an article metafield first —
-  `custom.related_products`, a product_list — and fall back to the section's
-  own picker for merchants who would rather set one list for the whole blog.
-  Nothing is inferred from the body text and nothing is picked at random: an
-  article that mentions no product shows no product row.
+  theme, so the products come from this section's own `related_products`
+  picker — a merchant using an alternate template per article can set a
+  different list per post; one using the shared template sets one list for
+  the whole blog. Nothing is inferred from the body text and nothing is
+  picked at random: an article with nothing picked shows no product row.
 
   Newsletter capture sits at the end, after the body and after the related
   products. §9.4 is explicit that it is not placed mid-scroll — an inline
@@ -20,16 +20,7 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign related = article.metafields.custom.related_products.value
-  if related == blank
-    assign related = section.settings.related_products
-  endif
-
-  comment
-    `.size` for both sources. A product_list setting and a metafield's
-    `.value` are both arrays here, and `.count` is nil on one of them —
-    comparing nil with `>` is a Liquid error, not a false.
-  endcomment
+  assign related = section.settings.related_products
   assign related_count = related.size
 
   capture card_sizes

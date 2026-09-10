@@ -271,13 +271,6 @@
       },
       {
         "type": "checkbox",
-        "id": "card_show_material",
-        "label": "t:settings.product_cards.card_show_material.label",
-        "info": "t:settings.product_cards.card_show_material.info",
-        "default": true
-      },
-      {
-        "type": "checkbox",
         "id": "card_quick_add",
         "label": "t:settings.product_cards.card_quick_add.label",
         "info": "t:settings.product_cards.card_quick_add.info",

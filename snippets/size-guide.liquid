@@ -5,17 +5,19 @@
   abandoned: they lose the variant they had selected and the scroll position
   they were at. The drawer keeps the PDP state intact underneath.
 
-  Content comes from `product.metafields.custom.size_guide`, a page
-  reference. No metafield, no trigger and no drawer — this degrades to
-  nothing rather than to an empty panel.
+  Content comes from a merchant-picked page (the "Size guide" setting on the
+  variant picker block), not a metafield — a plain page setting works on
+  every store with zero configuration beyond writing the page itself. No
+  page picked, no trigger and no drawer — this degrades to nothing rather
+  than to an empty panel.
 
   Params:
-    product     (product, required)
+    page        (page, optional)
     section_id  (string, required)
 {%- endcomment -%}
 
 {%- liquid
-  assign guide = product.metafields.custom.size_guide.value
+  assign guide = page
   assign drawer_id = section_id | append: '-size-guide'
 -%}
 

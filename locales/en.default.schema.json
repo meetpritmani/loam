@@ -127,10 +127,6 @@
         "label": "Show second image on hover",
         "info": "Uses the second image on the product. Products with one image are unaffected."
       },
-      "card_show_material": {
-        "label": "Show material tag",
-        "info": "Reads the product metafield custom.material. Hidden when the metafield is empty."
-      },
       "card_show_swatches": {
         "label": "Show color swatches"
       },
@@ -360,7 +356,7 @@
       "related_products": {
         "label": "Products in this article"
       },
-      "related_paragraph": "Set these per article with the custom.related_products metafield. Anything chosen here is the fallback for articles that do not have it. Only add products the article actually mentions.",
+      "related_paragraph": "To vary this list per article, create an alternate template for that article and set its own products here. Only add products the article actually mentions.",
       "comments_per_page": {
         "label": "Comments per page"
       },
@@ -520,13 +516,34 @@
           "name": "Price"
         },
         "material": {
-          "name": "Material tag"
+          "name": "Material tag",
+          "material_text": {
+            "label": "Material",
+            "info": "For example \"Merino wool upper\". Use the dynamic source icon to bind this to a product metafield instead of typing it per product."
+          },
+          "material_story": {
+            "label": "Behind the seam note",
+            "info": "An optional provenance note shown when the material tag is expanded. Leave blank to show just the tag."
+          }
+        },
+        "material_composition": {
+          "name": "Material composition row",
+          "name_setting": {
+            "label": "Component name"
+          },
+          "percent": {
+            "label": "Share"
+          }
         },
         "variant_picker": {
           "name": "Variant picker",
           "show_size_guide": {
             "label": "Show size guide link",
-            "info": "Appears only on products with a size guide page set in the custom.size_guide metafield."
+            "info": "Appears only when a size guide page is picked below."
+          },
+          "size_guide_page": {
+            "label": "Size guide page",
+            "info": "Opens in a drawer over the product page. This link only shows once a page is picked here, and this setting applies to every product using this template — pick a page whose sizing applies broadly, or use an alternate template for products that need a different one."
           }
         },
         "low_stock": {
@@ -556,7 +573,7 @@
             "label": "Content from",
             "options": {
               "custom": "Text below",
-              "care": "Care metafield",
+              "care": "Care instructions metafield (descriptors.care_guide)",
               "description": "Product description"
             }
           },
