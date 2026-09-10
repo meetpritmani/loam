@@ -31,6 +31,9 @@
     "view_all": "Ver tudo",
     "learn_more": "Saber mais",
     "loading": "A carregar",
+    "no_products_yet_heading": "Ainda não há produtos",
+    "no_products_yet_text": "Adicione produtos no seu administrador Shopify para preencher este espaço.",
+    "no_products_yet_link": "Ver todos os produtos",
     "share": {
       "label": "Partilhar",
       "copied": "Ligação copiada"

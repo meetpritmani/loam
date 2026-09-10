@@ -1,19 +1,10 @@
 {%- comment -%}
-  card-product.liquid — the product card, and the theme's demo fallback.
+  card-product.liquid — the product card.
 
-  A freshly installed theme has no products. Every product-driven section on
-  the homepage would otherwise render an empty grid, which is the single
-  worst first impression a paid theme can make. So this snippet has two
-  modes:
-
-    product given  → the real product
-    no product     → demo mode: a Fernway shoe with a real name, price and
-                     material, drawn from the demo set by `demo_index`
-
-  Demo mode is not fake data pretending to be real: it renders only when
-  there is no product to show, its imagery comes from `demo-product-N.webp`
-  through image-fallback.liquid, and the whole path switches off with
-  Theme settings → Demo content.
+  Renders nothing when `product` is blank. A freshly installed theme has no
+  products, and a card that invents a name and a price for a shoe that does
+  not exist would put fabricated commercial data in front of a shopper —
+  callers are responsible for their own empty state (see empty-state.liquid).
 
   One tab stop per card: the title carries a stretched ::after that covers
   the card, and the image link is removed from the tab order. Quick add adds
@@ -21,8 +12,7 @@
   the action block below.
 
   Params:
-    product      (product, optional)
-    demo_index   (number, optional)  — 1-8, which demo shoe to render
+    product      (product, optional) — nothing renders when blank
     sizes        (string, optional)
     loading      (string, optional)
     show_badges  (boolean, optional) — default true
@@ -294,73 +284,4 @@
     </div>
   </div>
 
-{%- else -%}
-  {%- comment -%}
-    Demo mode. Names, prices and materials are the Fernway set from the build
-    spec's copy bible (§10) — no lorem ipsum, no "Product title".
-  {%- endcomment -%}
-  {%- liquid
-    assign index = demo_index | default: 1 | modulo: 8
-    if index == 0
-      assign index = 8
-    endif
-
-    assign demo_names = 'Coastline Runner,Ridge Lounger,Harbour Slip-On,Meadow Low,Fernway Trail Mid,Drift Knit,Bracken Boot,Tideline Sandal' | split: ','
-    assign demo_prices = '12800,9800,10800,11800,14500,8800,13800,7800' | split: ','
-    assign demo_materials = 'Merino wool upper,Merino wool upper,Eucalyptus fibre knit,Eucalyptus fibre knit,Sugarcane foam sole,Eucalyptus fibre knit,Merino wool upper,Sugarcane foam sole' | split: ','
-
-    assign position = index | minus: 1
-    assign demo_name = demo_names[position]
-    assign demo_price = demo_prices[position] | plus: 0
-    assign demo_material = demo_materials[position]
-    assign demo_image = 'demo-product-' | append: index | append: '.webp'
-    assign demo_image_alt = 'demo-product-' | append: index | append: '-alt.webp'
-  -%}
-
-  <div class="card card-product card-product--demo">
-    <span class="card-product__media media {{ ratio_class }}{{ zoom_class }}" aria-hidden="true">
-      {%- render 'image-fallback',
-        fallback: demo_image,
-        alt: demo_name,
-        sizes: sizes,
-        widths: card_widths,
-        loading: loading,
-        width: 1200,
-        height: 1500,
-        placeholder: 'product-1'
-      -%}
-
-      {%- if settings.card_hover_image -%}
-        <span class="card-product__hover">
-          {%- render 'image-fallback',
-            fallback: demo_image_alt,
-            alt: demo_name,
-            sizes: sizes,
-            widths: card_widths,
-            width: 1200,
-            height: 1500,
-            placeholder: 'product-2'
-          -%}
-        </span>
-      {%- endif -%}
-    </span>
-
-    {%- if show_card_badges -%}
-      <div class="badge-row">
-        {%- if index <= 2 and settings.card_show_new_badge -%}
-          <span class="badge">{{ 'products.product.new' | t }}</span>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
-
-    <div class="card__body">
-      <{{ title_tag }} class="card-product__title h5">{{ demo_name }}</{{ title_tag }}>
-
-      {%- if settings.card_show_material -%}
-        {%- render 'material-tag', material: demo_material, compact: true -%}
-      {%- endif -%}
-
-      {%- render 'price', price: demo_price -%}
-    </div>
-  </div>
 {%- endif -%}

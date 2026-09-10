@@ -10,12 +10,10 @@
   stacked gallery — a spotlight is a preview of the product, not the PDP
   itself, so it does not need a lightbox or a multi-image grid.
 
-  Renders on a store with no products: with nothing picked, it falls back to
-  card-product.liquid's own demo mode — the same fallback featured-collection
-  uses — rather than an empty state. There's no honest way to show a working
-  buy form for a product that doesn't exist, so the fallback is decorative
-  only, matching the zero-product install state a buyer expects everywhere
-  else in the theme.
+  Renders on a store with no products: with nothing picked, it renders
+  empty-state.liquid rather than a fabricated product. There's no honest way
+  to show a working buy form — or a name and a price — for a product that
+  doesn't exist.
 
   Not added to templates/index.json: this section exists to satisfy the
   Theme Store's "featured product section" requirement (available in the
@@ -34,9 +32,18 @@
 >
   <div class="page-width">
     {%- if product == blank -%}
-      <div class="featured-product featured-product--demo">
-        {%- render 'card-product', demo_index: 1 -%}
-      </div>
+      {%- liquid
+        assign no_products_heading = 'general.no_products_yet_heading' | t
+        assign no_products_text = 'general.no_products_yet_text' | t
+        assign no_products_link = 'general.no_products_yet_link' | t
+      -%}
+      {%- render 'empty-state',
+        heading: no_products_heading,
+        text: no_products_text,
+        link_url: routes.all_products_collection_url,
+        link_label: no_products_link,
+        icon: 'cart'
+      -%}
     {%- else -%}
       {%- liquid
         assign current = product.selected_or_first_available_variant

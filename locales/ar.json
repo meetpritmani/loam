@@ -36,6 +36,9 @@
     "view_all": "عرض الكل",
     "learn_more": "معرفة المزيد",
     "loading": "جارٍ التحميل",
+    "no_products_yet_heading": "لا توجد منتجات بعد",
+    "no_products_yet_text": "أضف منتجات في لوحة تحكم Shopify لملء هذه المساحة.",
+    "no_products_yet_link": "تصفح جميع المنتجات",
     "share": {
       "label": "مشاركة",
       "copied": "تم نسخ الرابط"

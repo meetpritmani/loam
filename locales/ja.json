@@ -31,6 +31,9 @@
     "view_all": "すべて見る",
     "learn_more": "詳しく見る",
     "loading": "読み込み中",
+    "no_products_yet_heading": "商品はまだありません",
+    "no_products_yet_text": "Shopify管理画面で商品を追加して、このスペースを埋めてください。",
+    "no_products_yet_link": "すべての商品を見る",
     "share": {
       "label": "シェア",
       "copied": "リンクをコピーしました"

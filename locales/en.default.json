@@ -31,6 +31,9 @@
     "view_all": "View all",
     "learn_more": "Learn more",
     "loading": "Loading",
+    "no_products_yet_heading": "No products yet",
+    "no_products_yet_text": "Add products in your Shopify admin to fill this space.",
+    "no_products_yet_link": "Browse all products",
     "share": {
       "label": "Share",
       "copied": "Link copied"

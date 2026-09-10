@@ -2,10 +2,9 @@
   featured-collection.liquid — a row of products, as a grid or a slider.
 
   Renders on a store with no products: when the picked collection is empty
-  (or none is picked), it falls through to card-product.liquid's demo mode,
-  so the section shows real-looking shoes rather than an empty grid. That is
-  the install state for every buyer, and it is the state this section is
-  judged in.
+  (or none is picked), it renders empty-state.liquid rather than inventing
+  products. A theme must never show a shopper a priced product that doesn't
+  exist, so there is no demo-card fallback here.
 {%- endcomment -%}
 
 {%- liquid
@@ -82,18 +81,23 @@
             -%}
           </div>
         {%- endfor -%}
-      {%- else -%}
-        {%- for i in (1..count) -%}
-          <div class="reveal" style="--reveal-delay: {{ forloop.index0 | at_most: 3 | times: 60 }}ms;">
-            {%- render 'card-product',
-              demo_index: i,
-              sizes: card_sizes,
-              loading: 'lazy'
-            -%}
-          </div>
-        {%- endfor -%}
       {%- endif -%}
     </div>
+
+    {%- unless has_products -%}
+      {%- liquid
+        assign no_products_heading = 'general.no_products_yet_heading' | t
+        assign no_products_text = 'general.no_products_yet_text' | t
+        assign no_products_link = 'general.no_products_yet_link' | t
+      -%}
+      {%- render 'empty-state',
+        heading: no_products_heading,
+        text: no_products_text,
+        link_url: routes.all_products_collection_url,
+        link_label: no_products_link,
+        icon: 'cart'
+      -%}
+    {%- endunless -%}
   </div>
 </div>
 

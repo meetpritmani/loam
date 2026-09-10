@@ -738,7 +738,7 @@
           "name": "Logo",
           "text": {
             "label": "Alt text",
-            "info": "Describes the logo for screen readers, for example \"B Corp certified\"."
+            "info": "Describes the logo for screen readers, for example \"Certified organic\"."
           }
         }
       }
@@ -746,7 +746,7 @@
     "featured_collection": {
       "name": "Featured collection",
       "collection": {
-        "info": "Leave empty to preview with demo products. Your own products appear as soon as you pick a collection."
+        "info": "Leave empty to show a message inviting you to add products. Your own products appear as soon as you pick a collection."
       },
       "products_to_show": {
         "label": "Products to show"
@@ -858,7 +858,7 @@
           },
           "detail": {
             "label": "Detail",
-            "info": "City, product, or \"verified buyer\"."
+            "info": "A short line of context, such as a city or the product they bought."
           },
           "image": {
             "label": "Photo"

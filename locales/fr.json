@@ -31,6 +31,9 @@
     "view_all": "Tout voir",
     "learn_more": "En savoir plus",
     "loading": "Chargement",
+    "no_products_yet_heading": "Aucun produit pour le moment",
+    "no_products_yet_text": "Ajoutez des produits dans votre back-office Shopify pour remplir cet espace.",
+    "no_products_yet_link": "Parcourir tous les produits",
     "share": {
       "label": "Partager",
       "copied": "Lien copié"

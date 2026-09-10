@@ -31,6 +31,9 @@
     "view_all": "Vedi tutto",
     "learn_more": "Scopri di più",
     "loading": "Caricamento",
+    "no_products_yet_heading": "Ancora nessun prodotto",
+    "no_products_yet_text": "Aggiungi prodotti nel tuo pannello di amministrazione Shopify per riempire questo spazio.",
+    "no_products_yet_link": "Sfoglia tutti i prodotti",
     "share": {
       "label": "Condividi",
       "copied": "Link copiato"
