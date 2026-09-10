@@ -20,8 +20,8 @@ external CDN. Everything a shopper downloads is in this repository.
 | 3 | Homepage — 15 sections | Complete |
 | 4 | Templates — product, collection, search, cart, blog, customers | Complete |
 | 5 | Demo store seeding | **Complete** — 48 of 48 demo photos sourced, licensed and uploaded; catalogue, collections and content seeded |
-| 6 | Demo content shipped in the repo | **Complete** — theme JSON fully wired to the seeded media, both presets ship, `assets/` correctly bundles no photography |
-| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | **In progress** — theme check, contrast, section and locale audits automated and passing; JSON-LD validated on every template; RTL verified live (a real bidi bug found and fixed); a fresh, empty dev store confirmed installing to a finished-looking homepage in the seeded time budget; desktop Lighthouse confirmed 90+ repeatably; listing screenshots captured — 10 page states × 3 breakpoints, both theme styles. VoiceOver pass confirmed (iPadOS VoiceOver + Safari) |
+| 6 | Demo content shipped in the repo | **Complete** — theme JSON fully wired to the seeded media, a single "Loam" preset ships, `assets/` correctly bundles no photography |
+| 7 | Hardening — Lighthouse, JSON-LD, VoiceOver, fresh-install test | **In progress** — theme check, contrast, section and locale audits automated and passing; JSON-LD validated on every template; RTL verified live (a real bidi bug found and fixed); a fresh, empty dev store confirmed installing to a finished-looking homepage in the seeded time budget; desktop Lighthouse confirmed 90+ repeatably; listing screenshots captured — 10 page states × 3 breakpoints. VoiceOver pass confirmed (iPadOS VoiceOver + Safari) |
 
 Nothing in this file describes behaviour that does not exist today.
 
@@ -99,19 +99,12 @@ them, re-measure: `npm run check:contrast` checks every rendered pair in every
 scheme of every style and exits non-zero on a failure. The tightest pair as
 shipped is the accent on the sand scheme at 4.69:1.
 
-### Theme styles
+### Theme style
 
-Two presets ship, switchable from the top of the theme editor:
-
-| Style | Ground |
-|---|---|
-| **Fernway** | Light. Paper `#F5F4F0`, ink `#101A16`, accent `#2E6B4F` |
-| **Fernway Night** | Dark. Paper `#0E1512`, text `#EDEFEA`, accent lifted to `#8FBFA4` |
-
-In Fernway Night the `scheme-ink` scheme is *inverted* rather than darkened
-further, so the sections that break up the page in daylight still break it up
-at night. Switching style replaces your colour settings — it does not merge
-with them.
+One preset ships — **Loam** — light, with paper `#F5F4F0`, ink `#101A16`,
+and accent `#2E6B4F`. Every colour is a theme setting, so a merchant can
+build their own dark or alternate look from the Colors group without
+needing a second preset to start from.
 
 ---
 

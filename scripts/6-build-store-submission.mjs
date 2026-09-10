@@ -29,10 +29,13 @@ const outDir = path.join(root, 'store-submission-build');
 // dev-only tooling (scripts/, demo-store-export/, docs) never belonged in a
 // submission zip in the first place.
 //
-// listings/ added 2026-09-04: required once the theme ships more than one
-// preset (§18's Theme Store fix) — its per-preset templates/sections, when
-// present, need the same shopify:// stripping as the root theme.
-const THEME_PATHS = ['assets', 'config', 'layout', 'listings', 'locales', 'sections', 'snippets', 'templates'];
+// No listings/ entry: that would only be needed if the theme shipped more
+// than one preset. It briefly did (2026-09-04, "Fernway Night"), but that
+// preset differed from "Loam" only by colour — Shopify doesn't count a
+// colour swap as real differentiation, and each preset needs its own demo
+// store to list. Collapsed back to a single "Loam" preset; see T4 in
+// CLAUDE-TASKS-theme-store-fixes.md.
+const THEME_PATHS = ['assets', 'config', 'layout', 'locales', 'sections', 'snippets', 'templates'];
 
 function copyDir(src, dest) {
   mkdirSync(dest, { recursive: true });
@@ -114,10 +117,6 @@ function main() {
   const stripped = [];
   forEachJsonFile(path.join(outDir, 'templates'), (f) => processJsonFile(f, stripped));
   forEachJsonFile(path.join(outDir, 'sections'), (f) => processJsonFile(f, stripped));
-  const listingsDir = path.join(outDir, 'listings');
-  if (existsSync(listingsDir)) {
-    forEachJsonFile(listingsDir, (f) => processJsonFile(f, stripped));
-  }
 
   // demo_images defaults to true in the working repo (build spec §6) so the
   // demo store and the marketplace listings show real imagery. Shopify's own
