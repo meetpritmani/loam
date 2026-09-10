@@ -14,6 +14,10 @@
         "label": "Text",
         "info": "Ink. Body copy, headings, and primary buttons."
       },
+      "surface_text": {
+        "label": "Text on surface",
+        "info": "Text sitting on the surface colour above — a card's title, a drawer's body copy. Defaults to the same colour as Text; change it if your surface colour needs different contrast."
+      },
       "accent": {
         "label": "Accent",
         "info": "Link hover, progress bars, and the focus ring. Must stay readable on the page background."
@@ -21,6 +25,10 @@
       "sand": {
         "label": "Sand",
         "info": "Image placeholders and soft badges."
+      },
+      "sand_text": {
+        "label": "Text on sand",
+        "info": "Text sitting on the sand colour above — a badge label, a placeholder caption. Defaults to the same colour as Text; change it if your sand colour needs different contrast."
       },
       "signal": {
         "label": "Sale",

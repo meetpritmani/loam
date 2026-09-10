@@ -10,12 +10,15 @@
   Params: none. Rendered once, from the <head> of every layout.
 
   Palette roles (build spec §2):
-    --c-ink      text, buttons, footer background
-    --c-paper    page background
-    --c-surface  cards, drawers, inputs
-    --c-accent   link hover, progress, focus ring
-    --c-sand     image placeholders, soft badges
-    --c-signal   sale price and sale badge ONLY
+    --c-ink          text, buttons, footer background
+    --c-paper        page background
+    --c-surface      cards, drawers, inputs
+    --c-surface-text text sitting on --c-surface (§16: every background
+                     colour setting needs a paired foreground)
+    --c-accent       link hover, progress, focus ring
+    --c-sand         image placeholders, soft badges
+    --c-sand-text    text sitting on --c-sand
+    --c-signal       sale price and sale badge ONLY
 
   Ink tints are produced with the `color_mix` filter against the scheme's own
   background, never with `opacity` on text — opacity would also fade any
@@ -151,8 +154,10 @@
     --c-paper: #F5F4F0;
     --c-surface: #FFFFFF;
     --c-ink: #101A16;
+    --c-surface-text: #101A16;
     --c-accent: #2E6B4F;
     --c-sand: #E3DED1;
+    --c-sand-text: #101A16;
     --c-signal: #B23A2F;
     --c-ink-70: #555b57;
     --c-ink-45: #8e928e;
@@ -181,8 +186,10 @@
       --c-paper: {{ paper }};
       --c-surface: {{ s.surface | default: paper }};
       --c-ink: {{ ink }};
+      --c-surface-text: {{ s.surface_text | default: ink }};
       --c-accent: {{ s.accent | default: ink }};
       --c-sand: {{ s.sand | default: paper }};
+      --c-sand-text: {{ s.sand_text | default: ink }};
       --c-signal: {{ s.signal | default: ink }};
 
       --c-ink-70: {{ ink_70 }};

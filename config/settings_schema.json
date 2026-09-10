@@ -37,6 +37,13 @@
           },
           {
             "type": "color",
+            "id": "surface_text",
+            "label": "t:settings.colors.surface_text.label",
+            "info": "t:settings.colors.surface_text.info",
+            "default": "#101A16"
+          },
+          {
+            "type": "color",
             "id": "accent",
             "label": "t:settings.colors.accent.label",
             "info": "t:settings.colors.accent.info",
@@ -48,6 +55,13 @@
             "label": "t:settings.colors.sand.label",
             "info": "t:settings.colors.sand.info",
             "default": "#E3DED1"
+          },
+          {
+            "type": "color",
+            "id": "sand_text",
+            "label": "t:settings.colors.sand_text.label",
+            "info": "t:settings.colors.sand_text.info",
+            "default": "#101A16"
           },
           {
             "type": "color",

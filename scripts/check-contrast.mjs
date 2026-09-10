@@ -11,7 +11,8 @@
  * Checks, per scheme, the pairs the theme actually renders:
  *
  *   text / background         AA normal text (4.5)
- *   text / surface            cards, drawers, inputs sit on surface
+ *   surface_text / surface    cards, drawers, inputs sit on surface
+ *   sand_text / sand          badges, placeholders sit on sand
  *   accent / background       link hover, focus ring, route icons
  *   accent / surface
  *   signal / background       sale price
@@ -84,7 +85,8 @@ function pairsFor(scheme) {
   const s = scheme;
   return [
     { name: 'text on background', fg: s.text, bg: s.background, min: AA_NORMAL },
-    { name: 'text on surface', fg: s.text, bg: s.surface, min: AA_NORMAL },
+    { name: 'surface_text on surface', fg: s.surface_text ?? s.text, bg: s.surface, min: AA_NORMAL },
+    { name: 'sand_text on sand', fg: s.sand_text ?? s.text, bg: s.sand, min: AA_NORMAL },
     { name: 'accent on background', fg: s.accent, bg: s.background, min: AA_NORMAL },
     { name: 'accent on surface', fg: s.accent, bg: s.surface, min: AA_NORMAL },
     { name: 'signal on background', fg: s.signal, bg: s.background, min: AA_NORMAL },

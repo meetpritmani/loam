@@ -826,7 +826,7 @@ dialog {
   padding-inline: var(--sp-2);
   border-radius: var(--radius-sm);
   background-color: var(--c-sand);
-  color: var(--c-ink);
+  color: var(--c-sand-text);
   font-size: var(--t-xs);
   line-height: 1;
   letter-spacing: var(--caption-tracking);
@@ -900,7 +900,7 @@ dialog {
   background-color: var(--c-surface);
   border: var(--border-hairline) solid var(--c-ink-12);
   border-radius: var(--radius);
-  color: var(--c-ink);
+  color: var(--c-surface-text);
   font-size: var(--t-base);
   transition: border-color var(--dur) var(--ease);
 }
@@ -1081,6 +1081,7 @@ compare-toggle {
   flex-direction: column;
   width: min(100%, 420px);
   background-color: var(--c-surface);
+  color: var(--c-surface-text);
   transform: translateX(100%);
   transition: transform var(--dur-slow) var(--ease);
 }
